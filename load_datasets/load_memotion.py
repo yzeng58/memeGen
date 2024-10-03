@@ -5,7 +5,7 @@ sys.path.append(root_dir)
 from configs import dataset_dir
 
 
-def load_memotion():
+def load_memotion(binary_classification = False):
     memotion_dir = f'{dataset_dir}/memotion_dataset_7k'
     memotion_labels = pd.read_csv(f'{memotion_dir}/labels.csv')
 
@@ -23,4 +23,12 @@ def load_memotion():
     df = df.copy()  # Create a copy to avoid SettingWithCopyWarning
     df['image_path'] = df['image_name'].apply(lambda img_name: f'{memotion_dir}/images/{img_name}')
     df['humor_level'] = df['humor_level'].astype(int)
-    return df[['image_path', 'text', 'humor_level']]
+    df = df[['image_path', 'text', 'humor_level']]
+
+    if binary_classification:
+        # Filter the dataframe to include only rows where humor_level is 1 or 4
+        df = df[df['humor_level'].isin([1, 4])]
+        df['label'] = df['humor_level'].replace({1:0, 4:1})
+        df = df[['image_path', 'text', 'label']].reset_index(drop=True)
+    return df
+

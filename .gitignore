@@ -37,6 +37,8 @@ figures/
 **/logs
 **/archive
 **/resources
+**/submit
+**/log_slurm
 
 
 **/submit_cpu.sh
