@@ -1,12 +1,53 @@
 from load_dataset import load_dataset
 from load_model import load_model
-import os, wandb, argparse
+import os, wandb, argparse, re
 root_dir = os.path.dirname(__file__)
 from helper import save_json, read_json, print_configs
 from configs import support_models, support_datasets, prompt_processor
 from environment import WANDB_INFO
 import pandas as pd
 from tqdm import tqdm
+
+def get_output(
+    call_model, 
+    prompt_name,
+    prompt,
+    image_paths, 
+    max_new_tokens=1,
+    max_intermediate_tokens=300,
+    description = '',
+):
+    if 'cot' in prompt_name:
+        output_1 = call_model(
+            prompt[0], 
+            image_paths, 
+            max_new_tokens=max_intermediate_tokens,
+            save_history=True,
+            description=description,
+        )
+        output_2 = call_model(
+            prompt[1], 
+            [], 
+            max_new_tokens=max_new_tokens,
+            history=output_1['history'],
+            save_history=True,
+            description=description,
+        )
+        output_dict = {
+            'output': output_2['output'],
+            'analysis': output_1['output'] + output_2['output'],
+        }
+    else:
+        output_dict_all = call_model(
+            prompt, 
+            image_paths, 
+            max_new_tokens=max_new_tokens,
+            description=description,
+        )
+        output_dict = {
+            'output': output_dict_all['output'],
+        }
+    return output_dict
 
 def evaluate(
     model_name, 
@@ -18,8 +59,9 @@ def evaluate(
     log_wandb = False,
     overwrite = False,
     eval_mode = 'single',
+    description = '',
 ):
-    dataset = load_dataset(dataset_name, binary_classification=True)
+    dataset = load_dataset(dataset_name, binary_classification=True, description=description)
     sampled_datasets = []
     for label in dataset['label'].unique():
         label_dataset = dataset[dataset['label'] == label]
@@ -32,43 +74,61 @@ def evaluate(
 
     call_model = load_model(model_name, api_key=api_key)
 
-    if eval_mode not in prompt_processor:
-        raise ValueError(f'Eval mode {eval_mode} not supported, please choose from {list(prompt_processor.keys())}')
-    if prompt_name not in prompt_processor[eval_mode]:
-        raise ValueError(f'Prompt name {prompt_name} not supported, please choose from {list(prompt_processor[eval_mode].keys())}')
+    if eval_mode not in prompt_processor[model_name]:
+        raise ValueError(f'Eval mode {eval_mode} not supported, please choose from {list(prompt_processor[model_name].keys())}')
+    if prompt_name not in prompt_processor[model_name][eval_mode]:
+        raise ValueError(f'Prompt name {prompt_name} not supported, please choose from {list(prompt_processor[model_name][eval_mode].keys())}')
 
-    prompt = prompt_processor[eval_mode][prompt_name]['prompt']
+    prompt = prompt_processor[model_name][eval_mode][prompt_name]['prompt']
 
-    result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_name}'
+    description_flag = f'description_{description}' if description else 'multimodal'
+    result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_name}/{description_flag}/{eval_mode}_{prompt_name}'
     os.makedirs(result_dir, exist_ok=True)
 
     if eval_mode == 'single':
         corr = 0
-        for i in tqdm(range(len(dataset))):
-            image_path = dataset.loc[i, 'image_path']
-            image_name = image_path.split('/')[-1].split('.')[0]
+        tqdm_bar = tqdm(range(len(dataset)))
+        for i in tqdm_bar:
+            if description:
+                file_path = dataset.loc[i, 'description_path']
+            else:
+                file_path = dataset.loc[i, 'image_path']
+            file_name = file_path.split('/')[-1].split('.')[0]
             label = dataset.loc[i, 'label']
+            result_file = f'{result_dir}/{file_name}.json'
 
-            if os.path.exists(f'{result_dir}/{image_name}.json') and not overwrite:
+            if os.path.exists(result_file) and not overwrite:
                 try:
-                    result = read_json(f'{result_dir}/{image_name}.json')
+                    result = read_json(result_file)
                     continue
                 except KeyboardInterrupt:
                     raise KeyboardInterrupt
                 except:
                     pass
             
-            output = call_model(prompt, [image_path], max_new_tokens=1)
-            pred_label = prompt_processor[eval_mode][prompt_name]['output_processor'](output)
+            output_dict = get_output(
+                call_model, 
+                prompt_name,
+                prompt,
+                [file_path], 
+                max_new_tokens=1,
+                description=description,
+            )
+
+            pred_label = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](output_dict['output'])
             if pred_label == label: corr += 1
 
             result = {
-                'image_path': image_path,
+                'file_path': file_path,
                 'label': int(label),  # Convert numpy.int64 to Python int
-                'output': output,
+                'output_dict': output_dict,
                 'pred_label': int(pred_label),  # Convert numpy.int64 to Python int
             }
-            save_json(result, f'{result_dir}/{image_name}.json')
+            save_json(result, result_file)
+            # Update tqdm description with current accuracy
+            total_predictions = i + 1  # One prediction per iteration
+            current_acc = corr / total_predictions
+            tqdm_bar.set_description(f"Acc: {current_acc:.4f}")
 
         acc = corr / len(dataset)
 
@@ -77,39 +137,72 @@ def evaluate(
         funny_data = dataset[dataset['label'] == 1].reset_index(drop=True)
         not_funny_data = dataset[dataset['label'] == 0].reset_index(drop=True)
 
-        for i in tqdm(range(len(funny_data))):
-            funny_image_path = funny_data.loc[i, 'image_path']
-            not_funny_image_path = not_funny_data.loc[i, 'image_path']
+        tqdm_bar = tqdm(range(len(funny_data)))
+        for i in tqdm_bar:
+            if description:
+                funny_path = funny_data.loc[i, 'description_path']
+                not_funny_path = not_funny_data.loc[i, 'description_path']
+            else:
+                funny_path = funny_data.loc[i, 'image_path']
+                not_funny_path = not_funny_data.loc[i, 'image_path']
 
-            result_name = f'{funny_image_path.split("/")[-1].split(".")[0]}_{not_funny_image_path.split("/")[-1].split(".")[0]}'
+            funny_file_name = funny_path.split("/")[-1].split(".")[0]
+            not_funny_file_name = not_funny_path.split("/")[-1].split(".")[0]
 
-            if os.path.exists(f'{result_dir}/{result_name}.json') and not overwrite:
+            result_name = f'{funny_file_name}_{not_funny_file_name}'
+            result_file = f'{result_dir}/{result_name}.json'
+
+            read_result = False
+            if os.path.exists(result_file) and not overwrite:
                 try:
-                    result = read_json(f'{result_dir}/{result_name}.json')
-                    continue
+                    result = read_json(result_file)
+                    read_result = True
                 except KeyboardInterrupt:
                     raise KeyboardInterrupt
                 except:
                     pass
+            
+            if not read_result:
 
-            compare_output_1 = call_model(prompt, [funny_image_path, not_funny_image_path], max_new_tokens=1)
-            compare_output_2 = call_model(prompt, [not_funny_image_path, funny_image_path], max_new_tokens=1)
-            pred_label_1 = prompt_processor[eval_mode][prompt_name]['output_processor'](compare_output_1)
-            pred_label_2 = prompt_processor[eval_mode][prompt_name]['output_processor'](compare_output_2)
-            if pred_label_1 == 0: corr += 1
-            if pred_label_2 == 1: corr += 1
+                compare_output_dict_1 = get_output(
+                    call_model, 
+                    prompt_name,
+                    prompt,
+                    [funny_path, not_funny_path], 
+                    max_new_tokens=1,
+                    description=description,
+                )
+                pred_label_1 = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
 
-            result = {
-                'funny_image_path': funny_image_path,
-                'not_funny_image_path': not_funny_image_path,
-                'label': 0,
-                'output_1': compare_output_1,
-                'output_2': compare_output_2,
-                'pred_label_1': int(pred_label_1),
-                'pred_label_2': int(pred_label_2),
-            }
-            save_json(result, f'{result_dir}/{result_name}.json')
-        acc = corr / (len(funny_data) * 2)
+                compare_output_dict_2 = get_output(
+                    call_model, 
+                    prompt_name,
+                    prompt,
+                    [not_funny_path, funny_path], 
+                    max_new_tokens=1,
+                    description=description,
+                )
+                pred_label_2 = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](compare_output_dict_2['output'])
+
+                
+                result = {
+                    'funny_image_path': funny_path,
+                    'not_funny_image_path': not_funny_path,
+                    'label_1': 0,
+                    'label_2': 1,
+                    'output_1': compare_output_dict_1,
+                    'output_2': compare_output_dict_2,
+                    'pred_label_1': int(pred_label_1),
+                    'pred_label_2': int(pred_label_2),
+                }
+                save_json(result, result_file)
+
+            # Update tqdm description with current accuracy
+            if (result['pred_label_1'] == 0) and (result['pred_label_2'] == 1): corr += 1
+            total_predictions = i + 1
+            current_acc = corr / total_predictions
+            tqdm_bar.set_description(f"Acc: {current_acc:.4f}")
+        acc = corr / len(funny_data)
 
     print(f'Accuracy: {acc}')
     if log_wandb:
@@ -123,7 +216,7 @@ if __name__ == '__main__':
         model_names.extend(support_models[model])
 
     parser.add_argument('--model_name', type=str, default='gpt-4o-mini', choices=model_names)
-    parser.add_argument('--dataset_name', type=str, default='memotion', choices=support_datasets)
+    parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=support_datasets)
     parser.add_argument('--prompt_name', type=str, default='yn')
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--n_per_class', type=int, default=35)
@@ -131,6 +224,7 @@ if __name__ == '__main__':
     parser.add_argument('--wandb', action='store_true')
     parser.add_argument('--overwrite', action='store_true')
     parser.add_argument('--eval_mode', type=str, default='pairwise', choices=['single', 'pairwise'])
+    parser.add_argument('--description', type=str, default = '')
     args = parser.parse_args()
 
     print_configs(args)
@@ -152,6 +246,7 @@ if __name__ == '__main__':
         log_wandb=args.wandb,
         overwrite=args.overwrite,
         eval_mode=args.eval_mode,
+        description=args.description,
     )
 
     if args.wandb:

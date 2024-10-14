@@ -7,7 +7,7 @@ sys.path.append(root_dir)
 from environment import CLAUDE_API_KEY
 import anthropic, base64
 from PIL import Image
-from helper import retry_if_fail
+from helper import retry_if_fail, read_json
 
 def ensure_jpeg(image_path):
     try:
@@ -70,27 +70,47 @@ def call_claude(
     claude, 
     prompt, 
     image_paths: list[str] = [],
-    max_new_tokens: int = 200,
+    history = None,
+    save_history = False,
+    description = '',
+    **kwargs,
 ):
     model, client = claude['model'], claude['client']
 
     # make messages
     contents = []
-    for image_path in image_paths:
-        contents.append(process_image(image_path))
+    for i, image_path in enumerate(image_paths):
+        if description:
+            print(image_path)
+            contents.append(process_text(f"Meme {i+1}: {read_json(image_path)['description']}\n"))
+        else:
+            contents.append(process_image(image_path))
     contents.append(process_text(prompt))
     messages = [{
         "role": "user",
         "content": contents,
     }]
 
+    output_dict = {}
+
+    if history is not None: messages = history + messages
+
     response = client.messages.create(
         model = model,
         messages = messages,
-        max_tokens = max_new_tokens,
+        max_tokens = 1000,
         temperature = 0,
-    ).content[0].text
-    
-    return response
+    )
+    output = response.content[0].text
+
+
+    if save_history: 
+        output_dict['history'] = messages + [{
+            "role": "assistant", 
+            "content": output,
+        }]
+
+    output_dict['output'] = output
+    return output_dict
 
 

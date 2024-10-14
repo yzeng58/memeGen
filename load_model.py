@@ -14,5 +14,9 @@ def load_model(
         from load_models.load_gpt import load_gpt, call_gpt
         model = load_gpt(model_name, api_key)
         return lambda *args, **kwargs: call_gpt(model, *args, **kwargs)
+    elif 'qwen' in model_name.lower():
+        from load_models.load_qwen import load_qwen, call_qwen
+        model = load_qwen(model_name)
+        return lambda *args, **kwargs: call_qwen(model, *args, **kwargs)
     else:
         raise ValueError(f"Model {model_name} not found")

@@ -8,7 +8,7 @@ from time import time
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
-from helper import retry_if_fail
+from helper import retry_if_fail, read_json
 import pdb
 
 # Function to encode the image
@@ -67,19 +67,29 @@ def call_gpt(
     prompt,
     image_paths: list[str] = [],
     max_new_tokens: int = 200,
+    history = None,
+    save_history = False,
     seed: int = 42,
     image_input_detail: Literal['low', 'high'] = 'low',
     image_mode: Literal['url', 'path'] = 'path',
+    description = '',
 ):
     model, client, api_key = gpt['model'], gpt['client'], gpt['api_key']
     contents = []
-    for image_path in image_paths:
-        contents.append(process_image(image_path, image_input_detail, image_mode))
+    for i, image_path in enumerate(image_paths):
+        if description:
+            contents.append(process_text(f"Meme {i+1}: {read_json(image_path)['description']}\n"))
+        else:
+            contents.append(process_image(image_path, image_input_detail, image_mode))
     contents.append(process_text(prompt))
     messages = [{
         "role": "user",
         "content": contents,
     }]
+
+    output_dict = {}
+
+    if history is not None: messages = history + messages
 
     payload = {
         'model': model,
@@ -104,7 +114,13 @@ def call_gpt(
         )
         output = response.json()['choices'][0]['message']['content']
     else:
-        raise ValueError("The image_mode must be either 'url' or 'path', not {mode}.")    
-    
-    
-    return output
+        raise ValueError("The image_mode must be either 'url' or 'path', not {mode}.")  
+
+    if save_history: 
+        output_dict['history'] = messages + [{
+            "role": "assistant", 
+            "content": output,
+        }]
+
+    output_dict['output'] = output
+    return output_dict

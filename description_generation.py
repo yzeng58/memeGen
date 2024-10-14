@@ -56,7 +56,7 @@ if __name__ == '__main__':
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--overwrite', action='store_true')
     parser.add_argument('--prompt_mode', type=str, default='default')
-    parser.add_argument('--max_new_tokens', type=int, default=300)
+    parser.add_argument('--max_new_tokens', type=int, default=1000)
     args = parser.parse_args()
     
     print_configs(args)
