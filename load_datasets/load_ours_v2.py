@@ -5,6 +5,11 @@ sys.path.append(root_dir)
 from configs import dataset_dir
 import glob, re
 
+def get_description_path(image_path: str, description: str):
+    description_path = image_path.replace('/images/', '/description/').replace('/funny', f'/{description}').replace('/not_funny', f'/{description}')
+    description_path = re.sub(r'\.(jpeg|jpg|png|gif|bmp|webp)$', '.json', description_path, flags=re.IGNORECASE)
+    return description_path
+
 def load_ours_v2(description: str = ''):
     files = glob.glob(f'{dataset_dir}/ours_v2/images/*/*')
     data = []
@@ -14,8 +19,7 @@ def load_ours_v2(description: str = ''):
         file_dict = {'image_path': file, 'label': label}
 
         if description: 
-            description_path = file.replace('/images/', '/description/').replace('/funny', f'/{description}').replace('/not_funny', f'/{description}')
-            description_path = re.sub(r'\.(jpeg|jpg|png|gif|bmp|webp)$', '.json', description_path)
+            description_path = get_description_path(file, description)
             file_dict['description_path'] = description_path
 
         data.append(file_dict)

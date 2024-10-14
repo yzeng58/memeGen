@@ -4,6 +4,7 @@ from load_dataset import load_dataset
 from load_model import load_model
 from helper import save_json, print_configs
 from configs import support_models, support_datasets, dataset_dir, description_prompt
+import re
 
 def generate_dataset_details(
     model_name: str,
@@ -14,7 +15,11 @@ def generate_dataset_details(
     max_new_tokens: int = 300,
 ):
     # Load the dataset
-    dataset = load_dataset(dataset_name, binary_classification=True)
+    dataset = load_dataset(
+        dataset_name, 
+        binary_classification=True,
+        description=model_name,
+    )
     
     # Load the model
     call_model = load_model(model_name, api_key=api_key)
@@ -28,11 +33,10 @@ def generate_dataset_details(
     
     for i in tqdm(range(len(dataset))):
         image_path = dataset.loc[i, 'image_path']
-        image_name = image_path.split('/')[-1].split('.')[0]
-        result_path = f'{result_dir}/{image_name}.json'
+        description_path = dataset.loc[i, 'description_path']
 
         # Check if result already exists
-        if os.path.exists(result_path) and not overwrite:
+        if os.path.exists(description_path) and not overwrite:
             continue
         
         # Generate description
@@ -43,7 +47,7 @@ def generate_dataset_details(
             'image_path': image_path,
             'description': description
         }
-        save_json(result, result_path)
+        save_json(result, description_path)
     
     print(f"Description generation completed for {dataset_name} dataset using {model_name}.")
 

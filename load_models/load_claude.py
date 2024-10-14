@@ -65,7 +65,6 @@ def load_claude(
         'model': model,
     }
 
-@retry_if_fail
 def call_claude(
     claude, 
     prompt, 
