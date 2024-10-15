@@ -1,6 +1,7 @@
 from PIL import Image
-import requests, functools, time, pdb, json, os
+import requests, functools, time, pdb, json, os, random, torch, transformers
 from io import BytesIO
+import numpy as np
 
 def save_json(data, path):
     folder = os.path.dirname(path)
@@ -33,7 +34,7 @@ def retry_if_fail(func):
                 print(f"Retry {retry} times...")
 
         if retry > 10:
-            out = {'description': 'ERROR', 'image': None, 'time': 0}
+            out = {'output': 'ERROR'}
             print('ERROR')
         
         return out
@@ -59,3 +60,13 @@ def print_configs(args):
     print("########"*3)
     for key, value in args_dict.items():
         print(f"| {key}: {value}")
+
+def set_seed(seed):
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.enabled = False
+    transformers.set_seed(seed)

@@ -74,6 +74,7 @@ def evaluate(
     if eval_mode not in prompt_processor[model_name]:
         raise ValueError(f'Eval mode {eval_mode} not supported, please choose from {list(prompt_processor[model_name].keys())}')
 
+    
     while True:
         success = False
         while not success:
@@ -115,36 +116,40 @@ def evaluate(
                 print('\n\n')
 
         elif eval_mode == 'pairwise':
-            funny_data = dataset[dataset['label'] == 1].reset_index(drop=True)
-            not_funny_data = dataset[dataset['label'] == 0].reset_index(drop=True)
+            try:
+                funny_data = dataset[dataset['label'] == 1].reset_index(drop=True)
+                not_funny_data = dataset[dataset['label'] == 0].reset_index(drop=True)
 
-            tqdm_bar = tqdm(range(len(funny_data)))
-            for i in tqdm_bar:
-                funny_image_path = funny_data.loc[i, 'image_path']
-                not_funny_image_path = not_funny_data.loc[i, 'image_path']
+                tqdm_bar = tqdm(range(len(funny_data)))
+                for i in tqdm_bar:
+                    funny_image_path = funny_data.loc[i, 'image_path']
+                    not_funny_image_path = not_funny_data.loc[i, 'image_path']
 
 
-                print('\n\n')
-                print("======================================================")
-                print(f'Evaluating (funny) {funny_image_path} and (not funny) {not_funny_image_path}')    
-                get_output(
-                    call_model, 
-                    prompt_name,
-                    prompt,
-                    [funny_image_path, not_funny_image_path], 
-                    max_new_tokens=1,
-                )
-                print('\n\n')
-                print("======================================================")
-                print(f'Evaluating (not funny) {not_funny_image_path} and (funny) {funny_image_path}')    
-                get_output(
-                    call_model, 
-                    prompt_name,
-                    prompt,
-                    [not_funny_image_path, funny_image_path], 
-                    max_new_tokens=1,
-                )
-                print('\n\n')
+                    print('\n\n')
+                    print("======================================================")
+                    print(f'Evaluating (funny) {funny_image_path} and (not funny) {not_funny_image_path}')    
+                    get_output(
+                        call_model, 
+                        prompt_name,
+                        prompt,
+                        [funny_image_path, not_funny_image_path], 
+                        max_new_tokens=1,
+                    )
+                    print('\n\n')
+                    print("======================================================")
+                    print(f'Evaluating (not funny) {not_funny_image_path} and (funny) {funny_image_path}')    
+                    get_output(
+                        call_model, 
+                        prompt_name,
+                        prompt,
+                        [not_funny_image_path, funny_image_path], 
+                        max_new_tokens=1,
+                    )
+                    print('\n\n')
+            except KeyboardInterrupt:
+                continue
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

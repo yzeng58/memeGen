@@ -7,7 +7,7 @@ import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 from environment import HUGGINGFACE_API_KEY
-from helper import get_image, read_json
+from helper import get_image, read_json, set_seed
 from configs import system_prompts
 import pdb
 
@@ -53,8 +53,10 @@ def call_llama(
     save_history = False,
     description = '',
     system_prompt = 'evaluator',
+    seed = 42,
     **kwargs,
 ):
+    set_seed(seed)
     if 'Llama-3.2' in llama['model_id']:
         model, processor = llama['model'], llama['processor']
         if history: 

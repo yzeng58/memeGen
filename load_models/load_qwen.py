@@ -1,5 +1,3 @@
-# Update qwen/finetune.py
-
 import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
@@ -7,9 +5,10 @@ sys.path.append(root_dir)
 from transformers import AutoModelForCausalLM, AutoTokenizer, Qwen2VLForConditionalGeneration, AutoProcessor
 from transformers.generation import GenerationConfig
 from configs import system_prompts
-from helper import read_json
+from helper import read_json, set_seed
 from qwen_vl_utils import process_vision_info
 import pdb
+
 def load_qwen(
     model_name: str,
 ):  
@@ -62,8 +61,11 @@ def call_qwen(
     system_prompt = 'evaluator',
     description = '',
     max_new_tokens = 500,
+    seed = 42,  
+    temperature = 0.1,
     **kwargs,
 ):
+    set_seed(seed)
     if 'tokenizer' in qwen:
         model, tokenizer = qwen['model'], qwen['tokenizer']  
         # make messages
@@ -103,7 +105,7 @@ def call_qwen(
         contents.append(process_text_qwen2(prompt))
         messages.append({"role": "user", "content": contents})
 
-        text = processor.apply_chat_template(messages, tokenize=False, add_generation_timestamp=True)
+        text = processor.apply_chat_template(messages, tokenize=False, add_generation_timestamp=True) + 'assistant\n'
         image_inputs, video_inputs = process_vision_info(messages)
         inputs = processor(
             text = [text],
@@ -112,10 +114,13 @@ def call_qwen(
             return_tensors = 'pt',
             padding = True,
         ).to(model.device)
-
         output_dict = {}
         
-        generated_ids = model.generate(**inputs, max_new_tokens = max_new_tokens+4)
+        generated_ids = model.generate(
+            **inputs, 
+            max_new_tokens = max_new_tokens+10,
+            temperature = temperature,
+        )
         generated_ids_trimmed = [
             out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
         ]
@@ -123,7 +128,7 @@ def call_qwen(
             generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
         )
 
-        output_dict['output'] = output_texts[0].replace('system\n', '').replace('assistant: ', '')
+        output_dict['output'] = output_texts[0].replace('system\n', '').replace('assistant: ', '').replace('assistant\n', '')
 
         if save_history:
             messages.append({"role": "assistant", "content": output_dict['output']})

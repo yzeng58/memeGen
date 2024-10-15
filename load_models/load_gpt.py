@@ -73,6 +73,7 @@ def call_gpt(
     image_input_detail: Literal['low', 'high'] = 'low',
     image_mode: Literal['url', 'path'] = 'path',
     description = '',
+    **kwargs,
 ):
     model, client, api_key = gpt['model'], gpt['client'], gpt['api_key']
     contents = []
