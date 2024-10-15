@@ -30,7 +30,7 @@ def generate_dataset_details(
     # Generate prompt for description
     prompt = description_prompt[prompt_mode]
     
-    for i in tqdm(range(len(dataset))):
+    for i in tqdm(range(70, len(dataset))):
         image_path = dataset.loc[i, 'image_path']
         description_path = dataset.loc[i, 'description_path']
 

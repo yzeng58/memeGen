@@ -60,6 +60,7 @@ def evaluate(
     overwrite = False,
     eval_mode = 'single',
     description = '',
+    max_new_tokens = 1000,
 ):
     dataset = load_dataset(dataset_name, binary_classification=True, description=description)
     sampled_datasets = []
@@ -113,6 +114,7 @@ def evaluate(
                 [file_path], 
                 max_new_tokens=1,
                 description=description,
+                max_intermediate_tokens=max_new_tokens,
             )
 
             pred_label = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](output_dict['output'])
@@ -171,6 +173,7 @@ def evaluate(
                     [funny_path, not_funny_path], 
                     max_new_tokens=1,
                     description=description,
+                    max_intermediate_tokens=max_new_tokens,
                 )
                 pred_label_1 = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
 
@@ -181,6 +184,7 @@ def evaluate(
                     [not_funny_path, funny_path], 
                     max_new_tokens=1,
                     description=description,
+                    max_intermediate_tokens=max_new_tokens,
                 )
                 pred_label_2 = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](compare_output_dict_2['output'])
 
@@ -225,6 +229,7 @@ if __name__ == '__main__':
     parser.add_argument('--overwrite', action='store_true')
     parser.add_argument('--eval_mode', type=str, default='pairwise', choices=['single', 'pairwise'])
     parser.add_argument('--description', type=str, default = '')
+    parser.add_argument('--max_new_tokens', type=int, default = 1000)
     args = parser.parse_args()
 
     print_configs(args)
@@ -247,6 +252,7 @@ if __name__ == '__main__':
         overwrite=args.overwrite,
         eval_mode=args.eval_mode,
         description=args.description,
+        max_new_tokens=args.max_new_tokens,
     )
 
     if args.wandb:
