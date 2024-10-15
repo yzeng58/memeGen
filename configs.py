@@ -18,6 +18,8 @@ support_models = {
     ],
     'llama': [
         "Llama-3.1-405B-Instruct",
+        "Llama-3.1-8B-Instruct",
+        "Llama-3.1-70B-Instruct",
         "Llama-3.2-11B-Vision-Instruct",
         "Llama-3.2-90B-Vision-Instruct",
     ],
@@ -100,8 +102,10 @@ description_prompt = {
     'default': "Describe this meme in detail. Include information about the image content, text content, and any cultural references or context that might be relevant to understanding the humor."
 }
 
-system_prompts = {
-    'qwen': {
-        'evaluator': "You are a meme evaluation expert. You will follow the user's instruction and give your evaluation directly.",
-    }
+system_prompts_default = {
+    'evaluator': "You are a meme evaluation expert. You will follow the user's instruction and give your evaluation directly.",
 }
+
+system_prompts = deepcopy(system_prompts_default)
+for support_model in support_models:
+    system_prompts[support_model] = deepcopy(system_prompts_default)

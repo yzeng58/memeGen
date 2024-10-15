@@ -8,7 +8,8 @@ root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 from environment import HUGGINGFACE_API_KEY
 from helper import get_image, read_json
-
+from configs import system_prompts
+import pdb
 
 def load_llama(
     model: str = "Llama-3.2-11B-Vision",
@@ -51,42 +52,70 @@ def call_llama(
     history = None,
     save_history = False,
     description = '',
+    system_prompt = 'evaluator',
+    **kwargs,
 ):
     if 'Llama-3.2' in llama['model_id']:
         model, processor = llama['model'], llama['processor']
-        if description:
-            images = [f"Meme {i+1}: {read_json(image_path)['description']}\n" for i, image_path in enumerate(image_paths)]
-            begin_of_text = '<|begin_of_text|>' if history is None else ''
-            prompt = "".join(images) + f"{begin_of_text}Question: {prompt}\nAnswer: "
-        else:
-            images = [get_image(image_path) for image_path in image_paths]
-            begin_of_text = '<|begin_of_text|>' if history is None else ''
-            prompt = f'<|image|>'*len(images) + f'{begin_of_text}Question: {prompt}\nAnswer: '
         if history: 
-            prompt = history['prompt'] + '\n\n' + prompt
-            images = history['images'] + images
+            messages = history['messages']
+            images = history['images']
+        else:
+            messages, images = [], []
 
-        inputs = processor(images, prompt, return_tensors="pt").to(model.device)
+        content = []
+        if description:
+            for i, image_path in enumerate(image_paths):
+                content.append({"type": "text", "text": f"Meme {i+1}: {read_json(image_path)['description']}\n"})
+        else:
+            for i, image_path in enumerate(image_paths):
+                images.append(get_image(image_path))
+                content.append({"type": "image"})
+
+        content.append({"type": "text", "text": prompt})
+        messages.append({"role": "user", "content": content})
+
+        input_text = processor.apply_chat_template(messages, add_generation_prompt=True)
+        inputs = processor(
+            images,
+            input_text,
+            add_special_tokens=False,
+            return_tensors="pt"
+        ).to(model.device)
+        output = model.generate(**inputs, max_new_tokens=max_new_tokens)
+        output = processor.decode(output[0])[len(input_text):]
 
         output_dict = {}
-
-        output = model.generate(**inputs, max_new_tokens=max_new_tokens)
-        response = processor.decode(output[0])
-        response = re.sub(r'<\|.*?\|>', '', response)
-        # Remove the prompt from the response
-        response = response.replace(prompt, '').strip()
-
-        output_dict['output'] = response
         if save_history: 
+            messages.append({"role": "assistant", "content": output})
             output_dict['history'] = {
-                'prompt': prompt + ' ' + response,
+                'messages': messages,
                 'images': images,
             }
-        
+        output_dict['output'] = output
         return output_dict
+    
     elif 'Llama-3.1' in llama['model_id']:
-        llama_pipeline = llama['model']
-        response = llama_pipeline(prompt, max_new_tokens=max_new_tokens)
-        # Remove the prompt from the response
-        response_without_prompt = response[0]['generated_text'].replace(prompt, '').strip()
-        return response_without_prompt
+        pipeline = llama['model']
+        if description == '':
+            raise ValueError('Description is required for Llama-3.1 since it is text-only model.')
+        
+        if history:
+            messages = history['messages']
+        else:
+            messages = [{"role": "system", "content": system_prompts['llama'][system_prompt]}]
+        text_prompt = ''
+        for i, image_path in enumerate(image_paths):
+            text_prompt += f"Meme {i+1}: {read_json(image_path)['description']}\n"
+        text_prompt += prompt
+        messages.append({"role": "user", "content": text_prompt})
+        outputs = pipeline(messages, max_new_tokens=max_new_tokens)
+        output = outputs[0]['generated_text']
+
+        output_dict = {}
+        if save_history: 
+            output_dict['history'] = {
+                'messages': output,
+            }
+        output_dict['output'] = output[-1]['content']
+        return output_dict

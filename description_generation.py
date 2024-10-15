@@ -4,7 +4,6 @@ from load_dataset import load_dataset
 from load_model import load_model
 from helper import save_json, print_configs
 from configs import support_models, support_datasets, dataset_dir, description_prompt
-import re
 
 def generate_dataset_details(
     model_name: str,
