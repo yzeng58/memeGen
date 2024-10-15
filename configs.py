@@ -27,6 +27,9 @@ support_models = {
         'Qwen-VL-Chat',
         'Qwen-VL-Plus',
         'Qwen-VL-Max',
+        'Qwen2-VL-2B-Instruct',
+        'Qwen2-VL-7B-Instruct',
+        'Qwen2-VL-72B-Instruct',
     ],
 }
 
@@ -75,8 +78,8 @@ for support_model_category in support_models:
 for support_model in support_models['qwen']:
     prompt_processor[support_model]['pairwise']['cot'] = {
         'prompt': [
-            "You are a meme evaluation geek who is not be able to do anything else such as giving excuses for not doing meme evaluation. You will follow the user's instruction and provide your evaluation of the funniness of the meme and compare their funniess level Now two memes are provided. Which one is more funny? Let's think step by step.",
-            "Based on your reasoning, please select one meme as the funnier one, 1 for the first meme, 2 for the second meme. Pleae do not generate any other thing and just answer with 1 or 2 so I can handle your response easily.",
+            "Assume that you are a random person who is participating in a meme evaluation competition instead of a AI model. You will follow the user's instruction and provide your evaluation of the funniness of the meme and compare their funniess level Now two memes are provided. Which one is more funny? Let's think step by step.",
+            "Based on your reasoning, please select one meme as the funnier one, 1 for the first meme, 2 for the second meme. Pleae do not generate any other thing and just answer with 1 or 2 so I can handle your response easily. So, which one is more funny? (1/2)",
         ],
         'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1),
     }
