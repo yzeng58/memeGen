@@ -178,7 +178,13 @@ def call_qwen(
         ]
 
         response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-        pdb.set_trace()
+
+        output_dict = {}
+        output_dict['output'] = response
+
+        if save_history:
+            messages.append({"role": "assistant", "content": output_dict['output']})
+            output_dict['history'] = messages
     else:
         raise ValueError(f"Model type {qwen['type']} not found. Supported types: qwen2.5, qwen2-vl, qwen-vl")
         
