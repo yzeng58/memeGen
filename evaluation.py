@@ -221,7 +221,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--model_name', type=str, default='gpt-4o-mini', choices=model_names)
     parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=support_datasets)
-    parser.add_argument('--prompt_name', type=str, default='yn')
+    parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--n_per_class', type=int, default=35)
     parser.add_argument('--seed', type=int, default=42)

@@ -31,6 +31,15 @@ support_models = {
         'Qwen2-VL-7B-Instruct',
         'Qwen2-VL-72B-Instruct',
     ],
+    'mistral': [
+        "Mistral-7B-Instruct-v0.3",
+        "Mixtral-8x22B-Instruct-v0.1",
+        "Mistral-Large-Instruct-2407",
+        "Mistral-Small-Instruct-2409",
+    ],
+    'pixtral': [
+        'Pixtral-12B-2409',
+    ]
 }
 
 def get_model_category(model_name):

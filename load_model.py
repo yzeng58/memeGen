@@ -18,5 +18,13 @@ def load_model(
         from load_models.load_qwen import load_qwen, call_qwen
         model = load_qwen(model_name)
         return lambda *args, **kwargs: call_qwen(model, *args, **kwargs)
+    elif 'mistral' in model_name.lower():
+        from load_models.load_mistral import load_mistral, call_mistral
+        model = load_mistral(model_name)
+        return lambda *args, **kwargs: call_mistral(model, *args, **kwargs)
+    elif 'pixtral' in model_name.lower():
+        from load_models.load_pixtral import load_pixtral, call_pixtral
+        model = load_pixtral(model_name)
+        return lambda *args, **kwargs: call_pixtral(model, *args, **kwargs)
     else:
         raise ValueError(f"Model {model_name} not found")
