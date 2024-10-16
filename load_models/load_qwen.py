@@ -12,7 +12,19 @@ import pdb
 def load_qwen(
     model_name: str,
 ):  
-    if 'qwen2' in model_name.lower():
+    if 'qwen2.5' in model_name.lower():
+        model = AutoModelForCausalLM.from_pretrained(
+            f"Qwen/{model_name}",
+            torch_dtype="auto",
+            device_map="auto"
+        )
+        tokenizer = AutoTokenizer.from_pretrained(f"Qwen/{model_name}")
+        qwen = {
+            'model': model,
+            'tokenizer': tokenizer,
+            'type': 'qwen2.5',
+        }
+    elif 'qwen2-vl' in model_name.lower():
         model = Qwen2VLForConditionalGeneration.from_pretrained(
             f"Qwen/{model_name}", 
             torch_dtype="auto", 
@@ -22,15 +34,19 @@ def load_qwen(
         qwen = {
             'model': model,
             'processor': processor,
+            'type': 'qwen2-vl',
         }
-    else:
+    elif 'qwen-vl' in model_name.lower():
         tokenizer = AutoTokenizer.from_pretrained(f"Qwen/{model_name}", trust_remote_code=True)
         model = AutoModelForCausalLM.from_pretrained(f"Qwen/{model_name}", device_map='auto', trust_remote_code=True).eval()
         model.generation_config = GenerationConfig.from_pretrained(f"Qwen/{model_name}", trust_remote_code=True)
         qwen = {
             'model': model,
             'tokenizer': tokenizer,
+            'type': 'qwen-vl',
         }
+    else:
+        raise ValueError(f"Model {model_name} not found")
     return qwen
 
 def process_text_qwen(text_input):
@@ -66,7 +82,7 @@ def call_qwen(
     **kwargs,
 ):
     set_seed(seed)
-    if 'tokenizer' in qwen:
+    if qwen['type'] in ['qwen2.5', 'qwen-vl']:
         model, tokenizer = qwen['model'], qwen['tokenizer']  
         # make messages
         contents = []
@@ -88,7 +104,7 @@ def call_qwen(
 
         if not save_history: output_dict.pop('history')
 
-    else:
+    elif qwen['type'] in ['qwen2-vl']:
         model, processor = qwen['model'], qwen['processor']
         
         if history:
@@ -133,5 +149,8 @@ def call_qwen(
         if save_history:
             messages.append({"role": "assistant", "content": output_dict['output']})
             output_dict['history'] = messages
+
+    else:
+        raise ValueError(f"Model type {qwen['type']} not found. Supported types: qwen2.5, qwen2-vl, qwen-vl")
         
     return output_dict

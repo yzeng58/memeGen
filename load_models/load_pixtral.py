@@ -6,7 +6,7 @@ from mistral_inference.transformer import Transformer
 from mistral_inference.generate import generate
 
 from mistral_common.tokens.tokenizers.mistral import MistralTokenizer
-from mistral_common.protocol.instruct.messages import UserMessage, TextChunk, ImageChunk, SystemMessage, AssistantMessage
+from mistral_common.protocol.instruct.messages import UserMessage, TextChunk, ImageURLChunk, SystemMessage, AssistantMessage
 from mistral_common.protocol.instruct.request import ChatCompletionRequest
 
 from huggingface_hub import snapshot_download
@@ -75,9 +75,11 @@ def call_pixtral(
     content = []
     for i, image_path in enumerate(image_paths):
         if description:
-            content.append(TextChunk(text=read_json(image_path)['description']))
+            content.append(TextChunk(text=f"Meme {i+1}: {read_json(image_path)['description']}"))
         else:
-            content.append(ImageChunk(encode_image(image_path)))
+            content.append(ImageURLChunk(
+                image_url=f"data:image/{image_path.split('.')[-1].lower()};base64,{encode_image(image_path)}"
+            ))
 
     content.append(TextChunk(text=prompt))
     messages.append(UserMessage(content=content))
@@ -96,7 +98,14 @@ def call_pixtral(
         eos_id=tokenizer.instruct_tokenizer.tokenizer.eos_id,
     )
     result = tokenizer.decode(out_tokens[0])
-    pdb.set_trace()
-    return result
+
+    output_dict = {}
+    output_dict['output'] = result
+
+    if save_history:
+        messages.append(AssistantMessage(content=[TextChunk(text=result)]))
+        output_dict['history'] = messages
+
+    return output_dict
     
     

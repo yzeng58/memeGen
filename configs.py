@@ -25,11 +25,16 @@ support_models = {
     ],
     'qwen': [
         'Qwen-VL-Chat',
-        'Qwen-VL-Plus',
-        'Qwen-VL-Max',
         'Qwen2-VL-2B-Instruct',
         'Qwen2-VL-7B-Instruct',
         'Qwen2-VL-72B-Instruct',
+        'Qwen2.5-0.5B-Instruct',
+        'Qwen2.5-1.5B-Instruct',
+        'Qwen2.5-3B-Instruct',
+        'Qwen2.5-7B-Instruct',
+        'Qwen2.5-14B-Instruct',
+        'Qwen2.5-32B-Instruct',
+        'Qwen2.5-72B-Instruct',
     ],
     'mistral': [
         "Mistral-7B-Instruct-v0.3",
