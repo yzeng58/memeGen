@@ -103,7 +103,7 @@ def call_pixtral(
     output_dict['output'] = result
 
     if save_history:
-        messages.append(AssistantMessage(content=[TextChunk(text=result)]))
+        messages.append(AssistantMessage(content=result))
         output_dict['history'] = messages
 
     return output_dict
