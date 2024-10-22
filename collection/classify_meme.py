@@ -7,13 +7,13 @@ from tqdm import tqdm
 from load_model import load_model
 from load_dataset import load_dataset
 from helper import save_json, print_configs
-import argparse
+import argparse, pdb
 
 def is_funny(
     meme_path, 
     call_model,
     model_name = 'Qwen2-VL-72B-Instruct',
-    meme_anchor = f"{root_dir}/collection/anchors/hilarious_meme_anchor.json",
+    meme_anchor = f"{root_dir}/collection/anchors/hilarious.jpg",
 ):
     prompt = prompt_processor[model_name]["pairwise"]["standard"]["prompt"]
     output_1 = call_model(prompt, [meme_path, meme_anchor])['output']
@@ -33,7 +33,7 @@ def is_universal(
 
     universal_flag = True
     for region in region_list:
-        output = call_model(prompt, [meme_path, region])['output']
+        output = call_model(prompt(region), [meme_path])['output']
         label = prompt_processor[model_name]["universality"]["output_processor"](output)
         universal_flag = universal_flag and label == 1
 
@@ -55,7 +55,7 @@ def classify_memes(
     api_key = "yz",
     description = "",
     overwrite = False,
-    funny_anchor = f"{root_dir}/collection/anchors/hilarious_meme_anchor.json",
+    funny_anchor = f"{root_dir}/collection/anchors/hilarious.jpg",
 ):
     if description:
         raise ValueError("Description is not supported for meme collection period.")
@@ -85,6 +85,7 @@ def classify_memes(
             'is_funny': funny_label,
             'is_universal': universal_label,
             'is_toxic': toxic_label,
+            "image_path": meme_path,
         }
         save_json(result, result_path)
 
@@ -99,7 +100,7 @@ if __name__ == "__main__":
     parser.add_argument("--api_key", type=str, default="yz")
     parser.add_argument("--description", type=str, default="")
     parser.add_argument("--overwrite", action="store_true")
-    parser.add_argument("--funny_anchor", type=str, default=f"{root_dir}/collection/anchors/hilarious_meme_anchor.json")
+    parser.add_argument("--funny_anchor", type=str, default=f"{root_dir}/collection/anchors/hilarious.jpg")
     args = parser.parse_args()
 
     print_configs(args)
