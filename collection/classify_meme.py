@@ -8,7 +8,7 @@ from load_model import load_model
 from load_dataset import load_dataset
 from helper import save_json, print_configs
 import argparse, pdb
-
+from PIL import Image
 def is_funny(
     meme_path, 
     call_model,
@@ -49,6 +49,11 @@ def is_toxic(
     label = prompt_processor[model_name]["toxicity"]["output_processor"](output)
     return label == 1
 
+def get_image_size(image_path):
+    with Image.open(image_path) as img:
+        width, height = img.size
+    return width*height
+
 def classify_memes(
     dataset_name = 'memotion',
     model_name = 'Qwen2-VL-72B-Instruct',
@@ -56,6 +61,7 @@ def classify_memes(
     description = "",
     overwrite = False,
     funny_anchor = f"{root_dir}/collection/anchors/hilarious.jpg",
+    reverse = False,
 ):
     if description:
         raise ValueError("Description is not supported for meme collection period.")
@@ -70,8 +76,18 @@ def classify_memes(
 
     dataset = load_dataset(dataset_name)
     funny_anchor_name = os.path.basename(funny_anchor).rsplit('.', 1)[0]
+    
+    if reverse:
+        image_paths = dataset['image_path'][::-1]
+    else:
+        image_paths = dataset['image_path']
 
-    for meme_path in tqdm(dataset['image_path']):
+    for meme_path in tqdm(image_paths):
+        meme_size = get_image_size(meme_path)
+        if meme_size > 500000:
+            print(f"Image size of {os.path.basename(meme_path)}: {meme_size}. Skip.")
+            continue
+
         meme_name = os.path.basename(meme_path).rsplit('.', 1)[0]
         result_path = f"{result_dir}/{meme_name}_{funny_anchor_name}.json"
 
@@ -101,6 +117,7 @@ if __name__ == "__main__":
     parser.add_argument("--description", type=str, default="")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--funny_anchor", type=str, default=f"{root_dir}/collection/anchors/hilarious.jpg")
+    parser.add_argument("--reverse", action="store_true")
     args = parser.parse_args()
 
     print_configs(args)
@@ -112,6 +129,7 @@ if __name__ == "__main__":
         description = args.description,
         overwrite = args.overwrite,
         funny_anchor = args.funny_anchor,
+        reverse = args.reverse,
     )
 
 
