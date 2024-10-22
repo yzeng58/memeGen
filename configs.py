@@ -86,6 +86,8 @@ support_datasets = [
     'memotion',
     'ours_v2',
     '130k',
+    'vineeth',
+    'vipul',
 ]
 
 #########################

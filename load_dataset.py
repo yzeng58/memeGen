@@ -14,6 +14,12 @@ def load_dataset(
         from load_datasets.load_130k import load_130k
         if description: raise ValueError('130k dataset does not support description')
         return load_130k()
+    elif dataset_name == "vineeth":
+        from load_datasets.load_vineeth import load_vineeth
+        return load_vineeth()
+    elif dataset_name == "vipul":
+        from load_datasets.load_vipul import load_vipul
+        return load_vipul()
     else:
         raise ValueError(f"Dataset {dataset_name} not found")
     
