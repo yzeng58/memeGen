@@ -11,6 +11,7 @@ from copy import deepcopy
 support_models = {
     'gpt': [
         'gpt-4o-mini',
+        'gpt-4-turbo-2024-04-09',
     ],
     'claude': [
         'claude-3-haiku-20240307',
@@ -47,9 +48,37 @@ support_models = {
     ]
 }
 
+model_size = {
+    'gpt-4o-mini': 1000000000,
+    'gpt-4-turbo-2024-04-09': 100000000000,
+    'claude-3-haiku-20240307': 20000000000,
+    'claude-3-sonnet-20240229': 70000000000,
+    "Llama-3.1-405B-Instruct": 405000000000,
+    "Llama-3.1-8B-Instruct": 8000000000,
+    "Llama-3.1-70B-Instruct": 70000000000,
+    "Llama-3.2-11B-Vision-Instruct": 11000000000,
+    "Llama-3.2-90B-Vision-Instruct": 90000000000,
+    'Qwen-VL-Chat': 7000000000,
+    'Qwen2-VL-2B-Instruct': 2000000000,
+    'Qwen2-VL-7B-Instruct': 7000000000,
+    'Qwen2-VL-72B-Instruct': 72000000000,
+    'Qwen2.5-0.5B-Instruct': 500000000,
+    'Qwen2.5-1.5B-Instruct': 1500000000,
+    'Qwen2.5-3B-Instruct': 3000000000,
+    'Qwen2.5-7B-Instruct': 7000000000,
+    'Qwen2.5-14B-Instruct': 14000000000,
+    'Qwen2.5-32B-Instruct': 32000000000,
+    'Qwen2.5-72B-Instruct': 72000000000,
+    "Mistral-7B-Instruct-v0.3": 7000000000,
+    "Mixtral-8x22B-Instruct-v0.1": 176000000000,
+    "Mistral-Large-Instruct-2407": 123000000000,
+    "Mistral-Small-Instruct-2409": 22000000000,
+    'Pixtral-12B-2409': 12000000000,
+}
+
 def get_model_category(model_name):
     for support_model in support_models:
-        if support_model in model_name.lower():
+        if model_name in support_models[support_model]:
             return support_model
     raise ValueError(f"Model {model_name} not found")
 
@@ -82,6 +111,14 @@ prompt_processor_default = {
             ],
             'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1),
         },
+    },
+    'universality': {
+        "prompt": lambda country: f"Many memes nowadays require specific cultural background. Assume you are an ordinary person who grew up in {country}. Without any additional context, can you quickly understand the meaning of this meme? If so, reply with 1, otherwise reply with 0: (0/1)",
+        "output_processor": lambda x: {'1': 1, '0': 0}.get(x[-1], -1),
+    },
+    "toxicity": {
+        "prompt": "Is this image toxic? Please respond with a single letter, 'Y' for yes, 'N' for no. (Y/N)",
+        "output_processor": lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1),
     }
 }
 
@@ -126,3 +163,15 @@ system_prompts_default = {
 system_prompts = deepcopy(system_prompts_default)
 for support_model in support_models:
     system_prompts[support_model] = deepcopy(system_prompts_default)
+
+##########################
+# Dataset Configurations # 
+##########################
+
+dataset_dir_dict = {
+    "memotion": f"{dataset_dir}/memotion_dataset_7k",
+}
+
+get_dataset_dir = lambda dataset_name: dataset_dir_dict.get(dataset_name, f"{dataset_dir}/{dataset_name}")
+
+

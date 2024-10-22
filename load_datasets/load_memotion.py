@@ -2,11 +2,11 @@ import pandas as pd
 import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
-from configs import dataset_dir
+from configs import get_dataset_dir
 
 
 def load_memotion(binary_classification = False):
-    memotion_dir = f'{dataset_dir}/memotion_dataset_7k'
+    memotion_dir = get_dataset_dir('memotion')
     memotion_labels = pd.read_csv(f'{memotion_dir}/labels.csv')
 
     humor_mapping = {

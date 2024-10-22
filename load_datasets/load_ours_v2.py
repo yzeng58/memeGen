@@ -2,7 +2,7 @@ import pandas as pd
 import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
-from configs import dataset_dir
+from configs import get_dataset_dir
 import glob, re
 
 def get_description_path(image_path: str, description: str):
@@ -11,7 +11,7 @@ def get_description_path(image_path: str, description: str):
     return description_path
 
 def load_ours_v2(description: str = ''):
-    files = glob.glob(f'{dataset_dir}/ours_v2/images/*/*')
+    files = glob.glob(f'{get_dataset_dir("ours_v2")}/images/*/*')
     data = []
     for file in files:
         category = file.split('/')[-2]

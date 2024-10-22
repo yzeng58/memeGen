@@ -60,7 +60,8 @@ def print_configs(args):
     print("########"*3)
     for key, value in args_dict.items():
         print(f"| {key}: {value}")
-
+    print("########"*3)
+    
 def set_seed(seed):
     np.random.seed(seed)
     random.seed(seed)

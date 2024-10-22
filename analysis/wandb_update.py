@@ -14,7 +14,12 @@ for run in runs:
     #     print(run.config)
     #     run.config['description'] = ''
     #     run.update()
-    if not 'max_new_tokens' in run.config:
+    if run.config['prompt_name'] == 'fs':
         print(run.config)
-        run.config['max_new_tokens'] = 300
+        run.config['prompt_name'] = 'standard'
+        run.update()
+
+    if run.config['prompt_name'] == 'cot_default':
+        print(run.config)
+        run.config['prompt_name'] = 'cot'
         run.update()
