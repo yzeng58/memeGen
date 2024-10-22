@@ -117,7 +117,6 @@ if __name__ == "__main__":
     parser.add_argument("--api_key", type=str, default="yz")
     parser.add_argument("--description", type=str, default="")
     parser.add_argument("--overwrite", action="store_true")
-    parser.add_argument("--funny_anchor", type=str, default=f"{root_dir}/collection/anchors/hilarious.jpg")
     parser.add_argument("--reverse", action="store_true")
     args = parser.parse_args()
 
@@ -129,7 +128,6 @@ if __name__ == "__main__":
         api_key = args.api_key,
         description = args.description,
         overwrite = args.overwrite,
-        funny_anchor = args.funny_anchor,
         reverse = args.reverse,
     )
 
