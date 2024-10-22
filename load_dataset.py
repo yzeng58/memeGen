@@ -26,6 +26,9 @@ def load_dataset(
     elif dataset_name == "singh":
         from load_datasets.load_singh import load_singh
         return load_singh()
+    elif dataset_name == "gmor":
+        from load_datasets.load_gmor import load_gmor
+        return load_gmor()
     else:
         raise ValueError(f"Dataset {dataset_name} not found")
     
