@@ -2,13 +2,14 @@ import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
-from configs import prompt_processor, get_dataset_dir, support_models, support_datasets
+from configs import prompt_processor, get_dataset_dir, support_models, support_datasets, meme_anchors
 from tqdm import tqdm
 from load_model import load_model
 from load_dataset import load_dataset
 from helper import save_json, print_configs
 import argparse, pdb
 from PIL import Image
+
 def is_funny(
     meme_path, 
     call_model,
@@ -21,7 +22,7 @@ def is_funny(
     label_1 = prompt_processor[model_name]["pairwise"]["standard"]["output_processor"](output_1)
     label_2 = prompt_processor[model_name]["pairwise"]["standard"]["output_processor"](output_2)
 
-    return label_1 == 0 and label_2 == 1
+    return (label_1 == 0) or (label_2 == 1)
 
 def is_universal(
     meme_path, 
@@ -60,7 +61,6 @@ def classify_memes(
     api_key = "yz",
     description = "",
     overwrite = False,
-    funny_anchor = f"{root_dir}/collection/anchors/hilarious.jpg",
     reverse = False,
 ):
     if description:
@@ -75,7 +75,6 @@ def classify_memes(
     )
 
     dataset = load_dataset(dataset_name)
-    funny_anchor_name = os.path.basename(funny_anchor).rsplit('.', 1)[0]
     
     if reverse:
         image_paths = dataset['image_path'][::-1]
@@ -89,15 +88,17 @@ def classify_memes(
             continue
 
         meme_name = os.path.basename(meme_path).rsplit('.', 1)[0]
-        result_path = f"{result_dir}/{meme_name}_{funny_anchor_name}.json"
+        result_path = f"{result_dir}/{meme_name}.json"
 
         if os.path.exists(result_path) and not overwrite: continue
 
-        funny_label = is_funny(meme_path, call_model)
+        hilarious_label = is_funny(meme_path, call_model, meme_anchor = meme_anchors['hilarious'])
+        funny_label = is_funny(meme_path, call_model, meme_anchor = meme_anchors['funny'])
         universal_label = is_universal(meme_path, call_model)
         toxic_label = is_toxic(meme_path, call_model)
     
         result = {
+            'is_hilarious': hilarious_label,
             'is_funny': funny_label,
             'is_universal': universal_label,
             'is_toxic': toxic_label,

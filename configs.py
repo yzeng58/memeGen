@@ -85,6 +85,7 @@ def get_model_category(model_name):
 support_datasets = [
     'memotion',
     'ours_v2',
+    '130k',
 ]
 
 #########################
@@ -174,4 +175,7 @@ dataset_dir_dict = {
 
 get_dataset_dir = lambda dataset_name: dataset_dir_dict.get(dataset_name, f"{dataset_dir}/{dataset_name}")
 
-
+meme_anchors = {
+    "hilarious": f"{root_dir}/collection/anchors/hilarious.jpg",
+    "funny": f"{root_dir}/collection/anchors/funny.jpeg",
+}
