@@ -77,14 +77,14 @@ def classify_memes(
 
         if os.path.exists(result_path) and not overwrite: continue
 
-        is_funny = is_funny(meme_path, call_model)
-        is_universal = is_universal(meme_path, call_model)
-        is_toxic = is_toxic(meme_path, call_model)
+        funny_label = is_funny(meme_path, call_model)
+        universal_label = is_universal(meme_path, call_model)
+        toxic_label = is_toxic(meme_path, call_model)
     
         result = {
-            'is_funny': is_funny,
-            'is_universal': is_universal,
-            'is_toxic': is_toxic,
+            'is_funny': funny_label,
+            'is_universal': universal_label,
+            'is_toxic': toxic_label,
         }
         save_json(result, result_path)
 
