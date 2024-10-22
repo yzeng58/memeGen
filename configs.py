@@ -89,6 +89,7 @@ support_datasets = [
     'vineeth',
     'vipul',
     'nikitricky',
+    'singh',
 ]
 
 #########################

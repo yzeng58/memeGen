@@ -23,6 +23,9 @@ def load_dataset(
     elif dataset_name == "nikitricky":
         from load_datasets.load_nikitricky import load_nikitricky
         return load_nikitricky()
+    elif dataset_name == "singh":
+        from load_datasets.load_singh import load_singh
+        return load_singh()
     else:
         raise ValueError(f"Dataset {dataset_name} not found")
     
