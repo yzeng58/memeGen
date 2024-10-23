@@ -185,4 +185,6 @@ get_dataset_dir = lambda dataset_name: dataset_dir_dict.get(dataset_name, f"{dat
 meme_anchors = {
     "hilarious": f"{root_dir}/collection/anchors/hilarious.jpg",
     "funny": f"{root_dir}/collection/anchors/funny.jpeg",
+    "boring1": f"{root_dir}/collection/anchors/boring1.jpg",
+    "boring2": f"{root_dir}/collection/anchors/boring2.jpg",
 }
