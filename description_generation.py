@@ -17,7 +17,6 @@ def generate_dataset_details(
     dataset = load_dataset(
         dataset_name, 
         binary_classification=True,
-        description=model_name,
     )
     
     # Load the model
