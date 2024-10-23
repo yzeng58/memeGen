@@ -107,21 +107,20 @@ def classify_memes(
         meme_name = os.path.basename(meme_path).rsplit('.', 1)[0]
         result_path = f"{result_dir}/{meme_name}.json"
 
-        not_exist_keys, result = deepcopy(keys), {}
+        not_exist_keys, result = [], {}
         if overwrite:
             pass
         elif os.path.exists(result_path):
             result = read_json(result_path)
             for key in keys:
                 if not key in result:
-                    not_exist_keys.remove(key)
+                    not_exist_keys.append(key)
                     break
             if len(not_exist_keys) == 0: continue
 
         for key in not_exist_keys:
             if key == "is_hilarious":
                 result[key] = is_funny(meme_path, call_model, meme_anchor = meme_anchors['hilarious'])
-
             elif key == "is_funny":
                 result[key] = is_funny(meme_path, call_model, meme_anchor = meme_anchors['funny'])
             elif key == "is_universal":
