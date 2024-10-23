@@ -6,9 +6,10 @@ from configs import prompt_processor, get_dataset_dir, support_models, support_d
 from tqdm import tqdm
 from load_model import load_model
 from load_dataset import load_dataset
-from helper import save_json, print_configs
+from helper import save_json, print_configs, read_json
 import argparse, pdb
 from PIL import Image
+from copy import deepcopy
 
 def is_funny(
     meme_path, 
@@ -23,6 +24,20 @@ def is_funny(
     label_2 = prompt_processor[model_name]["pairwise"]["standard"]["output_processor"](output_2)
 
     return (label_1 == 0) or (label_2 == 1)
+
+def is_boring(
+    meme_path, 
+    call_model,
+    model_name = 'Qwen2-VL-72B-Instruct',
+    meme_anchor = f"{root_dir}/collection/anchors/boring1.jpg",
+):
+    prompt = prompt_processor[model_name]["pairwise"]["standard"]["prompt"]
+    output_1 = call_model(prompt, [meme_path, meme_anchor])['output']
+    output_2 = call_model(prompt, [meme_anchor, meme_path])['output']
+    label_1 = prompt_processor[model_name]["pairwise"]["standard"]["output_processor"](output_1)
+    label_2 = prompt_processor[model_name]["pairwise"]["standard"]["output_processor"](output_2)
+
+    return (label_1 == 1) or (label_2 == 0)
 
 def is_universal(
     meme_path, 
@@ -75,6 +90,8 @@ def classify_memes(
     )
 
     dataset = load_dataset(dataset_name)
+
+    keys = ['is_hilarious', 'is_funny', 'is_universal', 'is_toxic', "is_boring"]
     
     if reverse:
         image_paths = dataset['image_path'][::-1]
@@ -90,20 +107,33 @@ def classify_memes(
         meme_name = os.path.basename(meme_path).rsplit('.', 1)[0]
         result_path = f"{result_dir}/{meme_name}.json"
 
-        if os.path.exists(result_path) and not overwrite: continue
+        not_exist_keys, result = deepcopy(keys), {}
+        if overwrite:
+            pass
+        elif os.path.exists(result_path):
+            result = read_json(result_path)
+            for key in keys:
+                if not key in result:
+                    not_exist_keys.remove(key)
+                    break
+            if len(not_exist_keys) == 0: continue
 
-        hilarious_label = is_funny(meme_path, call_model, meme_anchor = meme_anchors['hilarious'])
-        funny_label = is_funny(meme_path, call_model, meme_anchor = meme_anchors['funny'])
-        universal_label = is_universal(meme_path, call_model)
-        toxic_label = is_toxic(meme_path, call_model)
-    
-        result = {
-            'is_hilarious': hilarious_label,
-            'is_funny': funny_label,
-            'is_universal': universal_label,
-            'is_toxic': toxic_label,
-            "image_path": meme_path,
-        }
+        for key in not_exist_keys:
+            if key == "is_hilarious":
+                result[key] = is_funny(meme_path, call_model, meme_anchor = meme_anchors['hilarious'])
+
+            elif key == "is_funny":
+                result[key] = is_funny(meme_path, call_model, meme_anchor = meme_anchors['funny'])
+            elif key == "is_universal":
+                result[key] = is_universal(meme_path, call_model)
+            elif key == "is_toxic":
+                result[key] = is_toxic(meme_path, call_model)
+            elif key == "is_boring":
+                boring_label_1 = is_boring(meme_path, call_model, meme_anchor = meme_anchors['boring1'])
+                boring_label_2 = is_boring(meme_path, call_model, meme_anchor = meme_anchors['boring2'])
+                result[key] = (boring_label_1 == 0) and (boring_label_2 == 1)
+
+        result["image_path"] = meme_path
         save_json(result, result_path)
 
 if __name__ == "__main__":
