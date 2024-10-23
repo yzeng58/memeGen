@@ -91,6 +91,8 @@ support_datasets = [
     'nikitricky',
     'singh',
     'gmor',
+    'tiwari',
+    'metmeme',
 ]
 
 #########################

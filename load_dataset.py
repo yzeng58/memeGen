@@ -16,19 +16,32 @@ def load_dataset(
         return load_130k()
     elif dataset_name == "vineeth":
         from load_datasets.load_vineeth import load_vineeth
+        if description: raise ValueError('Vineeth dataset does not support description')
         return load_vineeth()
     elif dataset_name == "vipul":
         from load_datasets.load_vipul import load_vipul
+        if description: raise ValueError('Vipul dataset does not support description')
         return load_vipul()
     elif dataset_name == "nikitricky":
         from load_datasets.load_nikitricky import load_nikitricky
+        if description: raise ValueError('Nikitricky dataset does not support description')
         return load_nikitricky()
     elif dataset_name == "singh":
         from load_datasets.load_singh import load_singh
+        if description: raise ValueError('Singh dataset does not support description')
         return load_singh()
     elif dataset_name == "gmor":
         from load_datasets.load_gmor import load_gmor
+        if description: raise ValueError('Gmor dataset does not support description')
         return load_gmor()
+    elif dataset_name == "tiwari":
+        from load_datasets.load_tiwari import load_tiwari
+        if description: raise ValueError('Tiwari dataset does not support description')
+        return load_tiwari()
+    elif dataset_name == "metmeme":
+        from load_datasets.load_metmeme import load_metmeme
+        if description: raise ValueError('Metmeme dataset does not support description')
+        return load_metmeme()
     else:
         raise ValueError(f"Dataset {dataset_name} not found")
     
