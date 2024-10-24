@@ -6,7 +6,7 @@ from configs import get_dataset_dir
 import re, pdb
 
 def get_description_path(image_path: str, description: str):
-    description_path = image_path.replace('/images/', f'/description/{description}')
+    description_path = image_path.replace('/images/', f'/description/{description}/')
     description_path = re.sub(r'\.(jpeg|jpg|png|gif|bmp|webp)$', '.json', description_path, flags=re.IGNORECASE)
     return description_path
 
