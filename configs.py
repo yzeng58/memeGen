@@ -85,6 +85,7 @@ def get_model_category(model_name):
 support_datasets = [
     'memotion',
     'ours_v2',
+    'ours_v3',
     '130k',
     'vineeth',
     'vipul',

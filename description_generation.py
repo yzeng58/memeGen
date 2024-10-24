@@ -12,11 +12,13 @@ def generate_dataset_details(
     overwrite: bool = False,
     prompt_mode: str = 'default',
     max_new_tokens: int = 300,
+    shuffle: bool = False,
 ):
     # Load the dataset
     dataset = load_dataset(
         dataset_name, 
         binary_classification=True,
+        description=model_name,
     )
     
     # Load the model
@@ -28,6 +30,8 @@ def generate_dataset_details(
     
     # Generate prompt for description
     prompt = description_prompt[prompt_mode]
+    
+    if shuffle: dataset = dataset.sample(frac=1).reset_index(drop=True)
     
     for i in tqdm(range(len(dataset))):
         image_path = dataset.loc[i, 'image_path']
@@ -59,6 +63,7 @@ if __name__ == '__main__':
     parser.add_argument('--overwrite', action='store_true')
     parser.add_argument('--prompt_mode', type=str, default='default')
     parser.add_argument('--max_new_tokens', type=int, default=1000)
+    parser.add_argument('--shuffle', action='store_true')
     args = parser.parse_args()
     
     print_configs(args)
@@ -69,5 +74,6 @@ if __name__ == '__main__':
         api_key=args.api_key,
         overwrite=args.overwrite,
         prompt_mode=args.prompt_mode,
-        max_new_tokens=args.max_new_tokens
+        max_new_tokens=args.max_new_tokens,
+        shuffle=args.shuffle,
     )
