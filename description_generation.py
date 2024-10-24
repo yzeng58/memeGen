@@ -3,7 +3,7 @@ from tqdm import tqdm
 from load_dataset import load_dataset
 from load_model import load_model
 from helper import save_json, print_configs, get_image_size
-from configs import support_models, support_datasets, dataset_dir, description_prompt
+from configs import support_models, support_datasets, dataset_dir, description_prompt, image_size_threshold
 
 def generate_dataset_details(
     model_name: str,
@@ -36,7 +36,7 @@ def generate_dataset_details(
     for i in tqdm(range(len(dataset))):
         image_path = dataset.loc[i, 'image_path']
         meme_size = get_image_size(image_path)
-        if meme_size > 500000:
+        if meme_size > image_size_threshold:
             print(f"Image size of {os.path.basename(image_path)}: {meme_size}. Skip.")
             continue
         description_path = dataset.loc[i, 'description_path']

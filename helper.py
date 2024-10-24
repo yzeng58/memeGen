@@ -48,6 +48,11 @@ def get_image(image_path: str):
         image = Image.open(image_path).convert("RGB")
     return image
 
+def get_image_size(image_path):
+    with Image.open(image_path) as img:
+        width, height = img.size
+    return width*height
+
 def display_image(image_path: str):
     image = get_image(image_path)
     display(image)

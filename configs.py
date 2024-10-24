@@ -189,3 +189,5 @@ meme_anchors = {
     "boring1": f"{root_dir}/collection/anchors/boring1.jpg",
     "boring2": f"{root_dir}/collection/anchors/boring2.jpg",
 }
+
+image_size_threshold = 500000

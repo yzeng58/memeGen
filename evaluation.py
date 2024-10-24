@@ -2,8 +2,8 @@ from load_dataset import load_dataset
 from load_model import load_model
 import os, wandb, argparse, pdb
 root_dir = os.path.dirname(__file__)
-from helper import save_json, read_json, print_configs, set_seed
-from configs import support_models, support_datasets, prompt_processor
+from helper import save_json, read_json, print_configs, set_seed, get_image_size
+from configs import support_models, support_datasets, prompt_processor, image_size_threshold
 from environment import WANDB_INFO
 import pandas as pd
 from tqdm import tqdm
@@ -149,18 +149,24 @@ def evaluate(
         all_pairs_idx = list(product(range(len(funny_data)), range(len(not_funny_data))))
         # Shuffle the pairs
         random.shuffle(all_pairs_idx)
-        if n_pairs != -1:
-            all_pairs_idx = all_pairs_idx[:n_pairs]
 
         tqdm_bar, idx = tqdm(all_pairs_idx), 0
         for i, j in tqdm_bar:
-            idx += 1
+            if idx >= n_pairs: break
             if description:
                 funny_path = funny_data.loc[i, 'description_path']
                 not_funny_path = not_funny_data.loc[j, 'description_path']
             else:
                 funny_path = funny_data.loc[i, 'image_path']
                 not_funny_path = not_funny_data.loc[j, 'image_path']
+
+                funny_image_size = get_image_size(funny_path)
+                not_funny_image_size = get_image_size(not_funny_path)
+                if funny_image_size > image_size_threshold or not_funny_image_size > image_size_threshold:
+                    print(f'Image size of {funny_path} or {not_funny_path} is too large, skip.')
+                    continue
+                else:
+                    idx += 1
 
             funny_file_name = funny_path.split("/")[-1].split(".")[0]
             not_funny_file_name = not_funny_path.split("/")[-1].split(".")[0]

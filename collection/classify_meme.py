@@ -2,14 +2,12 @@ import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
-from configs import prompt_processor, get_dataset_dir, support_models, support_datasets, meme_anchors
+from configs import prompt_processor, get_dataset_dir, support_models, support_datasets, meme_anchors, image_size_threshold
 from tqdm import tqdm
 from load_model import load_model
 from load_dataset import load_dataset
-from helper import save_json, print_configs, read_json
+from helper import save_json, print_configs, read_json, get_image_size
 import argparse, pdb
-from PIL import Image
-from copy import deepcopy
 
 def is_funny(
     meme_path, 
@@ -65,11 +63,6 @@ def is_toxic(
     label = prompt_processor[model_name]["toxicity"]["output_processor"](output)
     return label == 1
 
-def get_image_size(image_path):
-    with Image.open(image_path) as img:
-        width, height = img.size
-    return width*height
-
 def classify_memes(
     dataset_name = 'memotion',
     model_name = 'Qwen2-VL-72B-Instruct',
@@ -97,7 +90,7 @@ def classify_memes(
 
     for meme_path in tqdm(image_paths):
         meme_size = get_image_size(meme_path)
-        if meme_size > 500000:
+        if meme_size > image_size_threshold:
             print(f"Image size of {os.path.basename(meme_path)}: {meme_size}. Skip.")
             continue
 
