@@ -76,7 +76,7 @@ def classify_memes(
     api_key = "yz",
     description = "",
     overwrite = False,
-    reverse = False,
+    shuffle = False,
 ):
     if description:
         raise ValueError("Description is not supported for meme collection period.")
@@ -93,10 +93,7 @@ def classify_memes(
 
     keys = ['is_hilarious', 'is_funny', 'is_universal', 'is_toxic', "is_boring"]
     
-    if reverse:
-        image_paths = dataset['image_path'][::-1]
-    else:
-        image_paths = dataset['image_path']
+    if shuffle: image_paths = dataset['image_path'].sample(frac=1).values
 
     for meme_path in tqdm(image_paths):
         meme_size = get_image_size(meme_path)
@@ -146,7 +143,7 @@ if __name__ == "__main__":
     parser.add_argument("--api_key", type=str, default="yz")
     parser.add_argument("--description", type=str, default="")
     parser.add_argument("--overwrite", action="store_true")
-    parser.add_argument("--reverse", action="store_true")
+    parser.add_argument("--shuffle", action="store_true")
     args = parser.parse_args()
 
     print_configs(args)
@@ -157,7 +154,7 @@ if __name__ == "__main__":
         api_key = args.api_key,
         description = args.description,
         overwrite = args.overwrite,
-        reverse = args.reverse,
+        shuffle = args.shuffle,
     )
 
 
