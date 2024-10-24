@@ -160,13 +160,15 @@ def evaluate(
                 funny_path = funny_data.loc[i, 'image_path']
                 not_funny_path = not_funny_data.loc[j, 'image_path']
 
-                funny_image_size = get_image_size(funny_path)
-                not_funny_image_size = get_image_size(not_funny_path)
-                if funny_image_size > image_size_threshold or not_funny_image_size > image_size_threshold:
-                    print(f'Image size of {funny_path} or {not_funny_path} is too large, skip.')
-                    continue
-                else:
-                    idx += 1
+            funny_image_path = funny_data.loc[i, 'image_path']
+            not_funny_image_path = not_funny_data.loc[j, 'image_path']
+            funny_image_size = get_image_size(funny_image_path)
+            not_funny_image_size = get_image_size(not_funny_image_path)
+            if funny_image_size > image_size_threshold or not_funny_image_size > image_size_threshold:
+                print(f'Image size of {funny_path} or {not_funny_path} is too large, skip.')
+                continue
+            else:
+                idx += 1
 
             funny_file_name = funny_path.split("/")[-1].split(".")[0]
             not_funny_file_name = not_funny_path.split("/")[-1].split(".")[0]
