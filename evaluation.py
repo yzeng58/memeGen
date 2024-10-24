@@ -2,11 +2,13 @@ from load_dataset import load_dataset
 from load_model import load_model
 import os, wandb, argparse, pdb
 root_dir = os.path.dirname(__file__)
-from helper import save_json, read_json, print_configs
+from helper import save_json, read_json, print_configs, set_seed
 from configs import support_models, support_datasets, prompt_processor
 from environment import WANDB_INFO
 import pandas as pd
 from tqdm import tqdm
+from itertools import product
+import random
 
 def get_output(
     call_model, 
@@ -54,7 +56,8 @@ def evaluate(
     dataset_name, 
     prompt_name = 'yn',
     api_key = 'yz',  
-    n_per_class = 35,
+    n_per_class = -1,
+    n_pairs = -1,
     seed = 42, 
     log_wandb = False,
     overwrite = False,
@@ -62,13 +65,17 @@ def evaluate(
     description = '',
     max_new_tokens = 1000,
 ):
+    set_seed(seed)
     dataset = load_dataset(dataset_name, binary_classification=True, description=description)
     sampled_datasets = []
     for label in dataset['label'].unique():
         label_dataset = dataset[dataset['label'] == label]
-        if len(label_dataset) < n_per_class:
-            raise ValueError(f"Dataset {dataset_name} does not have enough samples for label {label}")
-        sampled_label_dataset = label_dataset.sample(n=n_per_class, random_state=seed, replace=False)
+        if n_per_class == -1:
+            sampled_label_dataset = label_dataset
+        else:
+            if len(label_dataset) < n_per_class:
+                raise ValueError(f"Dataset {dataset_name} does not have enough samples for label {label}")
+            sampled_label_dataset = label_dataset.sample(n=n_per_class, random_state=seed, replace=False)
         sampled_datasets.append(sampled_label_dataset)
     dataset = pd.concat(sampled_datasets, ignore_index=True).reset_index(drop=True)
     dataset = dataset.sample(frac=1, random_state=seed).reset_index(drop=True)
@@ -139,14 +146,21 @@ def evaluate(
         funny_data = dataset[dataset['label'] == 1].reset_index(drop=True)
         not_funny_data = dataset[dataset['label'] == 0].reset_index(drop=True)
 
-        tqdm_bar = tqdm(range(len(funny_data)))
-        for i in tqdm_bar:
+        all_pairs_idx = list(product(range(len(funny_data)), range(len(not_funny_data))))
+        # Shuffle the pairs
+        random.shuffle(all_pairs_idx)
+        if n_pairs != -1:
+            all_pairs_idx = all_pairs_idx[:n_pairs]
+
+        tqdm_bar, idx = tqdm(all_pairs_idx), 0
+        for i, j in tqdm_bar:
+            idx += 1
             if description:
                 funny_path = funny_data.loc[i, 'description_path']
-                not_funny_path = not_funny_data.loc[i, 'description_path']
+                not_funny_path = not_funny_data.loc[j, 'description_path']
             else:
                 funny_path = funny_data.loc[i, 'image_path']
-                not_funny_path = not_funny_data.loc[i, 'image_path']
+                not_funny_path = not_funny_data.loc[j, 'image_path']
 
             funny_file_name = funny_path.split("/")[-1].split(".")[0]
             not_funny_file_name = not_funny_path.split("/")[-1].split(".")[0]
@@ -203,10 +217,9 @@ def evaluate(
 
             # Update tqdm description with current accuracy
             if (result['pred_label_1'] == 0) and (result['pred_label_2'] == 1): corr += 1
-            total_predictions = i + 1
-            current_acc = corr / total_predictions
+            current_acc = corr / idx
             tqdm_bar.set_description(f"Acc: {current_acc:.4f}")
-        acc = corr / len(funny_data)
+        acc = corr / len(all_pairs_idx)
 
     print(f'Accuracy: {acc}')
     if log_wandb:
@@ -223,7 +236,8 @@ if __name__ == '__main__':
     parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=support_datasets)
     parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--api_key', type=str, default='yz')
-    parser.add_argument('--n_per_class', type=int, default=35)
+    parser.add_argument('--n_per_class', type=int, default=-1, help='-1 for all, otherwise random sample n_per_class for each class')
+    parser.add_argument('--n_pairs', type=int, default=-1, help='-1 for all, otherwise random sample n_pairs pairs')
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--wandb', action='store_true')
     parser.add_argument('--overwrite', action='store_true')
@@ -247,6 +261,7 @@ if __name__ == '__main__':
         prompt_name=args.prompt_name,
         api_key=args.api_key,
         n_per_class=args.n_per_class,
+        n_pairs=args.n_pairs,
         seed=args.seed,
         log_wandb=args.wandb,
         overwrite=args.overwrite,
