@@ -3,7 +3,7 @@ import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 from configs import get_dataset_dir
-import glob, re
+import glob, re, pdb
 
 def get_description_path(image_path: str, description: str):
     description_path = image_path.replace('/images/', '/description/').replace('/funny', f'/{description}').replace('/not_funny', f'/{description}')
@@ -21,6 +21,5 @@ def load_ours_v3(description: str = ''):
         if description: 
             description_path = get_description_path(file, description)
             file_dict['description_path'] = description_path
-
         data.append(file_dict)
     return pd.DataFrame(data)
