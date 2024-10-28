@@ -152,7 +152,7 @@ def evaluate(
 
         tqdm_bar, idx = tqdm(all_pairs_idx), 0
         for i, j in tqdm_bar:
-            if idx >= n_pairs: break
+            if n_pairs >=0 and idx >= n_pairs: break
             if description:
                 funny_path = funny_data.loc[i, 'description_path']
                 not_funny_path = not_funny_data.loc[j, 'description_path']
@@ -225,13 +225,10 @@ def evaluate(
 
             # Update tqdm description with current accuracy
             if (result['pred_label_1'] == 0) and (result['pred_label_2'] == 1): corr += 1
-            current_acc = corr / idx
-            tqdm_bar.set_description(f"Acc: {current_acc:.4f}")
-        acc = corr / len(all_pairs_idx)
-
-    print(f'Accuracy: {acc}')
-    if log_wandb:
-        wandb.log({'accuracy': acc})
+            acc = corr / idx
+            if log_wandb:
+                wandb.log({'accuracy': acc})
+            tqdm_bar.set_description(f"Acc: {acc:.4f}")
     return acc
 
 if __name__ == '__main__':

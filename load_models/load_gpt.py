@@ -61,7 +61,6 @@ def load_gpt(
         'api_key': OPENAI_API_KEY[api_key],
     }
 
-@retry_if_fail
 def call_gpt(
     gpt,
     prompt,
