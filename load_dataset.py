@@ -47,6 +47,9 @@ def load_dataset(
         from load_datasets.load_metmeme import load_metmeme
         if description: raise ValueError('Metmeme dataset does not support description')
         return load_metmeme()
+    elif dataset_name == "relca":
+        from load_datasets.load_relca import load_relca
+        return load_relca(description=description)
     else:
         raise ValueError(f"Dataset {dataset_name} not found")
     

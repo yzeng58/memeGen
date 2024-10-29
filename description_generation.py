@@ -3,7 +3,7 @@ from tqdm import tqdm
 from load_dataset import load_dataset
 from load_model import load_model
 from helper import save_json, print_configs, get_image_size
-from configs import support_models, support_datasets, dataset_dir, description_prompt, image_size_threshold
+from configs import support_models, support_datasets, description_prompt, image_size_threshold, get_dataset_dir
 
 def generate_dataset_details(
     model_name: str,
@@ -25,7 +25,7 @@ def generate_dataset_details(
     call_model = load_model(model_name, api_key=api_key)
     
     # Create result directory
-    result_dir = f'{dataset_dir}/{dataset_name}/description/{model_name}'
+    result_dir = f'{get_dataset_dir(dataset_name)}/description/{model_name}'
     os.makedirs(result_dir, exist_ok=True)
     
     # Generate prompt for description

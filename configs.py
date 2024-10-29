@@ -82,20 +82,6 @@ def get_model_category(model_name):
             return support_model
     raise ValueError(f"Model {model_name} not found")
 
-support_datasets = [
-    'memotion',
-    'ours_v2',
-    'ours_v3',
-    '130k',
-    'vineeth',
-    'vipul',
-    'nikitricky',
-    'singh',
-    'gmor',
-    'tiwari',
-    'metmeme',
-]
-
 #########################
 # Prompt Configurations # 
 #########################
@@ -177,8 +163,24 @@ for support_model in support_models:
 # Dataset Configurations # 
 ##########################
 
+support_datasets = [
+    'memotion',
+    'relca',
+    'ours_v2',
+    'ours_v3',
+    '130k',
+    'vineeth',
+    'vipul',
+    'nikitricky',
+    'singh',
+    'gmor',
+    'tiwari',
+    'metmeme',
+]
+
 dataset_dir_dict = {
     "memotion": f"{dataset_dir}/memotion_dataset_7k",
+    "relca": f"{dataset_dir}/RelCa",
 }
 
 get_dataset_dir = lambda dataset_name: dataset_dir_dict.get(dataset_name, f"{dataset_dir}/{dataset_name}")
