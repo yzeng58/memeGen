@@ -55,8 +55,6 @@ def get_output(
         }
     return output_dict
 
-
-# TODO: update the context: path for both description and images
 def evaluate(
     model_name, 
     dataset_name, 
@@ -97,61 +95,73 @@ def evaluate(
 
     prompt = prompt_processor[model_name][eval_mode][prompt_name]['prompt']
 
-    description_flag = f'description_{description}' if description else 'multimodal'
-    result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_name}/{description_flag}/{eval_mode}_{prompt_name}'
+    if description:
+        folder_name = f'description_{description}'
+    elif context:
+        folder_name = f'context_{context}'
+    else:
+        folder_name = 'multimodal'
+    result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_name}/{folder_name}/{eval_mode}_{prompt_name}'
     os.makedirs(result_dir, exist_ok=True)
 
     if eval_mode == 'single':
         corr = 0
         tqdm_bar = tqdm(range(len(dataset)))
         for i in tqdm_bar:
-            if description:
+            if context:
+                file_path = {
+                    "image_path": dataset.loc[i, 'image_path'],
+                    "description_path": dataset.loc[i, 'description_path'],
+                }
+            elif description:
                 file_path = dataset.loc[i, 'description_path']
             else:
                 file_path = dataset.loc[i, 'image_path']
-            file_name = file_path.split('/')[-1].split('.')[0]
+
+            file_name = dataset.loc[i, 'image_path'].split('/')[-1].split('.')[0]
             label = dataset.loc[i, 'label']
             result_file = f'{result_dir}/{file_name}.json'
 
+            read_result = False
             if os.path.exists(result_file) and not overwrite:
                 try:
                     result = read_json(result_file)
-                    continue
+                    read_result = True
                 except KeyboardInterrupt:
                     raise KeyboardInterrupt
                 except:
                     pass
             
-            output_dict = get_output(
-                call_model, 
-                prompt_name,
-                prompt,
-                [file_path], 
-                max_new_tokens=1,
-                description=description,
-                max_intermediate_tokens=max_new_tokens,
-                context=context,
-            )
+            if not read_result:
+                output_dict = get_output(
+                    call_model, 
+                    prompt_name,
+                    prompt,
+                    [file_path], 
+                    max_new_tokens=1,
+                    description=description,
+                    max_intermediate_tokens=max_new_tokens,
+                    context=context,
+                )
 
-            pred_label = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](output_dict['output'])
-            if pred_label == label: corr += 1
+                pred_label = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](output_dict['output'])
 
-            result = {
-                'file_path': file_path,
-                'label': int(label),  # Convert numpy.int64 to Python int
-                'output_dict': output_dict,
-                'pred_label': int(pred_label),  # Convert numpy.int64 to Python int
-            }
-            save_json(result, result_file)
-            # Update tqdm description with current accuracy
-            total_predictions = i + 1  # One prediction per iteration
-            current_acc = corr / total_predictions
-            tqdm_bar.set_description(f"Acc: {current_acc:.4f}")
+                result = {
+                    'file_path': file_path,
+                    'label': int(label),  # Convert numpy.int64 to Python int
+                    'output_dict': output_dict,
+                    'pred_label': int(pred_label),  # Convert numpy.int64 to Python int
+                }
+                save_json(result, result_file)
 
-        acc = corr / len(dataset)
+            if result['pred_label'] == label: corr += 1
+            acc = corr / (i + 1)
+            tqdm_bar.set_description(f"Acc: {acc:.4f}")
+            if log_wandb:
+                wandb.log({'accuracy': acc})
 
     elif eval_mode == 'pairwise':
-        corr = 0
+        calibrated_corr, corr, consistency = 0, 0, 0
         funny_data = dataset[dataset['label'] == 1].reset_index(drop=True)
         not_funny_data = dataset[dataset['label'] == 0].reset_index(drop=True)
 
@@ -206,7 +216,7 @@ def evaluate(
                     pass
             
             if not read_result:
-
+ 
                 compare_output_dict_1 = get_output(
                     call_model, 
                     prompt_name,
@@ -217,6 +227,7 @@ def evaluate(
                     max_intermediate_tokens=max_new_tokens,
                     context=context,
                 )
+     
                 pred_label_1 = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
 
                 compare_output_dict_2 = get_output(
@@ -245,11 +256,21 @@ def evaluate(
                 save_json(result, result_file)
 
             # Update tqdm description with current accuracy
-            if (result['pred_label_1'] == 0) and (result['pred_label_2'] == 1): corr += 1
-            acc = corr / idx
+            if (result['pred_label_1'] == 0) and (result['pred_label_2'] == 1): 
+                calibrated_corr += 1
+            if (result['pred_label_1'] == 1 - result['pred_label_2']) and (result['label_1'] in [0,1]): 
+                consistency += 1
+            if result['pred_label_1'] == 0:
+                corr += 1
+            if result['pred_label_2'] == 1:
+                corr += 1
+
+            acc = corr / idx / 2
+            cr = consistency / idx
+            calibrated_acc = calibrated_corr / idx
             if log_wandb:
-                wandb.log({'accuracy': acc})
-            tqdm_bar.set_description(f"Acc: {acc:.4f}")
+                wandb.log({'accuracy': acc, 'consistency_rate': cr, 'calibrated_accuracy': calibrated_acc})
+            tqdm_bar.set_description(f"Acc: {acc:.4f}, CR: {cr:.4f}, Calibrated Acc: {calibrated_acc:.4f}")
     return acc
 
 if __name__ == '__main__':

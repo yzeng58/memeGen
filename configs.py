@@ -89,7 +89,7 @@ def get_model_category(model_name):
 prompt_processor = {}
 prompt_processor_default = {
     'single': {
-        'yn': {
+        'standard': {
             'prompt': "Is this meme funny? Please respond with a single letter, 'Y' for yes, 'N' for no.",
             'output_processor': lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1),
         }

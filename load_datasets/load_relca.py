@@ -15,9 +15,13 @@ def load_relca(description: str = ''):
 
     df = []
     for i, row in data_df.iterrows():
-        if abs(row["bws_score"]) > 0.5:
+        if row["bws_score"] > .5 and int(row['upvote'].replace(',', '')) > 50:
             image_path = f'{get_dataset_dir("relca")}/images/{i}_{row["filename"]}'
-            file_dict = {'image_path': image_path, 'label': row['bws_score'] > 0}
+            file_dict = {'image_path': image_path, 'label': 1}
+            df.append(file_dict)
+        elif row["bws_score"] < -.5 and int(row['upvote'].replace(',', '')) < 10:
+            image_path = f'{get_dataset_dir("relca")}/images/{i}_{row["filename"]}'
+            file_dict = {'image_path': image_path, 'label': 0}
             df.append(file_dict)
 
     df = pd.DataFrame(df)
