@@ -72,6 +72,7 @@ def call_claude(
     history = None,
     save_history = False,
     description = '',
+    context = "",
     **kwargs,
 ):
     model, client = claude['model'], claude['client']
@@ -80,10 +81,13 @@ def call_claude(
     contents = []
     for i, image_path in enumerate(image_paths):
         if description:
-            print(image_path)
             contents.append(process_text(f"Meme {i+1}: {read_json(image_path)['description']}\n"))
+        elif context:
+            contents.append(process_text(f"Meme {i+1}: {read_json(image_path['description_path'])['description']}\n"))
+            contents.append(process_image(image_path['image_path']))
         else:
             contents.append(process_image(image_path))
+            
     contents.append(process_text(prompt))
     messages = [{
         "role": "user",

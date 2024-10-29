@@ -72,6 +72,7 @@ def call_gpt(
     image_input_detail: Literal['low', 'high'] = 'low',
     image_mode: Literal['url', 'path'] = 'path',
     description = '',
+    context = "",
     **kwargs,
 ):
     model, client, api_key = gpt['model'], gpt['client'], gpt['api_key']
@@ -79,6 +80,9 @@ def call_gpt(
     for i, image_path in enumerate(image_paths):
         if description:
             contents.append(process_text(f"Meme {i+1}: {read_json(image_path)['description']}\n"))
+        elif context:
+            contents.append(process_text(f"Meme {i+1}: {read_json(image_path['description_path'])['description']}\n"))
+            contents.append(process_image(image_path['image_path'], image_input_detail, image_mode))
         else:
             contents.append(process_image(image_path, image_input_detail, image_mode))
     contents.append(process_text(prompt))

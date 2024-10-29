@@ -58,6 +58,7 @@ def call_pixtral(
     max_new_tokens = 500,
     seed = 42,
     temperature = 0.1,
+    context = "",
     **kwargs,
 ):
     set_seed(seed)
@@ -76,6 +77,11 @@ def call_pixtral(
     for i, image_path in enumerate(image_paths):
         if description:
             content.append(TextChunk(text=f"Meme {i+1}: {read_json(image_path)['description']}"))
+        elif context:
+            content.append(TextChunk(text=f"Meme {i+1}: {read_json(image_path['description_path'])['description']}"))
+            content.append(ImageURLChunk(
+                image_url=f"data:image/{image_path['image_path'].split('.')[-1].lower()};base64,{encode_image(image_path['image_path'])}"
+            ))
         else:
             content.append(ImageURLChunk(
                 image_url=f"data:image/{image_path.split('.')[-1].lower()};base64,{encode_image(image_path)}"

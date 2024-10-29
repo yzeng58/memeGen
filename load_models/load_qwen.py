@@ -79,6 +79,7 @@ def call_qwen(
     max_new_tokens = 500,
     seed = 42,  
     temperature = 0.1,
+    context = "",
     **kwargs,
 ):
     set_seed(seed)
@@ -89,6 +90,9 @@ def call_qwen(
         for i, image_path in enumerate(image_paths):
             if description:
                 contents.append(process_text_qwen(f"Meme {i+1}: {read_json(image_path)['description']}\n"))
+            elif context:
+                contents.append(process_text_qwen(f"Meme {i+1}: {read_json(image_path['description_path'])['description']}\n"))
+                contents.append(process_image_qwen(image_path['image_path']))
             else:
                 contents.append(process_image_qwen(image_path))
         contents.append(process_text_qwen(prompt))

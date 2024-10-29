@@ -54,6 +54,7 @@ def call_llama(
     description = '',
     system_prompt = 'evaluator',
     seed = 42,
+    context = "",
     **kwargs,
 ):
     set_seed(seed)
@@ -69,6 +70,11 @@ def call_llama(
         if description:
             for i, image_path in enumerate(image_paths):
                 content.append({"type": "text", "text": f"Meme {i+1}: {read_json(image_path)['description']}\n"})
+        elif context:
+            for i, image_path in enumerate(image_paths):
+                content.append({"type": "text", "text": f"Meme {i+1}: {read_json(image_path['description_path'])['description']}\n"})
+                content.append({"type": "image"})
+                images.append(get_image(image_path['image_path']))
         else:
             for i, image_path in enumerate(image_paths):
                 images.append(get_image(image_path))

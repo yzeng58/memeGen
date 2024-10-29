@@ -18,6 +18,7 @@ def get_output(
     max_new_tokens=1,
     max_intermediate_tokens=300,
     description = '',
+    context = "",
 ):
     if 'cot' in prompt_name:
         output_1 = call_model(
@@ -26,6 +27,7 @@ def get_output(
             max_new_tokens=max_intermediate_tokens,
             save_history=True,
             description=description,
+            context=context,
         )
         output_2 = call_model(
             prompt[1], 
@@ -34,6 +36,7 @@ def get_output(
             history=output_1['history'],
             save_history=True,
             description=description,
+            context=context,
         )
         output_dict = {
             'output': output_2['output'],
@@ -45,12 +48,15 @@ def get_output(
             image_paths, 
             max_new_tokens=max_new_tokens,
             description=description,
+            context=context,
         )
         output_dict = {
             'output': output_dict_all['output'],
         }
     return output_dict
 
+
+# TODO: update the context: path for both description and images
 def evaluate(
     model_name, 
     dataset_name, 
@@ -63,10 +69,12 @@ def evaluate(
     overwrite = False,
     eval_mode = 'single',
     description = '',
+    context = "",
     max_new_tokens = 1000,
-):
+):    
+    
     set_seed(seed)
-    dataset = load_dataset(dataset_name, binary_classification=True, description=description)
+    dataset = load_dataset(dataset_name, binary_classification=True, description=description or context)
     sampled_datasets = []
     for label in dataset['label'].unique():
         label_dataset = dataset[dataset['label'] == label]
@@ -122,6 +130,7 @@ def evaluate(
                 max_new_tokens=1,
                 description=description,
                 max_intermediate_tokens=max_new_tokens,
+                context=context,
             )
 
             pred_label = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](output_dict['output'])
@@ -153,12 +162,6 @@ def evaluate(
         tqdm_bar, idx = tqdm(all_pairs_idx), 0
         for i, j in tqdm_bar:
             if n_pairs >=0 and idx >= n_pairs: break
-            if description:
-                funny_path = funny_data.loc[i, 'description_path']
-                not_funny_path = not_funny_data.loc[j, 'description_path']
-            else:
-                funny_path = funny_data.loc[i, 'image_path']
-                not_funny_path = not_funny_data.loc[j, 'image_path']
 
             funny_image_path = funny_data.loc[i, 'image_path']
             not_funny_image_path = not_funny_data.loc[j, 'image_path']
@@ -170,8 +173,24 @@ def evaluate(
             else:
                 idx += 1
 
-            funny_file_name = funny_path.split("/")[-1].split(".")[0]
-            not_funny_file_name = not_funny_path.split("/")[-1].split(".")[0]
+            if description:
+                funny_path = funny_data.loc[i, 'description_path']
+                not_funny_path = not_funny_data.loc[j, 'description_path']
+            elif context:
+                funny_path = {
+                    "image_path": funny_image_path,
+                    "description_path": funny_data.loc[i, 'description_path'],
+                }
+                not_funny_path = {
+                    "image_path": not_funny_image_path,
+                    "description_path": not_funny_data.loc[j, 'description_path'],
+                }
+            else:
+                funny_path = funny_image_path
+                not_funny_path = not_funny_image_path
+
+            funny_file_name = funny_image_path.split("/")[-1].split(".")[0]
+            not_funny_file_name = not_funny_image_path.split("/")[-1].split(".")[0]
 
             result_name = f'{funny_file_name}_{not_funny_file_name}'
             result_file = f'{result_dir}/{result_name}.json'
@@ -196,6 +215,7 @@ def evaluate(
                     max_new_tokens=1,
                     description=description,
                     max_intermediate_tokens=max_new_tokens,
+                    context=context,
                 )
                 pred_label_1 = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
 
@@ -207,6 +227,7 @@ def evaluate(
                     max_new_tokens=1,
                     description=description,
                     max_intermediate_tokens=max_new_tokens,
+                    context=context,
                 )
                 pred_label_2 = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](compare_output_dict_2['output'])
 
@@ -248,6 +269,7 @@ if __name__ == '__main__':
     parser.add_argument('--overwrite', action='store_true')
     parser.add_argument('--eval_mode', type=str, default='pairwise', choices=['single', 'pairwise'])
     parser.add_argument('--description', type=str, default = '')
+    parser.add_argument('--context', type=str, default = "")
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
     args = parser.parse_args()
 
@@ -272,6 +294,7 @@ if __name__ == '__main__':
         overwrite=args.overwrite,
         eval_mode=args.eval_mode,
         description=args.description,
+        context=args.context,
         max_new_tokens=args.max_new_tokens,
     )
 
