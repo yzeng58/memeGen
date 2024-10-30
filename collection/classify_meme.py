@@ -15,11 +15,11 @@ def is_funny(
     model_name = 'Qwen2-VL-72B-Instruct',
     meme_anchor = f"{root_dir}/collection/anchors/hilarious.jpg",
 ):
-    prompt = prompt_processor[model_name]["pairwise"]["standard"]["prompt"]
+    prompt = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["prompt"]
     output_1 = call_model(prompt, [meme_path, meme_anchor])['output']
     output_2 = call_model(prompt, [meme_anchor, meme_path])['output']
-    label_1 = prompt_processor[model_name]["pairwise"]["standard"]["output_processor"](output_1)
-    label_2 = prompt_processor[model_name]["pairwise"]["standard"]["output_processor"](output_2)
+    label_1 = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["output_processor"](output_1)
+    label_2 = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["output_processor"](output_2)
 
     return (label_1 == 0) or (label_2 == 1)
 
@@ -29,11 +29,11 @@ def is_boring(
     model_name = 'Qwen2-VL-72B-Instruct',
     meme_anchor = f"{root_dir}/collection/anchors/boring1.jpg",
 ):
-    prompt = prompt_processor[model_name]["pairwise"]["standard"]["prompt"]
+    prompt = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["prompt"]
     output_1 = call_model(prompt, [meme_path, meme_anchor])['output']
     output_2 = call_model(prompt, [meme_anchor, meme_path])['output']
-    label_1 = prompt_processor[model_name]["pairwise"]["standard"]["output_processor"](output_1)
-    label_2 = prompt_processor[model_name]["pairwise"]["standard"]["output_processor"](output_2)
+    label_1 = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["output_processor"](output_1)
+    label_2 = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["output_processor"](output_2)
 
     return (label_1 == 1) or (label_2 == 0)
 
@@ -43,12 +43,12 @@ def is_universal(
     model_name = 'Qwen2-VL-72B-Instruct',
     region_list = ['China', 'Germany', 'Brazil', 'America'],
 ):
-    prompt = prompt_processor[model_name]["universality"]["prompt"]
+    prompt = prompt_processor[model_name]["universality"]["single"]["standard"]["prompt"]
 
     universal_flag = True
     for region in region_list:
         output = call_model(prompt(region), [meme_path])['output']
-        label = prompt_processor[model_name]["universality"]["output_processor"](output)
+        label = prompt_processor[model_name]["universality"]["single"]["standard"]["output_processor"](output)
         universal_flag = universal_flag and label == 1
 
     return universal_flag
@@ -58,9 +58,9 @@ def is_toxic(
     call_model,
     model_name = 'Qwen2-VL-72B-Instruct',
 ):
-    prompt = prompt_processor[model_name]["toxicity"]["prompt"]
+    prompt = prompt_processor[model_name]["toxicity"]["single"]["standard"]["prompt"]
     output = call_model(prompt, [meme_path])['output']
-    label = prompt_processor[model_name]["toxicity"]["output_processor"](output)
+    label = prompt_processor[model_name]["toxicity"]["single"]["standard"]["output_processor"](output)
     return label == 1
 
 def classify_memes(
@@ -86,7 +86,8 @@ def classify_memes(
 
     keys = ['is_hilarious', 'is_funny', 'is_universal', 'is_toxic', "is_boring"]
     
-    if shuffle: image_paths = dataset['image_path'].sample(frac=1).values
+    image_paths = dataset['image_path'].values
+    if shuffle: image_paths = image_paths.sample(frac=1).values
 
     for meme_path in tqdm(image_paths):
         meme_size = get_image_size(meme_path)
@@ -131,7 +132,7 @@ if __name__ == "__main__":
     for model in support_models:
         model_names.extend(support_models[model])
 
-    parser.add_argument("--dataset_name", type=str, default="memotion", choices=support_datasets)
+    parser.add_argument("--dataset_name", type=str, default="memotion", choices=list(support_datasets.keys()))
     parser.add_argument("--model_name", type=str, default="Qwen2-VL-72B-Instruct", choices=model_names)
     parser.add_argument("--api_key", type=str, default="yz")
     parser.add_argument("--description", type=str, default="")

@@ -3,7 +3,7 @@ from load_model import load_model
 import os, wandb, argparse, pdb
 root_dir = os.path.dirname(__file__)
 from helper import save_json, read_json, print_configs, set_seed, get_image_size
-from configs import support_models, support_datasets, prompt_processor, image_size_threshold
+from configs import support_models, support_datasets, prompt_processor, prompt_processor_default, image_size_threshold
 from environment import WANDB_INFO
 import pandas as pd
 from tqdm import tqdm
@@ -73,6 +73,7 @@ def evaluate(
     
     set_seed(seed)
     dataset = load_dataset(dataset_name, binary_classification=True, description=description or context)
+    metric = support_datasets[dataset_name]
     sampled_datasets = []
     for label in dataset['label'].unique():
         label_dataset = dataset[dataset['label'] == label]
@@ -88,12 +89,12 @@ def evaluate(
 
     call_model = load_model(model_name, api_key=api_key)
 
-    if eval_mode not in prompt_processor[model_name]:
-        raise ValueError(f'Eval mode {eval_mode} not supported, please choose from {list(prompt_processor[model_name].keys())}')
-    if prompt_name not in prompt_processor[model_name][eval_mode]:
-        raise ValueError(f'Prompt name {prompt_name} not supported, please choose from {list(prompt_processor[model_name][eval_mode].keys())}')
+    if eval_mode not in prompt_processor[model_name][metric]:
+        raise ValueError(f'Eval mode {eval_mode} not supported, please choose from {list(prompt_processor[model_name][metric].keys())}')
+    if prompt_name not in prompt_processor[model_name][metric][eval_mode]:
+        raise ValueError(f'Prompt name {prompt_name} not supported, please choose from {list(prompt_processor[model_name][metric][eval_mode].keys())}')
 
-    prompt = prompt_processor[model_name][eval_mode][prompt_name]['prompt']
+    prompt = prompt_processor[model_name][metric][eval_mode][prompt_name]['prompt']
 
     if description:
         folder_name = f'description_{description}'
@@ -144,7 +145,7 @@ def evaluate(
                     context=context,
                 )
 
-                pred_label = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](output_dict['output'])
+                pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
 
                 result = {
                     'file_path': file_path,
@@ -228,7 +229,7 @@ def evaluate(
                     context=context,
                 )
      
-                pred_label_1 = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
+                pred_label_1 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
 
                 compare_output_dict_2 = get_output(
                     call_model, 
@@ -240,7 +241,7 @@ def evaluate(
                     max_intermediate_tokens=max_new_tokens,
                     context=context,
                 )
-                pred_label_2 = prompt_processor[model_name][eval_mode][prompt_name]['output_processor'](compare_output_dict_2['output'])
+                pred_label_2 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_2['output'])
 
                 
                 result = {
@@ -280,7 +281,7 @@ if __name__ == '__main__':
         model_names.extend(support_models[model])
 
     parser.add_argument('--model_name', type=str, default='gpt-4o-mini', choices=model_names)
-    parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=support_datasets)
+    parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=list(support_datasets.keys()))
     parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--n_per_class', type=int, default=-1, help='-1 for all, otherwise random sample n_per_class for each class')

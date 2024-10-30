@@ -50,6 +50,9 @@ def load_dataset(
     elif dataset_name == "relca":
         from load_datasets.load_relca import load_relca
         return load_relca(description=description)
+    elif dataset_name == "meta_hateful":
+        from load_datasets.load_meta_hateful import load_meta_hateful
+        return load_meta_hateful(description=description)
     else:
         raise ValueError(f"Dataset {dataset_name} not found")
     

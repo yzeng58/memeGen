@@ -62,7 +62,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_name', type=str, required=True, choices=[model for models in support_models.values() for model in models])
-    parser.add_argument('--dataset_name', type=str, required=True, choices=support_datasets)
+    parser.add_argument('--dataset_name', type=str, required=True, choices=list(support_datasets.keys()))
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--overwrite', action='store_true')
     parser.add_argument('--prompt_mode', type=str, default='default')

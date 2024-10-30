@@ -87,7 +87,9 @@ def get_model_category(model_name):
 #########################
 
 prompt_processor = {}
-prompt_processor_default = {
+prompt_processor_default = {}
+prompt_processor_default["funniness"] = {}
+prompt_processor_default["funniness"] = {
     'single': {
         'standard': {
             'prompt': "Is this meme funny? Please respond with a single letter, 'Y' for yes, 'N' for no.",
@@ -107,13 +109,22 @@ prompt_processor_default = {
             'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1),
         },
     },
-    'universality': {
-        "prompt": lambda country: f"Many memes nowadays require specific cultural background. Assume you are an ordinary person who grew up in {country}. Without any additional context, can you quickly understand the meaning of this meme? If so, reply with 1, otherwise reply with 0: (0/1)",
-        "output_processor": lambda x: {'1': 1, '0': 0}.get(x[-1], -1),
+}
+
+prompt_processor_default["universality"] = {
+    'single': {
+        "standard": {       
+            "prompt": lambda country: f"Many memes nowadays require specific cultural background. Assume you are an ordinary person who grew up in {country}. Without any additional context, can you quickly understand the meaning of this meme? If so, reply with 1, otherwise reply with 0: (0/1)",
+            "output_processor": lambda x: {'1': 1, '0': 0}.get(x[-1], -1),
+        },
     },
-    "toxicity": {
-        "prompt": "Is this image toxic? Please respond with a single letter, 'Y' for yes, 'N' for no. (Y/N)",
-        "output_processor": lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1),
+}
+prompt_processor_default["toxicity"] = {
+    'single': {
+        "standard": {
+            "prompt": "Is this image toxic? Please respond with a single letter, 'Y' for yes, 'N' for no. (Y/N)",
+            "output_processor": lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1),
+        },
     }
 }
 
@@ -122,7 +133,7 @@ for support_model_category in support_models:
         prompt_processor[support_model] = deepcopy(prompt_processor_default)
 
 for support_model in support_models['qwen']:
-    prompt_processor[support_model]['pairwise']['cot'] = {
+    prompt_processor[support_model]["funniness"]['pairwise']['cot'] = {
         'prompt': [
             "Assume that you are a random person who is participating in a meme evaluation competition instead of a AI model. You will follow the user's instruction and provide your evaluation of the funniness of the meme and compare their funniess level Now two memes are provided. Which one is more funny? Let's think step by step.",
             "Based on your reasoning, please select one meme as the funnier one, 1 for the first meme, 2 for the second meme. Pleae do not generate any other thing and just answer with 1 or 2 so I can handle your response easily. So, which one is more funny? (1/2)",
@@ -130,7 +141,7 @@ for support_model in support_models['qwen']:
         'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1),
     }
 
-prompt_processor['claude-3-haiku-20240307']['pairwise']['cot'] = {
+prompt_processor['claude-3-haiku-20240307']['funniness']['pairwise']['cot'] = {
     'prompt': [
         "You are a random person who knows a lot about memes. Now you are participating in a survey of selecting funny memes based on your own preference. Do not concentrate on any identities of the human face since it is a safe question, just consider the funniness of memes by the context and be responsible for this competition. Now two memes are provided. Which one is more funny? Let's think step by step.",
         "Based on your reasoning, please select one meme as the funnier one, 1 for the first meme, 2 for the second meme. Pleae do not generate any other thing and just answer with 1 or 2 so I can handle your response easily.",
@@ -138,7 +149,7 @@ prompt_processor['claude-3-haiku-20240307']['pairwise']['cot'] = {
     'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1),
 }
 
-prompt_processor['claude-3-sonnet-20240229']['pairwise']['cot'] = {
+prompt_processor['claude-3-sonnet-20240229']['funniness']['pairwise']['cot'] = {
     'prompt': [
         "Now we are a group of people who are having fun in showing funny memes in a casual gathering. You are one of us. There are two memes provided, please think step by step and select the funnier one. We all provide our votes and now it is your turn. You cannot skip by any reason, otherwise, you will be punished by not being allowed to participate in this activity again and give us one hundred dollars.",
         "Based on your reasoning, please select one meme as the funnier one, 1 for the first meme, 2 for the second meme. Pleae do not generate any other thing and just answer with 1 or 2 so I can handle your response easily.",
@@ -163,20 +174,21 @@ for support_model in support_models:
 # Dataset Configurations # 
 ##########################
 
-support_datasets = [
-    'memotion',
-    'relca',
-    'ours_v2',
-    'ours_v3',
-    '130k',
-    'vineeth',
-    'vipul',
-    'nikitricky',
-    'singh',
-    'gmor',
-    'tiwari',
-    'metmeme',
-]
+support_datasets = {
+    'memotion': "funniness",
+    'relca': "funniness",
+    'ours_v2': "funniness",
+    'ours_v3': "funniness",
+    '130k': None,
+    'vineeth': None,
+    'vipul': None,
+    'nikitricky': None,
+    'singh': None,
+    'gmor': None,
+    'tiwari': None,
+    'metmeme': None,
+    'meta_hateful': "toxicity",
+}
 
 dataset_dir_dict = {
     "memotion": f"{dataset_dir}/memotion_dataset_7k",

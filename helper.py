@@ -1,7 +1,8 @@
 from PIL import Image
 import requests, functools, time, pdb, json, os, random, torch, transformers
-from io import BytesIO
+from io import BytesIO, StringIO
 import numpy as np
+import pandas as pd
 
 def save_json(data, path):
     folder = os.path.dirname(path)
@@ -14,6 +15,17 @@ def read_json(path):
     with open(path) as f:
         data = json.load(f)
     return data
+
+def read_jsonl(file_path):
+    # Read jsonl file line by line
+    data = []
+    with open(file_path, 'r') as f:
+        for line in f:
+            if line.strip():  # Skip empty lines
+                # Wrap the JSON string in StringIO to resolve deprecation warning
+                data.append(pd.read_json(StringIO(line), typ='series'))
+    return pd.DataFrame(data)
+
 
 def retry_if_fail(func):
     @functools.wraps(func)
