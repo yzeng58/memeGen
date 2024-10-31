@@ -197,6 +197,7 @@ support_datasets = {
     'tiwari': None,
     'metmeme': None,
     'meta_hateful': "hatefulness",
+    'devastator': "alignment",
 }
 
 dataset_dir_dict = {

@@ -53,6 +53,9 @@ def load_dataset(
     elif dataset_name == "meta_hateful":
         from load_datasets.load_meta_hateful import load_meta_hateful
         return load_meta_hateful(description=description)
+    elif dataset_name == "devastator":
+        from load_datasets.load_devastator import load_devastator
+        return load_devastator(description=description)
     else:
         raise ValueError(f"Dataset {dataset_name} not found")
     
