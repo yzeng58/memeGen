@@ -122,7 +122,16 @@ prompt_processor_default["universality"] = {
 prompt_processor_default["toxicity"] = {
     'single': {
         "standard": {
-            "prompt": "Is this image toxic? Please respond with a single letter, 'Y' for yes, 'N' for no. (Y/N)",
+            "prompt": "Is this meme toxic? Please respond with a single letter, 'Y' for yes, 'N' for no. (Y/N)",
+            "output_processor": lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1),
+        },
+    }
+}
+
+prompt_processor_default["hatefulness"] = {
+    'single': {
+        "standard": {
+            "prompt": "Is this meme hateful? Please respond with a single letter, 'Y' for yes, 'N' for no. (Y/N)",
             "output_processor": lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1),
         },
     }
@@ -187,7 +196,7 @@ support_datasets = {
     'gmor': None,
     'tiwari': None,
     'metmeme': None,
-    'meta_hateful': "toxicity",
+    'meta_hateful': "hatefulness",
 }
 
 dataset_dir_dict = {
