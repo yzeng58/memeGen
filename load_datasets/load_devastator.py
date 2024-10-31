@@ -13,9 +13,10 @@ def get_description_path(image_path: str, description: str):
 def load_devastator(description: str = ''):
     dataset = pd.read_csv(f'{get_dataset_dir("devastator")}/memes.csv')
     dataset = dataset[dataset["score"] >= 50]
-    dataset = dataset[dataset['url'].str.contains('\.', regex=True)]
-    dataset['image_path'] = dataset[['id', 'url']].apply(lambda x: f'{get_dataset_dir("devastator")}/images/{x[0]}.{x[1].split(".")[-1]}', axis = 1)
-    dataset["context"] = dataset["title"] + "\n" + dataset["body"]
+    dataset = dataset[dataset['url'].str.split('/').str[-1].str.contains('\.', regex=True)]
+    dataset['image_path'] = dataset[['id', 'url']].apply(lambda x: f'{get_dataset_dir("devastator")}/images/{x[0]}.{x[1].split("/")[-1].split(".")[-1]}', axis = 1)
+    dataset["context"] = dataset["title"] + "\n" + dataset["body"].fillna("")
+    dataset = dataset[dataset['image_path'].apply(os.path.exists)]
     df = dataset[['image_path', "context"]].reset_index(drop=True)
 
     if description:
