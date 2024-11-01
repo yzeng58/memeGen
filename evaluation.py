@@ -290,6 +290,9 @@ def evaluate(
 
             files_names = []
             for option in meme_options:
+                if get_image_size(dataset_i[f"{option}_path"]) > image_size_threshold / 3 * 2:
+                    print(f'Image size of {dataset_i[f"{option}_path"]} is too large, skip.')
+                    continue
                 files_names.append(dataset_i[f"{option}_path"].split("/")[-1].split(".")[0])
             result_name = f'{files_names[0]}_{files_names[1]}_{files_names[2]}'
             result_file = f'{result_dir}/{result_name}.json'  
