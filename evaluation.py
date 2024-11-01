@@ -3,7 +3,7 @@ from load_model import load_model
 import os, wandb, argparse, pdb
 root_dir = os.path.dirname(__file__)
 from helper import save_json, read_json, print_configs, set_seed, get_image_size
-from configs import support_models, support_datasets, prompt_processor, prompt_processor_default, image_size_threshold
+from configs import support_models, support_datasets, prompt_processor, image_size_threshold, eval_modes
 from environment import WANDB_INFO
 import pandas as pd
 from tqdm import tqdm
@@ -72,23 +72,28 @@ def evaluate(
 ):    
     
     set_seed(seed)
-    dataset = load_dataset(dataset_name, binary_classification=True, description=description or context)
-    metric = support_datasets[dataset_name]
+    dataset = load_dataset(dataset_name, binary_classification=True, description=description or context, eval_mode=eval_mode)
+    metric = support_datasets[dataset_name]["metric"]
     sampled_datasets = []
-    for label in dataset['label'].unique():
-        label_dataset = dataset[dataset['label'] == label]
-        if n_per_class == -1:
-            sampled_label_dataset = label_dataset
-        else:
+    
+    if n_per_class >= 0:
+        if eval_mode == 'threeway':
+            raise ValueError('Threeway evaluation mode is not compatible with n_per_class!')
+        
+        for label in dataset['label'].unique():
+            label_dataset = dataset[dataset['label'] == label]
+
             if len(label_dataset) < n_per_class:
                 raise ValueError(f"Dataset {dataset_name} does not have enough samples for label {label}")
             sampled_label_dataset = label_dataset.sample(n=n_per_class, random_state=seed, replace=False)
-        sampled_datasets.append(sampled_label_dataset)
-    dataset = pd.concat(sampled_datasets, ignore_index=True).reset_index(drop=True)
-    dataset = dataset.sample(frac=1, random_state=seed).reset_index(drop=True)
+            sampled_datasets.append(sampled_label_dataset)
+        dataset = pd.concat(sampled_datasets, ignore_index=True).reset_index(drop=True)
+        dataset = dataset.sample(frac=1, random_state=seed).reset_index(drop=True)
 
     call_model = load_model(model_name, api_key=api_key)
 
+    if eval_mode not in support_datasets[dataset_name]["eval_mode"]:
+        raise ValueError(f'Eval mode {eval_mode} not supported by {dataset_name}, please choose from {support_datasets[dataset_name]["eval_mode"]}')
     if eval_mode not in prompt_processor[model_name][metric]:
         raise ValueError(f'Eval mode {eval_mode} not supported, please choose from {list(prompt_processor[model_name][metric].keys())}')
     if prompt_name not in prompt_processor[model_name][metric][eval_mode]:
@@ -272,6 +277,77 @@ def evaluate(
             if log_wandb:
                 wandb.log({'accuracy': acc, 'consistency_rate': cr, 'calibrated_accuracy': calibrated_acc})
             tqdm_bar.set_description(f"Acc: {acc:.4f}, CR: {cr:.4f}, Calibrated Acc: {calibrated_acc:.4f}")
+
+    elif eval_mode == 'threeway':
+        corr = 0
+        meme_options = ["ground_truth", "closest_candidate", "random_candidate"]
+        tqdm_bar = tqdm(range(len(dataset)))
+        for i in tqdm_bar:
+            dataset_i = dataset.loc[i]
+            image_path_idxs = random.sample([0, 1, 2], 3)
+            post_context = dataset_i["context"]
+            image_paths = []
+
+            files_names = []
+            for option in meme_options:
+                files_names.append(dataset_i[f"{option}_path"].split("/")[-1].split(".")[0])
+            result_name = f'{files_names[0]}_{files_names[1]}_{files_names[2]}'
+            result_file = f'{result_dir}/{result_name}.json'  
+
+            read_result = False
+            if os.path.exists(result_file) and not overwrite:
+                try:
+                    result = read_json(result_file)
+                    read_result = True
+                except KeyboardInterrupt:
+                    raise KeyboardInterrupt
+                except:
+                    pass
+
+            if not read_result:
+                if description:
+                    for meme_option in meme_options:
+                        image_paths.append(dataset_i[f"{meme_option}_description_path"])
+                elif context:
+                    for meme_option in meme_options:
+                        image_paths.append({
+                            "image_path": dataset_i[f"{meme_option}_path"],
+                            "description_path": dataset_i[f"{meme_option}_description_path"],
+                        })
+                else:
+                    for meme_option in meme_options:
+                        image_paths.append(dataset_i[f"{meme_option}_path"])
+
+                output_dict = get_output(
+                    call_model, 
+                    prompt_name,
+                    prompt(post_context),
+                    [image_paths[idx] for idx in image_path_idxs],
+                    max_new_tokens=1,
+                    description=description,
+                    max_intermediate_tokens=max_new_tokens,
+                    context=context,
+                )
+                pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
+
+                result = {
+                    "ground_truth_path": dataset_i["ground_truth_path"],
+                    "closest_candidate_path": dataset_i["closest_candidate_path"],
+                    "random_candidate_path": dataset_i["random_candidate_path"],
+                    "context": post_context,
+                    "indices": image_path_idxs,
+                    "pred_label": pred_label,
+                    "output": output_dict['output'],
+                }
+                
+                save_json(result, result_file)
+
+            if result['pred_label'] == image_path_idxs.index(0):
+                corr += 1
+            acc = corr / (i + 1)
+            tqdm_bar.set_description(f"Acc: {acc:.4f}")
+            if log_wandb:
+                wandb.log({'accuracy': acc})
     return acc
 
 if __name__ == '__main__':
@@ -289,7 +365,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--wandb', action='store_true')
     parser.add_argument('--overwrite', action='store_true')
-    parser.add_argument('--eval_mode', type=str, default='pairwise', choices=['single', 'pairwise'])
+    parser.add_argument('--eval_mode', type=str, default='pairwise', choices=eval_modes)
     parser.add_argument('--description', type=str, default = '')
     parser.add_argument('--context', type=str, default = "")
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
