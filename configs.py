@@ -144,6 +144,21 @@ prompt_processor_default["hatefulness"] = {
     }
 }
 
+prompt_processor_default["alignment"] = {
+    'single': {
+        "standard": {
+            "prompt": "Is this meme aligned with the context? Please respond with a single letter, 'Y' for yes, 'N' for no. (Y/N)",
+            "output_processor": lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1),
+        },
+    },
+    'threeway': {
+        "standard": {
+            "prompt": lambda context: f"Context: {context}\n\nWhich meme is more aligned with the context? Please respond with a single letter, 1 for the first meme, 2 for the second meme, 3 for the third meme. (1/2/3)",
+            "output_processor": lambda x: {'1': 0, '2': 1, '3': 2}.get(x[-1], -1),
+        },
+    }
+}
+
 for support_model_category in support_llms:
     for support_model in support_llms[support_model_category]:
         prompt_processor[support_model] = deepcopy(prompt_processor_default)
@@ -189,12 +204,25 @@ for support_model in support_llms:
 ##########################
 # Dataset Configurations # 
 ##########################
+eval_modes = ["single", "pairwise", "threeway"]
 
 support_datasets = {
-    'memotion': "funniness",
-    'relca': "funniness",
-    'ours_v2': "funniness",
-    'ours_v3': "funniness",
+    'memotion': {
+        "metric": "funniness",
+        "eval_mode": ["single", "pairwise"],
+    },
+    'relca': {
+        "metric": "funniness",
+        "eval_mode": ["single", "pairwise"],
+    },
+    'ours_v2': {
+        "metric": "funniness",
+        "eval_mode": ["single", "pairwise"],
+    },
+    'ours_v3': {
+        "metric": "funniness",
+        "eval_mode": ["single", "pairwise"],
+    },
     '130k': None,
     'vineeth': None,
     'vipul': None,
@@ -203,8 +231,14 @@ support_datasets = {
     'gmor': None,
     'tiwari': None,
     'metmeme': None,
-    'meta_hateful': "hatefulness",
-    'devastator': "alignment",
+    'meta_hateful': {
+        "metric": "hatefulness",
+        "eval_mode": ["single", "pairwise"],
+    },
+    'devastator': {
+        "metric": "alignment",
+        "eval_mode": ["single", "threeway"],
+    },
 }
 
 dataset_dir_dict = {

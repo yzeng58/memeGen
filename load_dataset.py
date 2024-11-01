@@ -2,6 +2,7 @@ def load_dataset(
     dataset_name: str,
     description: str = '',
     binary_classification: bool = False,
+    eval_mode: str = 'pairwise',
 ):
     if dataset_name == 'memotion':
         from load_datasets.load_memotion import load_memotion
@@ -55,7 +56,7 @@ def load_dataset(
         return load_meta_hateful(description=description)
     elif dataset_name == "devastator":
         from load_datasets.load_devastator import load_devastator
-        return load_devastator(description=description)
+        return load_devastator(description=description, eval_mode=eval_mode)
     else:
         raise ValueError(f"Dataset {dataset_name} not found")
     
