@@ -3,7 +3,7 @@ from load_model import load_model
 import os, wandb, argparse, pdb
 root_dir = os.path.dirname(__file__)
 from helper import save_json, read_json, print_configs, set_seed, get_image_size
-from configs import support_models, support_datasets, prompt_processor, prompt_processor_default, image_size_threshold
+from configs import support_llms, support_datasets, prompt_processor, prompt_processor_default, image_size_threshold
 from environment import WANDB_INFO
 import pandas as pd
 from tqdm import tqdm
@@ -277,8 +277,8 @@ def evaluate(
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     model_names = []
-    for model in support_models:
-        model_names.extend(support_models[model])
+    for model in support_llms:
+        model_names.extend(support_llms[model])
 
     parser.add_argument('--model_name', type=str, default='gpt-4o-mini', choices=model_names)
     parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=list(support_datasets.keys()))

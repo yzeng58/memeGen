@@ -3,7 +3,7 @@ from tqdm import tqdm
 from load_dataset import load_dataset
 from load_model import load_model
 from helper import save_json, print_configs, get_image_size
-from configs import support_models, support_datasets, description_prompt, image_size_threshold, get_dataset_dir
+from configs import support_llms, support_datasets, description_prompt, image_size_threshold, get_dataset_dir
 
 def generate_dataset_details(
     model_name: str,
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     import argparse
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', type=str, required=True, choices=[model for models in support_models.values() for model in models])
+    parser.add_argument('--model_name', type=str, required=True, choices=[model for models in support_llms.values() for model in models])
     parser.add_argument('--dataset_name', type=str, required=True, choices=list(support_datasets.keys()))
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--overwrite', action='store_true')

@@ -2,7 +2,7 @@ import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
-from configs import prompt_processor, get_dataset_dir, support_models, support_datasets, meme_anchors, image_size_threshold
+from configs import prompt_processor, get_dataset_dir, support_llms, support_datasets, meme_anchors, image_size_threshold
 from tqdm import tqdm
 from load_model import load_model
 from load_dataset import load_dataset
@@ -129,8 +129,8 @@ def classify_memes(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     model_names = []
-    for model in support_models:
-        model_names.extend(support_models[model])
+    for model in support_llms:
+        model_names.extend(support_llms[model])
 
     parser.add_argument("--dataset_name", type=str, default="memotion", choices=list(support_datasets.keys()))
     parser.add_argument("--model_name", type=str, default="Qwen2-VL-72B-Instruct", choices=model_names)

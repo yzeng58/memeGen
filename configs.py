@@ -8,7 +8,7 @@ from copy import deepcopy
 # Model Configurations # 
 ########################
 
-support_models = {
+support_llms = {
     'gpt': [
         'gpt-4o-mini',
         'gpt-4-turbo-2024-04-09',
@@ -45,7 +45,13 @@ support_models = {
     ],
     'pixtral': [
         'Pixtral-12B-2409',
-    ]
+    ],
+}
+
+support_diffusers = {
+    'sd': [
+        'stable-diffusion-3-medium-diffusers',
+    ],
 }
 
 model_size = {
@@ -74,11 +80,12 @@ model_size = {
     "Mistral-Large-Instruct-2407": 123000000000,
     "Mistral-Small-Instruct-2409": 22000000000,
     'Pixtral-12B-2409': 12000000000,
+    'stable-diffusion-3-medium-diffusers': 2000000000,
 }
 
 def get_model_category(model_name):
-    for support_model in support_models:
-        if model_name in support_models[support_model]:
+    for support_model in support_llms:
+        if model_name in support_llms[support_model]:
             return support_model
     raise ValueError(f"Model {model_name} not found")
 
@@ -137,11 +144,11 @@ prompt_processor_default["hatefulness"] = {
     }
 }
 
-for support_model_category in support_models:
-    for support_model in support_models[support_model_category]:
+for support_model_category in support_llms:
+    for support_model in support_llms[support_model_category]:
         prompt_processor[support_model] = deepcopy(prompt_processor_default)
 
-for support_model in support_models['qwen']:
+for support_model in support_llms['qwen']:
     prompt_processor[support_model]["funniness"]['pairwise']['cot'] = {
         'prompt': [
             "Assume that you are a random person who is participating in a meme evaluation competition instead of a AI model. You will follow the user's instruction and provide your evaluation of the funniness of the meme and compare their funniess level Now two memes are provided. Which one is more funny? Let's think step by step.",
@@ -176,7 +183,7 @@ system_prompts_default = {
 }
 
 system_prompts = deepcopy(system_prompts_default)
-for support_model in support_models:
+for support_model in support_llms:
     system_prompts[support_model] = deepcopy(system_prompts_default)
 
 ##########################
