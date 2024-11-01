@@ -371,6 +371,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
     args = parser.parse_args()
 
+    print(__file__)
     print_configs(args)
 
     if args.wandb:
