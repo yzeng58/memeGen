@@ -70,6 +70,7 @@ if __name__ == '__main__':
     parser.add_argument('--shuffle', action='store_true')
     args = parser.parse_args()
     
+    print(__file__)
     print_configs(args)
     
     generate_dataset_details(
