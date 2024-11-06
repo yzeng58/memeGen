@@ -90,11 +90,15 @@ def set_seed(seed):
     torch.backends.cudnn.enabled = False
     transformers.set_seed(seed)
 
-def score_meme(
+def score_meme_based_on_theory(
     meme_path,
     call_model,
+    result_dir = None,
     max_intermediate_tokens=300,
     max_new_tokens=1,
+    example = False,
+    description = '',
+    context = '',
 ):
     # # Cognitive Processing & Comprehension
     # cpc1 = "Is there a clear incongruity or surprise element?"
@@ -126,6 +130,12 @@ def score_meme(
     # cr2 = "Does it rely on shared cultural/social knowledge?"
     # cr3 = "Is it timely and relevant to current contexts?"
 
+    if result_dir:
+        img_name = meme_path.split("/")[-1].split(".")[0]
+        result_file = f'{result_dir}/scores/{img_name}.json'
+        if os.path.exists(result_file):
+            return read_json(result_file)
+
     output_control = "Please answer the question with a number without any other words."
 
     def process_score(score):
@@ -137,10 +147,12 @@ def score_meme(
     
     def get_score(q, example = False):
         output_1 = call_model(
-            q['question'] + (" " + q['example'] if example else ''),
+            f"{q['question']} {q['rating']}" + (" " + q['example'] if example else ''),
             [meme_path],
             max_new_tokens=max_intermediate_tokens,
             save_history=True,
+            description = description,
+            context = context,
         )
 
         output_2 = call_model(
@@ -148,7 +160,9 @@ def score_meme(
             [],
             max_new_tokens = max_new_tokens,
             history = output_1['history'],
-            save_history = True
+            save_history = True,
+            description = description,
+            context = context,
         )
 
         output_dict = {
@@ -169,24 +183,24 @@ def score_meme(
 
     humor_questions['ipr1'] = {
         "question": "Is there a clear setup that creates initial expectations and a punchline that violates these expectations?",
-        "rating": "Please give a score between 0 and 10, where 0 means no contrast and 10 means very clear contrast.",
+        "rating": "Please give a score between 0 and 9, where 0 means no contrast and 9 means very clear contrast.",
         "example": "To give you an example, the the meme with text 'Boss: why arent you working?\n Me: I didnt see you coming' has score 8.",
     }
     humor_questions['ipr2'] = {
         "question": "Does it enable resolution of the incongruity through reinterpretation (finding a 'cognitive rule' that makes the surprising ending fit)?",
-        "rating": "Please assign a score between 0 and 10, where 0 means no new understanding and 10 means highly satisfying realization.",
+        "rating": "Please assign a score between 0 and 9, where 0 means no new understanding and 9 means highly satisfying realization.",
     }
 
     ### * Violation & Benign Nature ###
 
     humor_questions['vbn1'] = {
         "question": "Does this meme contains something wrong/unexpected/norm-breaking?",
-        "rating": "Please give a score between 0 and 10, where 0 means no violation and 10 means a clear and strong violation.",
+        "rating": "Please give a score between 0 and 9, where 0 means no violation and 9 means a clear and strong violation.",
     }
 
     humor_questions['vbn2'] = {
         "question": "To what extent can the violation be interpreted as playful or non-threatening?",
-        "rating": "Please assign a score between 0 and 10, where 0 means threatening/offensive and 10 means completely harmless.",
+        "rating": "Please assign a score between 0 and 9, where 0 means threatening/offensive and 9 means completely harmless.",
     }
 
     #########################
@@ -197,29 +211,29 @@ def score_meme(
 
     humor_questions['dr1'] = {
         "question": "How effectively does this meme reduce the importance/seriousness of its subject?",
-        "rating": "Please give a score between 0 and 10, where 0 means no reduction and 10 means highly effective diminishment.",
+        "rating": "Please give a score between 0 and 9, where 0 means no reduction and 9 means highly effective diminishment.",
     }
 
     humor_questions['dr2'] = {
         "question": "How successfully does this meme transform something serious into something humorous?",
-        "rating": "Please assign a score between 0 and 10, where 0 means no transformation and 10 means perfect transformation.",
+        "rating": "Please assign a score between 0 and 9, where 0 means no transformation and 9 means perfect transformation.",
     }
 
     ### * Elaboration Potential ###
 
     humor_questions['ep1'] = {
         "question": "Can this meme be interpreted in multiple valid ways?",
-        "rating": "Please provide a score between 0 and 10, where 0 means single interpretation and 10 means multiple rich interpretations.",
+        "rating": "Please provide a score between 0 and 9, where 0 means single interpretation and 9 means multiple rich interpretations.",
     }
     
     humor_questions['ep2'] = {
         "question": "How well does this meme connect to other memes, cultural references, or shared experiences?",
-        "rating": "Please provide a score between 0 and 10, where 0 means no connections and 10 means rich connections.",
+        "rating": "Please provide a score between 0 and 9, where 0 means no connections and 9 means rich connections.",
     }
     
     humor_questions['ep3'] = {
         "question": "What is the potential for creative variations or responses to this meme?",
-        "rating": "Please provide a score between 0 and 10, where 0 means no potential and 10 means high potential.",
+        "rating": "Please provide a score between 0 and 9, where 0 means no potential and 9 means high potential.",
     }
 
     #########################
@@ -230,19 +244,19 @@ def score_meme(
 
     humor_questions['ie1'] = {
         "question": "How well do the visual and textual elements work together in this meme?",
-        "rating": "Please provide a score between 0 and 10, where 0 means poor integration and 10 means perfect integration.",
+        "rating": "Please provide a score between 0 and 9, where 0 means poor integration and 9 means perfect integration.",
     }
 
     humor_questions['ie2'] = {
         "question": "Does the combination of elements create meaning beyond their individual parts?",
-        "rating": "Please provide a score between 0 and 10, where 0 means no enhanced meaning and 10 means significant enhanced meaning.",
+        "rating": "Please provide a score between 0 and 9, where 0 means no enhanced meaning and 9 means significant enhanced meaning.",
     }
     
     
     scores, outputs, score = {}, {}, 0
 
     # Primary factors
-    outputs["ipr1"] = get_score(humor_questions["ipr1"])
+    outputs["ipr1"] = get_score(humor_questions["ipr1"], example = example)
     scores["ipr1"] = outputs["ipr1"]["score"]
 
     outputs["vbn1"] = get_score(humor_questions["vbn1"])
@@ -259,17 +273,21 @@ def score_meme(
     if scores["vbn1"] >= 6:
         outputs["vbn2"] = get_score(humor_questions["vbn2"])
         scores["vbn2"] = outputs["vbn2"]["score"]
-        score_vbn = 10 - abs(scores["vbn1"] - scores["vbn2"])
+        score_vbn = 9 - abs(scores["vbn1"] - scores["vbn2"])
     else:
         score_vbn = scores["vbn1"] 
 
     score_primary = max(score_ipr, score_vbn)
     if score_primary < 6:
-        return {
+        result_dict = {
             "score": score_primary,
             "scores": scores,
             "outputs": outputs,
         }
+
+        if result_dir:
+            save_json(result_dict, result_file)
+        return result_dict
 
     for q in ["dr1", "dr2", "ep1", "ep2", "ep3", "ie1", "ie2"]:
         outputs[q] = get_score(humor_questions[q])
@@ -279,8 +297,12 @@ def score_meme(
     score_supporting = scores["ie1"] + scores["ie2"]
     score_final = score_primary * (1 + .02 * score_secondary) * (1 + .005 * score_supporting)
 
-    return {
-        'score': score_final,
+    result_dict = {
+        'output': score_final,
         'scores': scores,
         'outputs': outputs,
-    }
+    }   
+    
+    if result_dir:
+        save_json(result_dict, result_file)
+    return result_dict

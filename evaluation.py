@@ -2,8 +2,8 @@ from load_dataset import load_dataset
 from load_model import load_model
 import os, wandb, argparse, pdb
 root_dir = os.path.dirname(__file__)
-from helper import save_json, read_json, print_configs, set_seed, get_image_size
-from configs import support_llms, support_datasets, prompt_processor, image_size_threshold
+from helper import save_json, read_json, print_configs, set_seed, get_image_size, score_meme_based_on_theory
+from configs import support_llms, support_datasets, prompt_processor, image_size_threshold, eval_modes
 
 from environment import WANDB_INFO
 import pandas as pd
@@ -20,8 +20,10 @@ def get_output(
     max_intermediate_tokens=300,
     description = '',
     context = "",
+    example = False,
+    result_dir = None,
 ):
-    if 'cot' in prompt_name:
+    if prompt_name == "cot":
         output_1 = call_model(
             prompt[0], 
             image_paths, 
@@ -43,7 +45,7 @@ def get_output(
             'output': output_2['output'],
             'analysis': output_1['output'] + output_2['output'],
         }
-    else:
+    elif prompt_name == "standard":
         output_dict_all = call_model(
             prompt, 
             image_paths, 
@@ -54,6 +56,19 @@ def get_output(
         output_dict = {
             'output': output_dict_all['output'],
         }
+    elif prompt_name == "theory":
+        output_dict = score_meme_based_on_theory(
+            meme_path = image_paths[0],
+            call_model = call_model,
+            result_dir = result_dir,
+            max_intermediate_tokens = max_intermediate_tokens,
+            max_new_tokens = max_new_tokens,
+            example = example,
+            description = description,
+            context = context,
+        )
+    else:
+        raise ValueError(f"Prompt name {prompt_name} not supported")
     return output_dict
 
 def evaluate(
@@ -70,6 +85,7 @@ def evaluate(
     description = '',
     context = "",
     max_new_tokens = 1000,
+    example = False,
 ):    
     
     set_seed(seed)
@@ -97,10 +113,13 @@ def evaluate(
         raise ValueError(f'Eval mode {eval_mode} not supported by {dataset_name}, please choose from {support_datasets[dataset_name]["eval_mode"]}')
     if eval_mode not in prompt_processor[model_name][metric]:
         raise ValueError(f'Eval mode {eval_mode} not supported, please choose from {list(prompt_processor[model_name][metric].keys())}')
-    if prompt_name not in prompt_processor[model_name][metric][eval_mode]:
+    if prompt_name not in prompt_processor[model_name][metric][eval_mode] and prompt_name != "theory":
         raise ValueError(f'Prompt name {prompt_name} not supported, please choose from {list(prompt_processor[model_name][metric][eval_mode].keys())}')
 
-    prompt = prompt_processor[model_name][metric][eval_mode][prompt_name]['prompt']
+    if prompt_name == "theory":
+        prompt = None
+    else:
+        prompt = prompt_processor[model_name][metric][eval_mode][prompt_name]['prompt']
 
     if description:
         folder_name = f'description_{description}'
@@ -149,6 +168,8 @@ def evaluate(
                     description=description,
                     max_intermediate_tokens=max_new_tokens,
                     context=context,
+                    example = example,
+                    result_dir = result_dir,
                 )
 
                 pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
@@ -185,7 +206,7 @@ def evaluate(
             funny_image_size = get_image_size(funny_image_path)
             not_funny_image_size = get_image_size(not_funny_image_path)
             if funny_image_size > image_size_threshold or not_funny_image_size > image_size_threshold:
-                print(f'Image size of {funny_path} or {not_funny_path} is too large, skip.')
+                print(f'Image size of {funny_image_path} or {not_funny_image_path} is too large, skip.')
                 continue
             else:
                 idx += 1
@@ -223,33 +244,65 @@ def evaluate(
                     pass
             
             if not read_result:
- 
-                compare_output_dict_1 = get_output(
-                    call_model, 
-                    prompt_name,
-                    prompt,
-                    [funny_path, not_funny_path], 
-                    max_new_tokens=1,
-                    description=description,
-                    max_intermediate_tokens=max_new_tokens,
-                    context=context,
-                )
-     
-                pred_label_1 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
+                if prompt_name != "theory":
+                    compare_output_dict_1 = get_output(
+                        call_model, 
+                        prompt_name,
+                        prompt,
+                        [funny_path, not_funny_path], 
+                        max_new_tokens=1,
+                        description=description,
+                        max_intermediate_tokens=max_new_tokens,
+                        context=context,
+                        example = example,
+                        result_dir = result_dir,
+                    )
+        
+                    pred_label_1 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
 
-                compare_output_dict_2 = get_output(
-                    call_model, 
-                    prompt_name,
-                    prompt,
-                    [not_funny_path, funny_path], 
-                    max_new_tokens=1,
-                    description=description,
-                    max_intermediate_tokens=max_new_tokens,
-                    context=context,
-                )
-                pred_label_2 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_2['output'])
+                    compare_output_dict_2 = get_output(
+                        call_model, 
+                        prompt_name,
+                        prompt,
+                        [not_funny_path, funny_path], 
+                        max_new_tokens=1,
+                        description=description,
+                        max_intermediate_tokens=max_new_tokens,
+                        context=context,
+                        example = example,
+                        result_dir = result_dir,
+                    )
+                    pred_label_2 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_2['output'])
 
-                
+                else:
+                    compare_output_dict_1 = get_output(
+                        call_model, 
+                        prompt_name,
+                        prompt,
+                        [funny_path], 
+                        max_new_tokens=1,
+                        description=description,
+                        max_intermediate_tokens=max_new_tokens,
+                        context=context,
+                        example = example,
+                        result_dir = result_dir,
+                    )
+                    compare_output_dict_2 = get_output(
+                        call_model, 
+                        prompt_name,
+                        prompt,
+                        [not_funny_path], 
+                        max_new_tokens=1,
+                        description=description,
+                        max_intermediate_tokens=max_new_tokens,
+                        context=context,
+                        example = example,
+                        result_dir = result_dir,
+                    )
+
+                    pred_label_1 = compare_output_dict_1['output'] <= compare_output_dict_2['output']
+                    pred_label_2 = compare_output_dict_1['output'] > compare_output_dict_2['output']
+                    
                 result = {
                     'funny_image_path': funny_path,
                     'not_funny_image_path': not_funny_path,
@@ -331,6 +384,8 @@ def evaluate(
                     description=description,
                     max_intermediate_tokens=max_new_tokens,
                     context=context,
+                    example = example,
+                    result_dir = result_dir,
                 )
                 pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
 
@@ -373,6 +428,7 @@ if __name__ == '__main__':
     parser.add_argument('--description', type=str, default = '')
     parser.add_argument('--context', type=str, default = "")
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
+    parser.add_argument('--example', action='store_true')
     args = parser.parse_args()
 
     print(__file__)
@@ -399,6 +455,7 @@ if __name__ == '__main__':
         description=args.description,
         context=args.context,
         max_new_tokens=args.max_new_tokens,
+        example = args.example,
     )
 
     if args.wandb:
