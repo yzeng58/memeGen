@@ -209,7 +209,7 @@ def evaluate(
             funny_image_size = get_image_size(funny_image_path)
             not_funny_image_size = get_image_size(not_funny_image_path)
             if funny_image_size > image_size_threshold or not_funny_image_size > image_size_threshold:
-                print(f'Image size of {funny_image_path} or {not_funny_image_path} is too large, skip.')
+                print(f'Image size of {funny_image_path}({funny_image_size}) or {not_funny_image_path}({not_funny_image_size}) is too large, skip.')
                 continue
             else:
                 idx += 1
@@ -350,11 +350,15 @@ def evaluate(
             image_paths = []
 
             files_names = []
+            skip_flag = False
             for option in meme_options:
                 if get_image_size(dataset_i[f"{option}_path"]) > image_size_threshold / 3 * 2:
                     print(f'Image size of {dataset_i[f"{option}_path"]} is too large, skip.')
+                    skip_flag = True
                     continue
                 files_names.append(dataset_i[f"{option}_path"].split("/")[-1].split(".")[0])
+            if skip_flag: continue
+            
             result_name = f'{files_names[0]}_{files_names[1]}_{files_names[2]}'
             result_file = f'{result_dir}/{result_name}.json'  
 

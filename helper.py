@@ -255,7 +255,7 @@ def score_meme_based_on_theory(
     }
     
     
-    scores, outputs, score = {}, {}, 0
+    scores, outputs = {}, {}
 
     # Primary factors
     outputs["ipr1"] = get_score(humor_questions["ipr1"], example = example)
@@ -267,7 +267,7 @@ def score_meme_based_on_theory(
     if scores["ipr1"] >= 6: 
         outputs["ipr2"] = get_score(humor_questions["ipr2"])
         scores["ipr2"] = outputs["ipr2"]["score"]
-        score_ipr = scores["ipr1"] * (1 + scores["ipr2"] * .05) / (1 + 9*.05)
+        score_ipr = scores["ipr1"] * (1 + scores["ipr2"] * .01) / (1 + 9*.01)
     else:
         score_ipr = scores["ipr1"] 
 

@@ -28,7 +28,7 @@ def load_devastator(description: str = '', eval_mode: str = ''):
         candidate_path = os.path.join(f"{get_dataset_dir('devastator')}/candidates", f'{image_name}.json')
         if os.path.exists(candidate_path):
             candidate = read_json(candidate_path)
-            if candidate['is_good']:
+            if candidate['is_good'] and os.path.exists(candidate['candidate']) and os.path.exists(candidate['random']) and os.path.exists(image_path):
                 df.append({
                     'ground_truth_path': image_path,
                     'context': row['context'],
