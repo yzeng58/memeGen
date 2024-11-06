@@ -158,82 +158,106 @@ def score_meme(
     humor_questions = {}
     output_control = " Make sure your response is a number without any other words."
 
-    # Primary Factors (45%)
-    # * Cognitive Processing (20%)
+    #############################
+    ### Primary Factors (45%) ###
+    #############################
+
+    ### * Cognitive Processing (20%) ###
+
     humor_questions['cp1'] = {
         "question": "Is there a clear contrast between initial and final interpretations?",
-        "rating": "Please give a score between 0 and 7, where 0 means no contrast and 7 means very clear contrast." + output_control,
-        "score_range": (0, 7),
+        "score_range": 7,
     }
+    humor_questions['cp1']['rating'] = f"Please give a score between 0 and {humor_questions['cp1']['score_range']}, where 0 means no contrast and {humor_questions['cp1']['score_range']} means very clear contrast."
+
     humor_questions['cp2'] = {
         "question": "Does the viewer arrive at a satisfying new understanding?",
-        "rating": "Please assign a score between 0 and 7, where 0 means no new understanding and 7 means highly satisfying realization." + output_control,
-        "score_range": (0, 7),
+        "score_range": 7,
     }
+    humor_questions['cp2']['rating'] = f"Please assign a score between 0 and {humor_questions['cp2']['score_range']}, where 0 means no new understanding and {humor_questions['cp2']['score_range']} means highly satisfying realization."
+
     humor_questions['cp3'] = {
         "question": "Is the meme at an appropriate difficulty level - neither too obvious nor too complex?",
-        "rating": "Please provide a score between 0 and 6, where 0 means inappropriate difficulty and 6 means perfect difficulty level." + output_control,
-        "score_range": (0, 6),
+        "score_range": 6,
     }
-    # * Violation & Benign Nature (25%)
+    humor_questions['cp3']['rating'] = f"Please provide a score between 0 and {humor_questions['cp3']['score_range']}, where 0 means inappropriate difficulty and {humor_questions['cp3']['score_range']} means perfect difficulty level."
+
+    ### * Violation & Benign Nature (25%) ###
+
     humor_questions['vbn1'] = {
         "question": "Does this meme contains something wrong/unexpected/norm-breaking?",
-        "rating": "Please give a score between 0 and 8, where 0 means no violation and 8 means a clear and strong violation." + output_control,
-        "score_range": (0, 8),
+        "score_range": 8,
+        "example": "To give you an example, the the meme with text 'Boss: why arent you working?\n Me: I didnt see you coming' has score 7.",
     }
+    humor_questions['vbn1']['rating'] = f"Please give a score between 0 and {humor_questions['vbn1']['score_range']}, where 0 means no violation and {humor_questions['vbn1']['score_range']} means a clear and strong violation."
+
     humor_questions['vbn2'] = {
         "question": "To what extent can the violation be interpreted as playful or non-threatening?",
-        "rating": "Please assign a score between 0 and 8, where 0 means threatening/offensive and 8 means completely harmless." + output_control,
-        "score_range": (0, 8),
+        "score_range": 8,
     }
+    humor_questions['vbn2']['rating'] = f"Please assign a score between 0 and {humor_questions['vbn2']['score_range']}, where 0 means threatening/offensive and {humor_questions['vbn2']['score_range']} means completely harmless."
+
     humor_questions['vbn3'] = {
         "question": "How well does this meme balance being provocative yet acceptable?",
-        "rating": "Please provide a score between 0 and 9, where 0 means poorly balanced and 9 means perfectly balanced." + output_control,
-        "score_range": (0, 9),
+        "score_range": 9,
     }
+    humor_questions['vbn3']['rating'] = f"Please provide a score between 0 and {humor_questions['vbn3']['score_range']}, where 0 means poorly balanced and {humor_questions['vbn3']['score_range']} means perfectly balanced."
 
-    # Secondary Factors (40%)
-    # * Diminishment & Reframing (25%)
+    ###############################
+    ### Secondary Factors (40%) ###
+    ###############################
+
+    ### * Diminishment & Reframing (25%) ###
+
     humor_questions['dr1'] = {
         "question": "How effectively does this meme reduce the importance/seriousness of its subject?",
-        "rating": "Please give a score between 0 and 12, where 0 means no reduction and 12 means highly effective diminishment." + output_control,
-        "score_range": (0, 12),
+        "score_range": 12,
     }
+    humor_questions['dr1']['rating'] = f"Please give a score between 0 and {humor_questions['dr1']['score_range']}, where 0 means no reduction and {humor_questions['dr1']['score_range']} means highly effective diminishment."
+
     humor_questions['dr2'] = {
         "question": "How successfully does this meme transform something serious into something humorous?",
-        "rating": "Please assign a score between 0 and 13, where 0 means no transformation and 13 means perfect transformation." + output_control,
-        "score_range": (0, 13),
+        "score_range": 13,
     }
-    # Elaboration Potential (15%)
+    humor_questions['dr2']['rating'] = f"Please assign a score between 0 and {humor_questions['dr2']['score_range']}, where 0 means no transformation and {humor_questions['dr2']['score_range']} means perfect transformation."
+
+    ### * Elaboration Potential (15%) ###
+
     humor_questions['ep1'] = {
         "question": "Can this meme be interpreted in multiple valid ways?",
-        "rating": "Please provide a score between 0 and 5, where 0 means single interpretation and 5 means multiple rich interpretations." + output_control,
-        "score_range": (0, 5),
+        "score_range": 5,
     }
+    humor_questions['ep1']['rating'] = f"Please provide a score between 0 and {humor_questions['ep1']['score_range']}, where 0 means single interpretation and {humor_questions['ep1']['score_range']} means multiple rich interpretations."
+    
     humor_questions['ep2'] = {
         "question": "How well does this meme connect to other memes, cultural references, or shared experiences?",
-        "rating": "Please give a score between 0 and 5, where 0 means no connections and 5 means rich connections." + output_control,
-        "score_range": (0, 5),
+        "score_range": 5,
     }
+    humor_questions['ep2']['rating'] = f"Please provide a score between 0 and {humor_questions['ep2']['score_range']}, where 0 means no connections and {humor_questions['ep2']['score_range']} means rich connections."
+    
     humor_questions['ep3'] = {
         "question": "What is the potential for creative variations or responses to this meme?",
-        "rating": "Please assign a score between 0 and 5, where 0 means no potential and 5 means high potential." + output_control,
-        "score_range": (0, 5),
+        "score_range": 5,
     }
+    humor_questions['ep3']['rating'] = f"Please provide a score between 0 and {humor_questions['ep3']['score_range']}, where 0 means no potential and {humor_questions['ep3']['score_range']} means high potential."
 
-    # Supporting Factor (15%)
-    # * Integration of Elements (15%)
+    ###############################
+    ### Supporting Factor (15%) ###
+    ###############################
+
+    ### * Integration of Elements (15%) ###
+
     humor_questions['ie1'] = {
         "question": "How well do the visual and textual elements work together in this meme?",
-        "rating": "Please provide a score between 0 and 7, where 0 means poor integration and 7 means perfect integration." + output_control,
-        "score_range": (0, 7),
+        "score_range": 7,
     }
+    humor_questions['ie1']['rating'] = f"Please provide a score between 0 and {humor_questions['ie1']['score_range']}, where 0 means poor integration and {humor_questions['ie1']['score_range']} means perfect integration."
+
     humor_questions['ie2'] = {
         "question": "Does the combination of elements create meaning beyond their individual parts?",
-        "rating": "Please give a score between 0 and 8, where 0 means no enhanced meaning and 8 means significant enhanced meaning." + output_control,
-        "score_range": (0, 8),
+        "score_range": 8,
     }
-
+    humor_questions['ie2']['rating'] = f"Please provide a score between 0 and {humor_questions['ie2']['score_range']}, where 0 means no enhanced meaning and {humor_questions['ie2']['score_range']} means significant enhanced meaning."
     scores, outputs = {}, {}
     for q in ["cp1", "cp2", "cp3"]:
         outputs[q] = get_score(humor_questions[q])
