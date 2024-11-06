@@ -99,6 +99,7 @@ def score_meme_based_on_theory(
     example = False,
     description = '',
     context = '',
+    overwrite = False,
 ):
     # # Cognitive Processing & Comprehension
     # cpc1 = "Is there a clear incongruity or surprise element?"
@@ -132,8 +133,9 @@ def score_meme_based_on_theory(
 
     if result_dir:
         img_name = meme_path.split("/")[-1].split(".")[0]
-        result_file = f'{result_dir}/scores/{img_name}.json'
-        if os.path.exists(result_file):
+        example_flag = "example" if example else "plain"
+        result_file = f'{result_dir}/scores/{example_flag}/{img_name}.json'
+        if os.path.exists(result_file) and not overwrite:
             return read_json(result_file)
 
     output_control = "Please answer the question with a number without any other words."
@@ -184,7 +186,7 @@ def score_meme_based_on_theory(
     humor_questions['ipr1'] = {
         "question": "Is there a clear setup that creates initial expectations and a punchline that violates these expectations?",
         "rating": "Please give a score between 0 and 9, where 0 means no contrast and 9 means very clear contrast.",
-        "example": "To give you an example, the the meme with text 'Boss: why arent you working?\n Me: I didnt see you coming' has score 8.",
+        "example": "To give you an example, the the meme with text 'Boss: why arent you working?\n Me: I didnt see you coming' has score 7.",
     }
     humor_questions['ipr2'] = {
         "question": "Does it enable resolution of the incongruity through reinterpretation (finding a 'cognitive rule' that makes the surprising ending fit)?",
@@ -265,9 +267,9 @@ def score_meme_based_on_theory(
     if scores["ipr1"] >= 6: 
         outputs["ipr2"] = get_score(humor_questions["ipr2"])
         scores["ipr2"] = outputs["ipr2"]["score"]
-        score_ipr = (scores["ipr1"] + scores["ipr2"]) / 2
+        score_ipr = scores["ipr1"] * (1 + scores["ipr2"] * .05) / (1 + 9*.05)
     else:
-        score_ipr = scores["ipr1"] / 2
+        score_ipr = scores["ipr1"] 
 
     score_vbn = scores["vbn1"]
     if scores["vbn1"] >= 6:
@@ -280,7 +282,7 @@ def score_meme_based_on_theory(
     score_primary = max(score_ipr, score_vbn)
     if score_primary < 6:
         result_dict = {
-            "score": score_primary,
+            "output": score_primary,
             "scores": scores,
             "outputs": outputs,
         }

@@ -22,6 +22,7 @@ def get_output(
     context = "",
     example = False,
     result_dir = None,
+    overwrite = False,
 ):
     if prompt_name == "cot":
         output_1 = call_model(
@@ -66,6 +67,7 @@ def get_output(
             example = example,
             description = description,
             context = context,
+            overwrite = overwrite,
         )
     else:
         raise ValueError(f"Prompt name {prompt_name} not supported")
@@ -149,7 +151,7 @@ def evaluate(
             result_file = f'{result_dir}/{file_name}.json'
 
             read_result = False
-            if os.path.exists(result_file) and not overwrite:
+            if os.path.exists(result_file) and not overwrite and prompt_name != "theory":
                 try:
                     result = read_json(result_file)
                     read_result = True
@@ -170,6 +172,7 @@ def evaluate(
                     context=context,
                     example = example,
                     result_dir = result_dir,
+                    overwrite = overwrite,
                 )
 
                 pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
@@ -256,6 +259,7 @@ def evaluate(
                         context=context,
                         example = example,
                         result_dir = result_dir,
+                        overwrite = overwrite,
                     )
         
                     pred_label_1 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
@@ -271,6 +275,7 @@ def evaluate(
                         context=context,
                         example = example,
                         result_dir = result_dir,
+                        overwrite = overwrite,
                     )
                     pred_label_2 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_2['output'])
 
@@ -286,6 +291,7 @@ def evaluate(
                         context=context,
                         example = example,
                         result_dir = result_dir,
+                        overwrite = overwrite,
                     )
                     compare_output_dict_2 = get_output(
                         call_model, 
@@ -298,10 +304,11 @@ def evaluate(
                         context=context,
                         example = example,
                         result_dir = result_dir,
+                        overwrite = overwrite,
                     )
 
-                    pred_label_1 = compare_output_dict_1['output'] <= compare_output_dict_2['output']
-                    pred_label_2 = compare_output_dict_1['output'] > compare_output_dict_2['output']
+                    pred_label_1 = int(compare_output_dict_1['output'] <= compare_output_dict_2['output'])
+                    pred_label_2 = int(compare_output_dict_1['output'] > compare_output_dict_2['output'])
                     
                 result = {
                     'funny_image_path': funny_path,
@@ -386,6 +393,7 @@ def evaluate(
                     context=context,
                     example = example,
                     result_dir = result_dir,
+                    overwrite = overwrite,
                 )
                 pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
 
