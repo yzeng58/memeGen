@@ -135,9 +135,9 @@ def score_meme(
             return -1
 
     
-    def get_score(q):
+    def get_score(q, example = False):
         output_1 = call_model(
-            q['question'],
+            q['question'] + (" " + q['example'] if example else ''),
             [meme_path],
             max_new_tokens=max_intermediate_tokens,
             save_history=True,
@@ -165,19 +165,16 @@ def score_meme(
     ### Primary Factors ###
     #######################
 
-    ### * Cognitive Processing ###
+    ### * Incongruity Processing & Resolution ###
 
-    humor_questions['cp1'] = {
-        "question": "Is there a clear contrast between initial and final interpretations?",
+    humor_questions['ipr1'] = {
+        "question": "Is there a clear setup that creates initial expectations and a punchline that violates these expectations?",
         "rating": "Please give a score between 0 and 10, where 0 means no contrast and 10 means very clear contrast.",
+        "example": "To give you an example, the the meme with text 'Boss: why arent you working?\n Me: I didnt see you coming' has score 8.",
     }
-    humor_questions['cp2'] = {
-        "question": "Does the viewer arrive at a satisfying new understanding?",
+    humor_questions['ipr2'] = {
+        "question": "Does it enable resolution of the incongruity through reinterpretation (finding a 'cognitive rule' that makes the surprising ending fit)?",
         "rating": "Please assign a score between 0 and 10, where 0 means no new understanding and 10 means highly satisfying realization.",
-    }
-    humor_questions['cp3'] = {
-        "question": "Is the meme at an appropriate difficulty level - neither too obvious nor too complex?",
-        "rating": "Please provide a score between 0 and 10, where 0 means inappropriate difficulty and 10 means perfect difficulty level.",
     }
 
     ### * Violation & Benign Nature ###
@@ -185,17 +182,11 @@ def score_meme(
     humor_questions['vbn1'] = {
         "question": "Does this meme contains something wrong/unexpected/norm-breaking?",
         "rating": "Please give a score between 0 and 10, where 0 means no violation and 10 means a clear and strong violation.",
-        "example": "To give you an example, the the meme with text 'Boss: why arent you working?\n Me: I didnt see you coming' has score 7.",
     }
 
     humor_questions['vbn2'] = {
         "question": "To what extent can the violation be interpreted as playful or non-threatening?",
         "rating": "Please assign a score between 0 and 10, where 0 means threatening/offensive and 10 means completely harmless.",
-    }
-
-    humor_questions['vbn3'] = {
-        "question": "How well does this meme balance being provocative yet acceptable?",
-        "rating": "Please provide a score between 0 and 10, where 0 means poorly balanced and 10 means perfectly balanced.",
     }
 
     #########################
@@ -251,28 +242,29 @@ def score_meme(
     scores, outputs, score = {}, {}, 0
 
     # Primary factors
-    outputs["cp1"] = get_score(humor_questions["cp1"])
-    scores["cp1"] = outputs["cp1"]["score"]
+    outputs["ipr1"] = get_score(humor_questions["ipr1"])
+    scores["ipr1"] = outputs["ipr1"]["score"]
 
     outputs["vbn1"] = get_score(humor_questions["vbn1"])
     scores["vbn1"] = outputs["vbn1"]["score"]
 
-    score_cp = scores["cp1"]
-    if scores["cp1"] >= 6: 
-        for q in ["cp2", "cp3"]:
-            outputs[q] = get_score(humor_questions[q])
-            scores[q] = outputs[q]['score']
-            score_cp += scores[q]
+    if scores["ipr1"] >= 6: 
+        outputs["ipr2"] = get_score(humor_questions["ipr2"])
+        scores["ipr2"] = outputs["ipr2"]["score"]
+        score_ipr = (scores["ipr1"] + scores["ipr2"]) / 2
+    else:
+        score_ipr = scores["ipr1"] / 2
 
     score_vbn = scores["vbn1"]
     if scores["vbn1"] >= 6:
-        for q in ["vbn2", "vbn3"]:
-            outputs[q] = get_score(humor_questions[q])
-            scores[q] = outputs[q]['score']
-            score_vbn += scores[q]
+        outputs["vbn2"] = get_score(humor_questions["vbn2"])
+        scores["vbn2"] = outputs["vbn2"]["score"]
+        score_vbn = 10 - abs(scores["vbn1"] - scores["vbn2"])
+    else:
+        score_vbn = scores["vbn1"] 
 
-    score_primary = max(score_cp, score_vbn)
-    if score_primary < 18:
+    score_primary = max(score_ipr, score_vbn)
+    if score_primary < 6:
         return {
             "score": score_primary,
             "scores": scores,
