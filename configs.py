@@ -1,4 +1,4 @@
-import os
+import os, re
 root_dir = os.path.dirname(os.path.abspath(__file__))
 dataset_dir = f'{root_dir}/resources/datasets'
 from copy import deepcopy
@@ -10,6 +10,7 @@ from copy import deepcopy
 
 support_llms = {
     'gpt': [
+        'gpt-4o',
         'gpt-4o-mini',
         'gpt-4-turbo-2024-04-09',
     ],
@@ -159,6 +160,43 @@ prompt_processor_default["alignment"] = {
     }
 }
 
+prompt_processor_default["generation"] = {
+    "standard": {
+        "prompt": lambda context: f"""
+            MEME GENERATION INSTRUCTION:
+
+            Given any topic/context, generate the description of a hilarious meme related to the topic/context.
+
+            A detailed description of what the image should look like
+            The exact text that should overlay the image
+
+
+            TOPIC/CONTEXT
+
+            {context}
+
+            REQUIREMENTS
+
+            I will use a diffusion model to generate an image, and the overlay the image with the text. 
+            Therefore, the image we are going to generate should with no text (only digits and symbols are allowed).
+            The image itself should not just be a visualization, but it should cause incongruity with the text to make the meme funnier.
+            Moreover, the image should be **as simple as possible**. 
+
+            **Please provide your response in this format:**
+            IMAGE DESCRIPTION: "[Detailed description of the required image]"
+
+            TEXT OVERLAY: 
+            TOP TEXT: "[Text to be placed on the top of the image]"
+            BOTTOM TEXT: "[Text to be placed on the bottom of the image]"
+            """,
+        "output_processor": lambda x: {
+            'image_description': re.search(r'IMAGE DESCRIPTION:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
+            'top_text': re.search(r'TOP TEXT:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
+            'bottom_text': re.search(r'BOTTOM TEXT:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
+        },
+    }
+}
+
 for support_model_category in support_llms:
     for support_model in support_llms[support_model_category]:
         prompt_processor[support_model] = deepcopy(prompt_processor_default)
@@ -211,7 +249,7 @@ for support_model in support_llms:
 eval_modes = {
     "single": ["standard", "cot"], 
     "pairwise": ["standard", "cot", "theory", "single"],
-    "threeway": ["standard"],
+    "threeway": ["standard", "cot"],
 }
 
 support_datasets = {
@@ -256,6 +294,11 @@ dataset_dir_dict = {
 
 get_dataset_dir = lambda dataset_name: dataset_dir_dict.get(dataset_name, f"{dataset_dir}/{dataset_name}")
 
+
+########################
+# Other Configurations # 
+########################
+
 meme_anchors = {
     "hilarious": f"{root_dir}/collection/anchors/hilarious.jpg",
     "funny": f"{root_dir}/collection/anchors/funny.jpeg",
@@ -264,3 +307,5 @@ meme_anchors = {
 }
 
 image_size_threshold = 500000
+
+gen_modes = ["standard", "selective"]

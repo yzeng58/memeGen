@@ -1,5 +1,5 @@
-from PIL import Image
-import requests, functools, time, pdb, json, os, random, torch, transformers
+from PIL import Image, ImageDraw, ImageFont
+import requests, functools, time, pdb, json, os, random, torch, transformers, textwrap
 from io import BytesIO, StringIO
 import numpy as np
 import pandas as pd
@@ -308,3 +308,77 @@ def score_meme_based_on_theory(
     if result_dir:
         save_json(result_dict, result_file)
     return result_dict
+
+
+def combine_text_and_image(image_path, upper_text, lower_text):
+    img = Image.open(image_path)
+    if img.mode == 'RGBA': img = img.convert('RGB')
+    width, height = img.size
+    
+    draw = ImageDraw.Draw(img)
+    
+    def calculate_font_size(text, width):
+        base_font_size = int(width/12)
+        text_length = len(text)
+        return max(base_font_size - int(text_length / 10), 10)  # Ensure font size is at least 10
+    
+    # Add upper text
+    if upper_text and not pd.isna(upper_text):
+        # Wrap text to fit width
+        upper_text = textwrap.fill(upper_text.upper(), width=20)
+        
+        # Calculate font size
+        font_size = calculate_font_size(upper_text, width)
+        
+        # Load font
+        try:
+            font = ImageFont.truetype("impact.ttf", font_size)
+        except:
+            # Fallback to default font if Impact not available
+            font = ImageFont.load_default(font_size)
+        
+        # Get text size
+        text_bbox = draw.textbbox((0, 0), upper_text, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        
+        # Calculate position (centered horizontally, near top vertically)
+        x = (width - text_width) / 2
+        y = height * 0.05
+        
+        # Draw text with black outline
+        for offset in range(-2, 3):
+            for offset2 in range(-2, 3):
+                draw.text((x + offset, y + offset2), upper_text, font=font, fill='black')
+        draw.text((x, y), upper_text, font=font, fill='white')
+    
+    # Add lower text
+    if lower_text and not pd.isna(lower_text):
+        # Wrap text to fit width
+        lower_text = textwrap.fill(lower_text.upper(), width=20)
+        
+        # Calculate font size
+        font_size = calculate_font_size(lower_text, width)
+        
+        # Load font
+        try:
+            font = ImageFont.truetype("impact.ttf", font_size)
+        except:
+            # Fallback to default font if Impact not available
+            font = ImageFont.load_default(font_size)
+        
+        # Get text size
+        text_bbox = draw.textbbox((0, 0), lower_text, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
+        
+        # Calculate position (centered horizontally, near bottom vertically)
+        x = (width - text_width) / 2
+        y = height * 0.85 - text_height
+        
+        # Draw text with black outline
+        for offset in range(-2, 3):
+            for offset2 in range(-2, 3):
+                draw.text((x + offset, y + offset2), lower_text, font=font, fill='black')
+        draw.text((x, y), lower_text, font=font, fill='white')
+    
+    img.save(image_path)

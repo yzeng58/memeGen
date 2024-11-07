@@ -73,6 +73,7 @@ def call_gpt(
     image_mode: Literal['url', 'path'] = 'path',
     description = '',
     context = "",
+    temperature: float = 0.0,
     **kwargs,
 ):
     model, client, api_key = gpt['model'], gpt['client'], gpt['api_key']
@@ -100,6 +101,7 @@ def call_gpt(
         'messages':messages,
         'max_tokens':max_new_tokens,
         'seed': seed,
+        'temperature': temperature,
     }
 
     if image_mode == 'url':

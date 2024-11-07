@@ -26,5 +26,9 @@ def load_model(
         from load_models.load_pixtral import load_pixtral, call_pixtral
         model = load_pixtral(model_name)
         return lambda *args, **kwargs: call_pixtral(model, *args, **kwargs)
+    elif 'stable' in model_name.lower():
+        from load_models.load_sd import load_sd, call_sd
+        model = load_sd(model_name)
+        return lambda *args, **kwargs: call_sd(model, *args, **kwargs)
     else:
         raise ValueError(f"Model {model_name} not found")
