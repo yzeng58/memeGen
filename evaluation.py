@@ -11,6 +11,64 @@ from tqdm import tqdm
 from itertools import product
 import random
 
+def get_single_output(
+    file_path,
+    label,
+    result_dir,
+    overwrite,
+    call_model,
+    prompt_name,
+    prompt,
+    description,
+    max_new_tokens,
+    context,
+    example, 
+    model_name,
+    metric,
+    eval_mode,
+):
+    file_name = file_path.split('/')[-1].split('.')[0]
+    
+    new_result_dir = f"{os.path.dirname(result_dir)}/single_standard"
+    os.makedirs(new_result_dir, exist_ok=True)
+    result_file = f'{new_result_dir}/{file_name}.json'
+
+    read_result = False
+    if os.path.exists(result_file) and not overwrite:
+        try:
+            result = read_json(result_file)
+            read_result = True
+        except KeyboardInterrupt:
+            raise KeyboardInterrupt
+        except:
+            pass
+    
+    if not read_result:
+        output_dict = get_output(
+            call_model, 
+            "standard",
+            prompt,
+            [file_path], 
+            max_new_tokens=1,
+            description=description,
+            max_intermediate_tokens=max_new_tokens,
+            context=context,
+            example = example,
+            result_dir = result_dir,
+            overwrite = overwrite,
+        )
+
+        pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
+
+        result = {
+            'file_path': file_path,
+            'label': int(label),  # Convert numpy.int64 to Python int
+            'output_dict': output_dict,
+            'pred_label': int(pred_label),  # Convert numpy.int64 to Python int
+        }
+        save_json(result, result_file)
+    return result
+
 def get_output(
     call_model, 
     prompt_name,
@@ -88,8 +146,8 @@ def evaluate(
     context = "",
     max_new_tokens = 1000,
     example = False,
+    not_load_model = False,
 ):    
-    
     set_seed(seed)
     dataset = load_dataset(dataset_name, binary_classification=True, description=description or context, eval_mode=eval_mode)
     metric = support_datasets[dataset_name]["metric"]
@@ -109,16 +167,20 @@ def evaluate(
         dataset = pd.concat(sampled_datasets, ignore_index=True).reset_index(drop=True)
         dataset = dataset.sample(frac=1, random_state=seed).reset_index(drop=True)
 
-    call_model = load_model(model_name, api_key=api_key)
+    if not_load_model:
+        call_model = None
+    else:
+        call_model = load_model(model_name, api_key=api_key)
 
     if eval_mode not in support_datasets[dataset_name]["eval_mode"]:
         raise ValueError(f'Eval mode {eval_mode} not supported by {dataset_name}, please choose from {support_datasets[dataset_name]["eval_mode"]}')
     if eval_mode not in prompt_processor[model_name][metric]:
         raise ValueError(f'Eval mode {eval_mode} not supported, please choose from {list(prompt_processor[model_name][metric].keys())}')
-    if prompt_name not in prompt_processor[model_name][metric][eval_mode] and prompt_name != "theory":
-        raise ValueError(f'Prompt name {prompt_name} not supported, please choose from {list(prompt_processor[model_name][metric][eval_mode].keys())}')
+    if prompt_name not in eval_modes[eval_mode]:
+        raise ValueError(f'Prompt name {prompt_name} not supported, please choose from {eval_modes[eval_mode]}')
 
     if prompt_name == "theory":
+        # the pipeline is implemented in the score_meme_based_on_theory function
         prompt = None
     else:
         prompt = prompt_processor[model_name][metric][eval_mode][prompt_name]['prompt']
@@ -129,7 +191,9 @@ def evaluate(
         folder_name = f'context_{context}'
     else:
         folder_name = 'multimodal'
+
     result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_name}/{folder_name}/{eval_mode}_{prompt_name}'
+
     os.makedirs(result_dir, exist_ok=True)
 
     if eval_mode == 'single':
@@ -145,45 +209,23 @@ def evaluate(
                 file_path = dataset.loc[i, 'description_path']
             else:
                 file_path = dataset.loc[i, 'image_path']
-
-            file_name = dataset.loc[i, 'image_path'].split('/')[-1].split('.')[0]
             label = dataset.loc[i, 'label']
-            result_file = f'{result_dir}/{file_name}.json'
-
-            read_result = False
-            if os.path.exists(result_file) and not overwrite and prompt_name != "theory":
-                try:
-                    result = read_json(result_file)
-                    read_result = True
-                except KeyboardInterrupt:
-                    raise KeyboardInterrupt
-                except:
-                    pass
-            
-            if not read_result:
-                output_dict = get_output(
-                    call_model, 
-                    prompt_name,
-                    prompt,
-                    [file_path], 
-                    max_new_tokens=1,
-                    description=description,
-                    max_intermediate_tokens=max_new_tokens,
-                    context=context,
-                    example = example,
-                    result_dir = result_dir,
-                    overwrite = overwrite,
-                )
-
-                pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
-
-                result = {
-                    'file_path': file_path,
-                    'label': int(label),  # Convert numpy.int64 to Python int
-                    'output_dict': output_dict,
-                    'pred_label': int(pred_label),  # Convert numpy.int64 to Python int
-                }
-                save_json(result, result_file)
+            result = get_single_output(
+                file_path,
+                label,
+                result_dir,
+                overwrite,
+                call_model,
+                prompt_name,
+                prompt,
+                description,
+                max_new_tokens,
+                context,
+                example, 
+                model_name,
+                metric,
+                eval_mode,
+            )
 
             if result['pred_label'] == label: corr += 1
             acc = corr / (i + 1)
@@ -247,7 +289,7 @@ def evaluate(
                     pass
             
             if not read_result:
-                if prompt_name != "theory":
+                if not prompt_name in ["theory", "single"]:
                     compare_output_dict_1 = get_output(
                         call_model, 
                         prompt_name,
@@ -279,7 +321,7 @@ def evaluate(
                     )
                     pred_label_2 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_2['output'])
 
-                else:
+                elif prompt_name == "theory":
                     compare_output_dict_1 = get_output(
                         call_model, 
                         prompt_name,
@@ -309,6 +351,46 @@ def evaluate(
 
                     pred_label_1 = int(compare_output_dict_1['output'] <= compare_output_dict_2['output'])
                     pred_label_2 = int(compare_output_dict_1['output'] > compare_output_dict_2['output'])
+
+                elif prompt_name == "single":
+                        compare_output_dict_1 = get_single_output(
+                            funny_path,
+                            1,
+                            result_dir,
+                            overwrite,
+                            call_model,
+                            prompt_name,
+                            prompt,
+                            description,
+                            max_new_tokens,
+                            context,
+                            example,
+                            model_name,
+                            metric,
+                            eval_mode,
+                        )
+
+                        compare_output_dict_2 = get_single_output(
+                            not_funny_path,
+                            0,
+                            result_dir,
+                            overwrite,
+                            call_model,
+                            prompt_name,
+                            prompt,
+                            description,
+                            max_new_tokens,
+                            context,
+                            example,
+                            model_name,
+                            metric,
+                            eval_mode,
+                        )
+
+                        pred_label_1 = int(compare_output_dict_1['pred_label'] <= compare_output_dict_2['pred_label'])
+                        pred_label_2 = int(compare_output_dict_1['pred_label'] > compare_output_dict_2['pred_label'])
+                else:
+                    raise ValueError(f'Prompt name {prompt_name} not supported')
                     
                 result = {
                     'funny_image_path': funny_path,
@@ -436,11 +518,12 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--wandb', action='store_true')
     parser.add_argument('--overwrite', action='store_true')
-    parser.add_argument('--eval_mode', type=str, default='pairwise', choices=eval_modes)
+    parser.add_argument('--eval_mode', type=str, default='pairwise', choices=list(eval_modes.keys()))
     parser.add_argument('--description', type=str, default = '')
     parser.add_argument('--context', type=str, default = "")
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
     parser.add_argument('--example', action='store_true')
+    parser.add_argument('--not_load_model', action='store_true', help="Do not load the model. Use this option only when results have already been stored and you want to read the existing results.")
     args = parser.parse_args()
 
     print(__file__)
@@ -468,6 +551,7 @@ if __name__ == '__main__':
         context=args.context,
         max_new_tokens=args.max_new_tokens,
         example = args.example,
+        not_load_model = args.not_load_model,
     )
 
     if args.wandb:

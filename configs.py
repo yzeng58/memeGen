@@ -188,6 +188,10 @@ prompt_processor['claude-3-sonnet-20240229']['funniness']['pairwise']['cot'] = {
     'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1),
 }
 
+for support_model_category in support_llms:
+    for support_model in support_llms[support_model_category]:
+        prompt_processor[support_model]["funniness"]["pairwise"]["single"] = prompt_processor[support_model]["funniness"]["single"]["standard"]
+
 
 description_prompt = {
     'default': "Describe this meme in detail. Include information about the image content, text content, and any cultural references or context that might be relevant to understanding the humor."
@@ -204,7 +208,11 @@ for support_model in support_llms:
 ##########################
 # Dataset Configurations # 
 ##########################
-eval_modes = ["single", "pairwise", "threeway"]
+eval_modes = {
+    "single": ["standard", "cot"], 
+    "pairwise": ["standard", "cot", "theory", "single"],
+    "threeway": ["standard"],
+}
 
 support_datasets = {
     'memotion': {
