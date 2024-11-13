@@ -82,6 +82,7 @@ def call_qwen(
     context = "",
     **kwargs,
 ):
+    print(seed)
     set_seed(seed)
     if qwen['type'] in ['qwen-vl']:
         model, tokenizer = qwen['model'], qwen['tokenizer']  
@@ -154,7 +155,7 @@ def call_qwen(
             messages.append({"role": "assistant", "content": output_dict['output']})
             output_dict['history'] = messages
     elif qwen['type'] in ['qwen2.5']:
-        if description == "": raise ValueError("Description is required for qwen2.5 series model!")
+        if description == "" and image_paths: raise ValueError("Description is required for qwen2.5 series model!")
 
         model, tokenizer = qwen['model'], qwen['tokenizer']
         if history:

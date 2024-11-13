@@ -178,9 +178,9 @@ prompt_processor_default["generation"] = {
             REQUIREMENTS
 
             I will use a diffusion model to generate an image, and the overlay the image with the text. 
-            Therefore, the image we are going to generate should with no text (only digits and symbols are allowed).
-            The image itself should not just be a visualization, but it should cause incongruity with the text to make the meme funnier.
-            Moreover, the image should be **as simple as possible**. 
+            Therefore, the image we are going to generate should with no text (only digits and symbols are allowed) and as simple as possible.
+            The image itself should not just be a visualization, but it should cause **incongruity** and **surprise** with the text to make the meme funnier.
+            For instance, when the topic is "inflation", the image should not be a visualization of inflation, but it should be be something that is unnormal in real life, such as a load of bread sits museum-style on a glossy pedestal, priced at $49.99, and the text should be "When you go to store to grab a few things" and "and realize you've just taken out a small loan".
 
             **Please provide your response in this format:**
             IMAGE DESCRIPTION: "[Detailed description of the required image]"
@@ -200,6 +200,33 @@ prompt_processor_default["generation"] = {
 for support_model_category in support_llms:
     for support_model in support_llms[support_model_category]:
         prompt_processor[support_model] = deepcopy(prompt_processor_default)
+
+prompt_processor["gpt-4o"]["generation"]["standard"]["prompt"] = lambda context: f"""
+    MEME GENERATION INSTRUCTION:
+
+    Given any topic/context, generate the description of a hilarious meme related to the topic/context.
+
+    A detailed description of what the image should look like
+    The exact text that should overlay the image
+
+
+    TOPIC/CONTEXT
+
+    {context}
+
+    REQUIREMENTS
+
+    I will use a diffusion model to generate an image, and the overlay the image with the text. 
+    Therefore, the image we are going to generate should with no text (only digits and symbols are allowed) and as simple as possible.
+    The image itself should not just be a visualization, but it should cause **incongruity** with the text to make the meme funnier.
+    1. The bottom text should be a punchline that is **unexpected** and **surprising** to the reader.
+    2. The image should be unexpected and not closely related to the generated text.
+
+    **Please provide your response in this format, and ensure to include the quotation marks in your response:**
+    TOP TEXT: "[Text to be placed on the top of the image]"
+    BOTTOM TEXT: "[Text to be placed on the bottom of the image]"
+    IMAGE DESCRIPTION: "[Detailed description of the required image]"
+"""
 
 for support_model in support_llms['qwen']:
     prompt_processor[support_model]["funniness"]['pairwise']['cot'] = {

@@ -3,7 +3,7 @@ root_dir = os.path.dirname(__file__)
 from configs import prompt_processor
 from load_model import load_model
 from helper import combine_text_and_image, set_seed, save_json, score_meme_based_on_theory
-from typing import List
+from typing import List, Literal
 
 def generate_meme_llm(
     call_gen_llm,
@@ -14,12 +14,14 @@ def generate_meme_llm(
     max_new_tokens: int = 200,
     meme_path: str = None,
     temperature: float = 0.5,
+    seed: int = 42,
 ):
     prompt = prompt_processor[gen_llm_name]["generation"][prompt_name]["prompt"](context)
     gen_llm_output = call_gen_llm(
         prompt = prompt,
         max_new_tokens = max_new_tokens,
         temperature = temperature,
+        seed = seed,
     )["output"]
 
     gen_llm_output_dict = prompt_processor[gen_llm_name]["generation"][prompt_name]["output_processor"](gen_llm_output)
@@ -31,6 +33,8 @@ def generate_meme_llm(
         "context": context,
         "llm_output": gen_llm_output,
         "meme_path": meme_path,
+        "description": f"\n* image description: {gen_llm_output_dict['image_description']}\n* top text: {gen_llm_output_dict['top_text']}\n* bottom text: {gen_llm_output_dict['bottom_text']}",
+        "output_path": output_path,
     }
 
     save_json(output_dict, output_path)
@@ -84,6 +88,7 @@ def generate_meme_basic(
     guidance_scale: float = 7.0,
     negative_prompt: str = "",
     temperature: float = 0.5,
+    seed: int = 42,
 ): 
     time_string = time.strftime('%Y%m%d_%H%M%S')
     meme_path = f"{result_dir}/meme/{short_context}_{time_string}.png"
@@ -100,6 +105,7 @@ def generate_meme_basic(
         max_new_tokens = max_new_tokens,
         meme_path = meme_path,
         temperature = temperature,
+        seed = seed,
     )   
 
     if not description_only:
@@ -139,6 +145,7 @@ def generate_meme_good(
     eval_llm_name: str = None,
     call_eval_llm = None,
     temperature: float = 0.5,
+    eval_mode: Literal["description", "meme"] = "description",
 ): 
     if gen_mode == "selective":
         if eval_llm_name is None:
@@ -168,6 +175,7 @@ def generate_meme_good(
     results = []
 
     for i in range(n_memes_per_context):
+        seed_iter = random.randint(1, 10000)
         print(f"| Generating meme {i+1}")
 
         if gen_mode == "standard":
@@ -187,6 +195,7 @@ def generate_meme_good(
                 guidance_scale = guidance_scale,
                 negative_prompt = negative_prompt,
                 temperature = temperature,
+                seed = seed_iter,
             )
         elif gen_mode == "selective":
             time_string = time.strftime('%Y%m%d_%H%M%S')
@@ -195,6 +204,7 @@ def generate_meme_good(
 
             output_dict, best_idx = {}, 0
             for j in range(n_selected_from):
+                seed_iter = random.randint(1, 10000)
                 print(F"| -- For selective generation, generating meme {j+1}")
                 gen_llm_output_dict = generate_meme_basic(
                     result_dir = result_dir,
@@ -212,19 +222,32 @@ def generate_meme_good(
                     guidance_scale = guidance_scale,
                     negative_prompt = negative_prompt,
                     temperature = temperature,
+                    seed = seed_iter,
                 )
 
                 if eval_prompt_name == "theory":
-                    eval_llm_output_dict = score_meme_based_on_theory(
-                        meme_path = gen_llm_output_dict['meme_path'],
-                        call_model = call_eval_llm,
-                        result_dir = result_dir,
-                        max_intermediate_tokens = 300,
-                        max_new_tokens = 1,
-                        example = True,
-                        description = "",
-                        context = "",
-                    )
+                    if eval_mode == "description":
+                        eval_llm_output_dict = score_meme_based_on_theory(
+                            meme_path = gen_llm_output_dict['output_path'],
+                            call_model = call_eval_llm,
+                            result_dir = result_dir,
+                            max_intermediate_tokens = 300,
+                            max_new_tokens = 1,
+                            example = True,
+                            description = gen_llm_output_dict['description'],
+                            context = "",
+                        )
+                    elif eval_mode == "meme":
+                        eval_llm_output_dict = score_meme_based_on_theory(
+                            meme_path = gen_llm_output_dict['meme_path'],
+                            call_model = call_eval_llm,
+                            result_dir = result_dir,
+                            max_intermediate_tokens = 300,
+                            max_new_tokens = 1,
+                            example = True,
+                            description = "",
+                            context = "",
+                        )
 
                 output_dict[j+1] = {
                     "gen_llm_output": gen_llm_output_dict,
