@@ -189,7 +189,7 @@ prompt_processor_default["generation"] = {
             The bottom text should be a punchline that is **unexpected** and **surprising** to the reader, and better to be a concrete unnormal example.
             For instance, when the topic is "social media addiction", the text could be "I'm deleting Instagram for my mental health" and "Notification: you have 200 new followers", and the image could be "A person with an exaggerated gleeful expression staring at their phone screen, with floating heart emojis surrounding".
 
-            **Please provide your response in this format:**
+            **Please provide your response in this format, and ensure to include the quotation marks in your response:**
             IMAGE DESCRIPTION: "[Detailed description of the required image]"
 
             TEXT OVERLAY: 

@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 from IPython.display import display
 
+root_dir = os.path.dirname(os.path.abspath(__file__))
+
 def save_json(data, path):
     folder = os.path.dirname(path)
     os.makedirs(folder, exist_ok=True)
@@ -90,7 +92,6 @@ def set_seed(seed):
     torch.backends.cudnn.enabled = False
     transformers.set_seed(seed)
 
-
 def combine_text_and_image(image_path, upper_text, lower_text):
     img = Image.open(image_path)
     if img.mode == 'RGBA': img = img.convert('RGB')
@@ -101,65 +102,49 @@ def combine_text_and_image(image_path, upper_text, lower_text):
     def calculate_font_size(text, width):
         base_font_size = int(width/12)
         text_length = len(text)
-        return max(base_font_size - int(text_length / 10), 10)  # Ensure font size is at least 10
+        return max(base_font_size - int(text_length / 10), 10)
+    
+    def draw_multiline_text(text, y_start, font):
+        # Split text into lines
+        lines = text.split('\n')
+        y = y_start
+        
+        for line in lines:
+            # Get text size for this line
+            text_bbox = draw.textbbox((0, 0), line, font=font)
+            text_width = text_bbox[2] - text_bbox[0]
+            
+            # Center this specific line
+            x = (width - text_width) / 2
+            
+            # Draw outline
+            for offset in range(-2, 3):
+                for offset2 in range(-2, 3):
+                    draw.text((x + offset, y + offset2), line, font=font, fill='black')
+            draw.text((x, y), line, font=font, fill='white')
+            
+            # Move to next line
+            y += font.size + 5  # Add small padding between lines
     
     # Add upper text
     if upper_text and not pd.isna(upper_text):
-        # Wrap text to fit width
-        upper_text = textwrap.fill(upper_text.upper(), width=20)
-        
-        # Calculate font size
+        upper_text = textwrap.fill(upper_text.upper(), width=25)
         font_size = calculate_font_size(upper_text, width)
-        
-        # Load font
-        try:
-            font = ImageFont.truetype("impact.ttf", font_size)
-        except:
-            # Fallback to default font if Impact not available
-            font = ImageFont.load_default(font_size)
-        
-        # Get text size
-        text_bbox = draw.textbbox((0, 0), upper_text, font=font)
-        text_width = text_bbox[2] - text_bbox[0]
-        
-        # Calculate position (centered horizontally, near top vertically)
-        x = (width - text_width) / 2
-        y = height * 0.05
-        
-        # Draw text with black outline
-        for offset in range(-2, 3):
-            for offset2 in range(-2, 3):
-                draw.text((x + offset, y + offset2), upper_text, font=font, fill='black')
-        draw.text((x, y), upper_text, font=font, fill='white')
+        font = ImageFont.truetype(f"{root_dir}/utils/fonts/impact.ttf", font_size)
+        draw_multiline_text(upper_text, height * 0.05, font)
     
     # Add lower text
     if lower_text and not pd.isna(lower_text):
-        # Wrap text to fit width
-        lower_text = textwrap.fill(lower_text.upper(), width=20)
-        
-        # Calculate font size
+        lower_text = textwrap.fill(lower_text.upper(), width=25)
         font_size = calculate_font_size(lower_text, width)
+        font = ImageFont.truetype(f"{root_dir}/utils/fonts/impact.ttf", font_size)
         
-        # Load font
-        try:
-            font = ImageFont.truetype("impact.ttf", font_size)
-        except:
-            # Fallback to default font if Impact not available
-            font = ImageFont.load_default(font_size)
+        # Calculate total height of lower text to position it properly
+        lines = lower_text.split('\n')
+        total_height = len(lines) * (font.size + 5) - 5  # Subtract the last padding
+        y_start = height * 0.95 - total_height
         
-        # Get text size
-        text_bbox = draw.textbbox((0, 0), lower_text, font=font)
-        text_width = text_bbox[2] - text_bbox[0]
-        text_height = text_bbox[3] - text_bbox[1]
-        
-        # Calculate position (centered horizontally, near bottom vertically)
-        x = (width - text_width) / 2
-        y = height * 0.85 - text_height
-        
-        # Draw text with black outline
-        for offset in range(-2, 3):
-            for offset2 in range(-2, 3):
-                draw.text((x + offset, y + offset2), lower_text, font=font, fill='black')
-        draw.text((x, y), lower_text, font=font, fill='white')
+        draw_multiline_text(lower_text, y_start, font)
     
     img.save(image_path)
+

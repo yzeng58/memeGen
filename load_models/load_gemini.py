@@ -52,10 +52,11 @@ def call_gemini(
         response.resolve()
 
     try:
-        output_dict['description'] = response.text
+        output_dict['output'] = response.text
     except ValueError:
-        output_dict['description'] = ''
+        output_dict['output'] = ''
     
-    if save_history: output_dict['history'] = contents + [output_dict['description']]
+    if save_history: output_dict['history'] = contents + [output_dict['output']]
+    print(output_dict)
     
     return output_dict
