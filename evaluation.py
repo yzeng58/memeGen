@@ -286,7 +286,7 @@ def evaluate(
             result_file = f'{result_dir}/{result_name}.json'
 
             read_result = False
-            if os.path.exists(result_file) and not overwrite:
+            if os.path.exists(result_file) and not overwrite and not prompt_name == "theory":
                 try:
                     result = read_json(result_file)
                     read_result = True
