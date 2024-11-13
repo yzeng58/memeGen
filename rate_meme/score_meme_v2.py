@@ -20,7 +20,7 @@ def score_meme_based_on_theory_v2(
     if result_dir:
         img_name = meme_path.split("/")[-1].split(".")[0]
         example_flag = "example" if example else "plain"
-        result_file = f'{result_dir}/scores/{example_flag}/{img_name}_v1.json'
+        result_file = f'{result_dir}/scores/{example_flag}/{img_name}_v2.json'
         if os.path.exists(result_file) and not overwrite:
             return read_json(result_file)
 
@@ -86,7 +86,7 @@ def score_meme_based_on_theory_v2(
         meme_path = meme_path,
         call_model = call_model,
         output_control = output_control,
-        example = example,
+        example = False,
         max_intermediate_tokens = max_intermediate_tokens,
         max_new_tokens = max_new_tokens,
         description = description,
@@ -101,7 +101,7 @@ def score_meme_based_on_theory_v2(
             meme_path = meme_path,
             call_model = call_model,
             output_control = output_control,
-            example = example,
+            example = False,
             max_intermediate_tokens = max_intermediate_tokens,
             max_new_tokens = max_new_tokens,
             description = description,
@@ -130,7 +130,7 @@ def score_meme_based_on_theory_v2(
             meme_path = meme_path,
             call_model = call_model,
             output_control = output_control,
-            example = example,
+            example = False,
             max_intermediate_tokens = max_intermediate_tokens,
             max_new_tokens = max_new_tokens,
             description = description,
