@@ -73,6 +73,8 @@ def call_claude(
     save_history = False,
     description = '',
     context = "",
+    temperature = 0,
+    max_new_tokens = 1000,
     **kwargs,
 ):
     model, client = claude['model'], claude['client']
@@ -101,8 +103,8 @@ def call_claude(
     response = client.messages.create(
         model = model,
         messages = messages,
-        max_tokens = 1000,
-        temperature = 0,
+        max_tokens = max_new_tokens,
+        temperature = temperature,
     )
     output = response.content[0].text
 

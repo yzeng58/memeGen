@@ -82,7 +82,6 @@ def call_qwen(
     context = "",
     **kwargs,
 ):
-    print(seed)
     set_seed(seed)
     if qwen['type'] in ['qwen-vl']:
         model, tokenizer = qwen['model'], qwen['tokenizer']  

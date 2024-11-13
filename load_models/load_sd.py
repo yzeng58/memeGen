@@ -1,5 +1,11 @@
+import os, sys
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(root_dir)
+
 import torch
 from diffusers import StableDiffusion3Pipeline
+from helper import set_seed
+
 
 def load_sd(
     model_name: str,
@@ -17,8 +23,10 @@ def call_sd(
     negative_prompt: str = "",
     height: int = 300,
     width: int = 300,
+    seed: int = 1234,
     **kwargs,
 ):
+    set_seed(seed)
     try:
         image = pipe(
             prompt,

@@ -23,6 +23,7 @@ def generate_meme_llm(
         max_new_tokens = max_new_tokens,
         temperature = temperature,
         seed = seed,
+        system_prompt = "default",
     )["output"]
 
     gen_llm_output_dict = prompt_processor[gen_llm_name]["generation"][prompt_name]["output_processor"](gen_llm_output)
@@ -52,15 +53,18 @@ def generate_meme_dm(
     guidance_scale: float,
     negative_prompt: str,
     meme_path: str,
+    image_style: str = "cartoon",
+    seed: int = 1234,
 ):
     success_flag = call_dm(
-        gen_llm_output_dict['image_description'], 
+        f"{image_style} style\n{gen_llm_output_dict['image_description']}", 
         height=height,
         width=width,
         num_inference_steps=num_inference_steps,
         guidance_scale=guidance_scale,
         negative_prompt=negative_prompt,
         save_path=meme_path,
+        seed=seed,
     )
 
     if success_flag:
@@ -90,6 +94,7 @@ def generate_meme_basic(
     negative_prompt: str = "",
     temperature: float = 0.5,
     seed: int = 42,
+    image_style: str = "cartoon",
 ): 
     time_string = time.strftime('%Y%m%d_%H%M%S')
     meme_path = f"{result_dir}/meme/{short_context}_{time_string}.png"
@@ -119,6 +124,8 @@ def generate_meme_basic(
             guidance_scale = guidance_scale,
             negative_prompt = negative_prompt,
             meme_path = meme_path,
+            image_style = image_style,
+            seed = seed,
         )
 
     return gen_llm_output_dict
@@ -148,6 +155,7 @@ def generate_meme_good(
     temperature: float = 0.5,
     eval_mode: Literal["description", "meme"] = "description",
     theory_version: str = 'v1',
+    image_style: str = "cartoon",
 ): 
     if gen_mode == "selective":
         if eval_llm_name is None:
@@ -171,7 +179,8 @@ def generate_meme_good(
     )
 
     set_seed(seed)
-    short_context = "_".join(random.choices(context.split(" "), k=n_words_in_filename))
+    context_no_punct = ''.join(c for c in context if c.isalnum() or c.isspace())
+    short_context = "_".join(random.choices(context_no_punct.split(" "), k=n_words_in_filename))
 
     result_dir = f"{root_dir}/results/generation/{gen_llm_name}/{dm_name}/{prompt_name}"
     results = []
@@ -198,6 +207,7 @@ def generate_meme_good(
                 negative_prompt = negative_prompt,
                 temperature = temperature,
                 seed = seed_iter,
+                image_style = image_style,
             )
         elif gen_mode == "selective":
             time_string = time.strftime('%Y%m%d_%H%M%S')
@@ -225,6 +235,7 @@ def generate_meme_good(
                     negative_prompt = negative_prompt,
                     temperature = temperature,
                     seed = seed_iter,
+                    image_style = image_style,
                 )
 
                 if eval_prompt_name == "theory":

@@ -47,6 +47,12 @@ support_llms = {
     'pixtral': [
         'Pixtral-12B-2409',
     ],
+    'gemini': [
+        'gemini-1.5-flash',
+        'gemini-1.5-flash-8b',
+        'gemini-1.5-pro',
+        'gemini-1.0-pro',
+    ],
 }
 
 support_diffusers = {
@@ -179,8 +185,9 @@ prompt_processor_default["generation"] = {
 
             I will use a diffusion model to generate an image, and the overlay the image with the text. 
             Therefore, the image we are going to generate should with no text (only digits and symbols are allowed) and as simple as possible.
-            The image itself should not just be a visualization, but it should cause **incongruity** and **surprise** with the text to make the meme funnier.
-            For instance, when the topic is "inflation", the image should not be a visualization of inflation, but it should be be something that is unnormal in real life, such as a load of bread sits museum-style on a glossy pedestal, priced at $49.99, and the text should be "When you go to store to grab a few things" and "and realize you've just taken out a small loan".
+            The image itself should not be a visualization of tex, but it should cause **incongruity** or **exaggeration** with the text to make the meme funnier.
+            The bottom text should be a punchline that is **unexpected** and **surprising** to the reader, and better to be a concrete unnormal example.
+            For instance, when the topic is "social media addiction", the text could be "I'm deleting Instagram for my mental health" and "Notification: you have 200 new followers", and the image could be "A person with an exaggerated gleeful expression staring at their phone screen, with floating heart emojis surrounding".
 
             **Please provide your response in this format:**
             IMAGE DESCRIPTION: "[Detailed description of the required image]"
@@ -218,9 +225,10 @@ prompt_processor["gpt-4o"]["generation"]["standard"]["prompt"] = lambda context:
 
     I will use a diffusion model to generate an image, and the overlay the image with the text. 
     Therefore, the image we are going to generate should with no text (only digits and symbols are allowed) and as simple as possible.
-    The image itself should not just be a visualization, but it should cause **incongruity** with the text to make the meme funnier.
-    1. The bottom text should be a punchline that is **unexpected** and **surprising** to the reader.
-    2. The image should be unexpected and not closely related to the generated text.
+    The image itself should not be a visualization of tex, but it should cause **incongruity** or **exaggeration** with the text to make the meme funnier.
+    The bottom text should be a punchline that is **unexpected** and **surprising** to the reader, and better to be a concrete unnormal example.
+    For instance, when the topic is "inflation", the image should not be a visualization of inflation, but it should be be something that is unnormal in real life, such as a load of bread sits museum-style on a glossy pedestal, priced at $49.99, and the text should be "When you go to store to grab a few things" and "and realize you've just taken out a small loan".
+    Another example is "social media addiction", where the text could be "I'm deleting Instagram for my mental health" and "Notification: you have 200 new followers", and the image could be "A person with an exaggerated gleeful expression staring at their phone screen, with floating heart emojis and notification symbols surrounding them".
 
     **Please provide your response in this format, and ensure to include the quotation marks in your response:**
     TOP TEXT: "[Text to be placed on the top of the image]"
@@ -264,6 +272,8 @@ description_prompt = {
 
 system_prompts_default = {
     'evaluator': "You are a meme evaluation expert. You will follow the user's instruction and give your evaluation directly.",
+    'default': "You are a helpful AI assistant. You will follow the user's instructions carefully and provide thoughtful responses.",
+    'summarizer': "Summarize the social post. Your response should be in less than 5 words.",
 }
 
 system_prompts = deepcopy(system_prompts_default)
