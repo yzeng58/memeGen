@@ -2,7 +2,8 @@ from load_dataset import load_dataset
 from load_model import load_model
 import os, wandb, argparse, pdb
 root_dir = os.path.dirname(__file__)
-from helper import save_json, read_json, print_configs, set_seed, get_image_size, score_meme_based_on_theory
+from helper import save_json, read_json, print_configs, set_seed, get_image_size
+from rate_meme.rate_meme import score_meme_based_on_theory
 from configs import support_llms, support_datasets, prompt_processor, image_size_threshold, eval_modes
 
 from environment import WANDB_INFO
@@ -26,6 +27,7 @@ def get_single_output(
     model_name,
     metric,
     eval_mode,
+    theory_version,
 ):
     file_name = file_path.split('/')[-1].split('.')[0]
     
@@ -56,6 +58,7 @@ def get_single_output(
             example = example,
             result_dir = result_dir,
             overwrite = overwrite,
+            theory_version = theory_version,
         )
 
         pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
@@ -81,6 +84,7 @@ def get_output(
     example = False,
     result_dir = None,
     overwrite = False,
+    theory_version = 'v1',
 ):
     if prompt_name == "cot":
         output_1 = call_model(
@@ -126,6 +130,7 @@ def get_output(
             description = description,
             context = context,
             overwrite = overwrite,
+            version = theory_version,
         )
     else:
         raise ValueError(f"Prompt name {prompt_name} not supported")
@@ -147,6 +152,7 @@ def evaluate(
     max_new_tokens = 1000,
     example = False,
     not_load_model = False,
+    theory_version = 'v1',
 ):    
     set_seed(seed)
     dataset = load_dataset(dataset_name, binary_classification=True, description=description or context, eval_mode=eval_mode)
@@ -211,20 +217,21 @@ def evaluate(
                 file_path = dataset.loc[i, 'image_path']
             label = dataset.loc[i, 'label']
             result = get_single_output(
-                file_path,
-                label,
-                result_dir,
-                overwrite,
-                call_model,
-                prompt_name,
-                prompt,
-                description,
-                max_new_tokens,
-                context,
-                example, 
-                model_name,
-                metric,
-                eval_mode,
+                file_path = file_path,
+                label = label,
+                result_dir = result_dir,
+                overwrite = overwrite,
+                call_model = call_model,
+                prompt_name = prompt_name,
+                prompt = prompt,
+                description = description,
+                max_new_tokens = max_new_tokens,
+                context = context,
+                example = example, 
+                model_name = model_name,
+                metric = metric,
+                eval_mode = eval_mode,
+                theory_version = theory_version,
             )
 
             if result['pred_label'] == label: corr += 1
@@ -302,6 +309,7 @@ def evaluate(
                         example = example,
                         result_dir = result_dir,
                         overwrite = overwrite,
+                        theory_version = theory_version,
                     )
         
                     pred_label_1 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
@@ -318,6 +326,7 @@ def evaluate(
                         example = example,
                         result_dir = result_dir,
                         overwrite = overwrite,
+                        theory_version = theory_version,
                     )
                     pred_label_2 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_2['output'])
 
@@ -334,6 +343,7 @@ def evaluate(
                         example = example,
                         result_dir = result_dir,
                         overwrite = overwrite,
+                        theory_version = theory_version,
                     )
                     compare_output_dict_2 = get_output(
                         call_model, 
@@ -347,48 +357,51 @@ def evaluate(
                         example = example,
                         result_dir = result_dir,
                         overwrite = overwrite,
+                        theory_version = theory_version,
                     )
 
                     pred_label_1 = int(compare_output_dict_1['output'] <= compare_output_dict_2['output'])
                     pred_label_2 = int(compare_output_dict_1['output'] > compare_output_dict_2['output'])
 
                 elif prompt_name == "single":
-                        compare_output_dict_1 = get_single_output(
-                            funny_path,
-                            1,
-                            result_dir,
-                            overwrite,
-                            call_model,
-                            prompt_name,
-                            prompt,
-                            description,
-                            max_new_tokens,
-                            context,
-                            example,
-                            model_name,
-                            metric,
-                            eval_mode,
-                        )
+                    compare_output_dict_1 = get_single_output(
+                        file_path = funny_path,
+                        label = 1,
+                        result_dir = result_dir,
+                        overwrite = overwrite,
+                        call_model = call_model,
+                        prompt_name = prompt_name,
+                        prompt = prompt,
+                        description = description,
+                        max_new_tokens = max_new_tokens,
+                        context = context,
+                        example = example,
+                        model_name = model_name,
+                        metric = metric,
+                        eval_mode = eval_mode,
+                        theory_version = theory_version,
+                    )
 
-                        compare_output_dict_2 = get_single_output(
-                            not_funny_path,
-                            0,
-                            result_dir,
-                            overwrite,
-                            call_model,
-                            prompt_name,
-                            prompt,
-                            description,
-                            max_new_tokens,
-                            context,
-                            example,
-                            model_name,
-                            metric,
-                            eval_mode,
-                        )
+                    compare_output_dict_2 = get_single_output(
+                        file_path = not_funny_path,
+                        label = 0,
+                        result_dir = result_dir,
+                        overwrite = overwrite,
+                        call_model = call_model,
+                        prompt_name = prompt_name,
+                        prompt = prompt,
+                        description = description,
+                        max_new_tokens = max_new_tokens,
+                        context = context,
+                        example = example,
+                        model_name = model_name,
+                        metric = metric,
+                        eval_mode = eval_mode,
+                        theory_version = theory_version,
+                    )
 
-                        pred_label_1 = int(compare_output_dict_1['pred_label'] <= compare_output_dict_2['pred_label'])
-                        pred_label_2 = int(compare_output_dict_1['pred_label'] > compare_output_dict_2['pred_label'])
+                    pred_label_1 = int(compare_output_dict_1['pred_label'] <= compare_output_dict_2['pred_label'])
+                    pred_label_2 = int(compare_output_dict_1['pred_label'] > compare_output_dict_2['pred_label'])
                 else:
                     raise ValueError(f'Prompt name {prompt_name} not supported')
                     
@@ -480,6 +493,7 @@ def evaluate(
                     example = example,
                     result_dir = result_dir,
                     overwrite = overwrite,
+                    theory_version = theory_version,
                 )
                 pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
 
@@ -524,6 +538,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
     parser.add_argument('--example', action='store_true')
     parser.add_argument('--not_load_model', action='store_true', help="Do not load the model. Use this option only when results have already been stored and you want to read the existing results.")
+    parser.add_argument('--theory_version', type=str, default='v1', choices=['v1', 'v2'])
     args = parser.parse_args()
 
     print(__file__)
@@ -552,6 +567,7 @@ if __name__ == '__main__':
         max_new_tokens=args.max_new_tokens,
         example = args.example,
         not_load_model = args.not_load_model,
+        theory_version = args.theory_version,
     )
 
     if args.wandb:

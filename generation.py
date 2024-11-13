@@ -2,7 +2,8 @@ import os, time, random
 root_dir = os.path.dirname(__file__)
 from configs import prompt_processor
 from load_model import load_model
-from helper import combine_text_and_image, set_seed, save_json, score_meme_based_on_theory
+from helper import combine_text_and_image, set_seed, save_json
+from rate_meme.rate_meme import score_meme_based_on_theory
 from typing import List, Literal
 
 def generate_meme_llm(
@@ -146,6 +147,7 @@ def generate_meme_good(
     call_eval_llm = None,
     temperature: float = 0.5,
     eval_mode: Literal["description", "meme"] = "description",
+    theory_version: str = 'v1',
 ): 
     if gen_mode == "selective":
         if eval_llm_name is None:
@@ -236,6 +238,7 @@ def generate_meme_good(
                             example = True,
                             description = gen_llm_output_dict['description'],
                             context = "",
+                            theory_version = theory_version,
                         )
                     elif eval_mode == "meme":
                         eval_llm_output_dict = score_meme_based_on_theory(
@@ -247,6 +250,7 @@ def generate_meme_good(
                             example = True,
                             description = "",
                             context = "",
+                            theory_version = theory_version,
                         )
 
                 output_dict[j+1] = {
