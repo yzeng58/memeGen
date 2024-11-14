@@ -67,6 +67,25 @@ def process_image_qwen2(image_path):
         "image": image_path,
     }
 
+def process_sample_feature(
+    image_paths,
+    qwen,
+    description,
+):
+    if qwen['type'] in ['qwen2-vl']:
+        contents = []
+        for i, image_path in enumerate(image_paths):
+            if description:
+                contents.append(process_text_qwen2(f"Meme {i+1}: {read_json(image_path)['description']}\n"))
+            else:
+                contents.append(process_image_qwen2(image_path))
+        return contents
+    elif qwen['type'] in ['qwen2.5']:
+        user_prompt = ""
+        for i, image_path in enumerate(image_paths):
+            idx_str = f" {i+1}" if len(image_paths) > 1 else ""
+            user_prompt += f"Meme{idx_str}: {read_json(image_path)['description']}\n"
+        return user_prompt
     
 def call_qwen(
     qwen, 
@@ -117,14 +136,32 @@ def call_qwen(
         else:
             messages = [{"role": "system", "content": system_prompts['qwen'][system_prompt]}]
 
-        contents = []
-        for i, image_path in enumerate(image_paths):
-            if description:
-                contents.append(process_text_qwen2(f"Meme {i+1}: {read_json(image_path)['description']}\n"))
-            else:
-                contents.append(process_image_qwen2(image_path))
-        contents.append(process_text_qwen2(prompt))
-        messages.append({"role": "user", "content": contents})
+        if demonstrations:
+            messages.append({"role": "user", "content": [process_text_qwen2(prompt)]})
+            for sample_idx, sample in enumerate(demonstrations):
+                contents = []
+                image_paths = sample['image_paths']
+                contents.extend(process_sample_feature(
+                    image_paths=image_paths, 
+                    qwen=qwen,
+                    description=description,
+                ))
+                
+                messages.append({"role": "user", "content": contents})
+
+                if sample_idx < len(demonstrations) - 1:
+                    # this is not the test sample
+                    if not 'label' in sample:
+                        raise ValueError("Label is required for non-test samples!")
+                    messages.append({"role": "assistant", "content": [process_text_qwen2(sample['label'])]})
+        else:
+            contents = process_sample_feature(
+                image_paths=image_paths, 
+                qwen=qwen, 
+                description=description,
+            )
+            contents.append(process_text_qwen2(prompt))
+            messages.append({"role": "user", "content": contents})
 
         text = processor.apply_chat_template(messages, tokenize=False, add_generation_timestamp=True) + 'assistant\n'
         image_inputs, video_inputs = process_vision_info(messages)
@@ -168,13 +205,11 @@ def call_qwen(
             messages.append({"role": "user", "content": prompt})
             for sample_idx, sample in enumerate(demonstrations):
                 image_paths = sample['image_paths']
-
-                if len(image_paths) > 1:
-                    for image_idx, image_path in enumerate(image_paths):
-                        user_prompt = f"Meme {image_idx+1}: {read_json(image_path)['description']}"
-                else:
-                    user_prompt = f"Meme: {read_json(image_paths[0])['description']}"
-
+                user_prompt = process_sample_feature(
+                    image_paths=image_paths, 
+                    qwen=qwen,
+                    description=description,
+                )
                 messages.append({"role": "user", "content": user_prompt})
 
                 if sample_idx < len(demonstrations) - 1:
@@ -182,11 +217,13 @@ def call_qwen(
                     if not 'label' in sample:
                         raise ValueError("Label is required for non-test samples!")
                     messages.append({"role": "assistant", "content": sample['label']})
+
         else:
-            user_prompt = ""
-            for i, image_path in enumerate(image_paths):
-                user_prompt += f"Meme {i+1}: {read_json(image_path)['description']}\n"
-            user_prompt += prompt
+            user_prompt = process_sample_feature(
+                image_paths=image_paths, 
+                qwen=qwen,
+                description=description,
+            )
             messages.append({"role": "user", "content": user_prompt})
 
 
