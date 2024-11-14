@@ -44,6 +44,25 @@ def load_llama(
 
     return llama
 
+def process_sample_feature(
+    image_paths,
+    description,
+    context,
+):
+    content, images = [], []
+    if description:
+        for i, image_path in enumerate(image_paths):
+            content.append({"type": "text", "text": f"Meme {i+1}: {read_json(image_path)['description']}\n"})
+    elif context:
+        for i, image_path in enumerate(image_paths):
+            content.append({"type": "text", "text": f"Meme {i+1}: {read_json(image_path['description_path'])['description']}\n"})
+            content.append({"type": "image"})
+            images.append(get_image(image_path['image_path']))
+    else:
+        for i, image_path in enumerate(image_paths):
+            images.append(get_image(image_path))
+            content.append({"type": "image"})
+    return content, images
 def call_llama(
     llama, 
     prompt, 
