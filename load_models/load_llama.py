@@ -46,23 +46,29 @@ def load_llama(
 
 def process_sample_feature(
     image_paths,
-    description,
     context,
+    llama,
 ):
-    content, images = [], []
-    if description:
+    if 'Llama-3.2' in llama['model_id']:
+        content, images = [], []
+        if context:
+            for i, image_path in enumerate(image_paths):
+                idx_str = f" {i+1}" if len(image_paths) > 1 else ""
+                content.append({"type": "text", "text": f"Meme{idx_str}: {read_json(image_path['description_path'])['description']}\n"})
+                content.append({"type": "image"})
+                images.append(get_image(image_path['image_path']))
+        else:
+            for i, image_path in enumerate(image_paths):
+                images.append(get_image(image_path))
+                content.append({"type": "image"})
+        return content, images
+    elif 'Llama-3.1' in llama['model_id']:
+        text_prompt = ''
         for i, image_path in enumerate(image_paths):
-            content.append({"type": "text", "text": f"Meme {i+1}: {read_json(image_path)['description']}\n"})
-    elif context:
-        for i, image_path in enumerate(image_paths):
-            content.append({"type": "text", "text": f"Meme {i+1}: {read_json(image_path['description_path'])['description']}\n"})
-            content.append({"type": "image"})
-            images.append(get_image(image_path['image_path']))
-    else:
-        for i, image_path in enumerate(image_paths):
-            images.append(get_image(image_path))
-            content.append({"type": "image"})
-    return content, images
+            idx_str = f" {i+1}" if len(image_paths) > 1 else ""
+            text_prompt += f"Meme{idx_str}: {read_json(image_path)['description']}\n"
+        return text_prompt
+
 def call_llama(
     llama, 
     prompt, 
@@ -79,6 +85,8 @@ def call_llama(
 ):
     set_seed(seed)
     if 'Llama-3.2' in llama['model_id']:
+        if description: raise ValueError('Description is not supported for Llama-3.2 models.')
+
         model, processor = llama['model'], llama['processor']
         if history: 
             messages = history['messages']
@@ -86,23 +94,23 @@ def call_llama(
         else:
             messages, images = [], []
 
-        content = []
-        if description:
-            for i, image_path in enumerate(image_paths):
-                content.append({"type": "text", "text": f"Meme {i+1}: {read_json(image_path)['description']}\n"})
-        elif context:
-            for i, image_path in enumerate(image_paths):
-                content.append({"type": "text", "text": f"Meme {i+1}: {read_json(image_path['description_path'])['description']}\n"})
-                content.append({"type": "image"})
-                images.append(get_image(image_path['image_path']))
-        else:
-            for i, image_path in enumerate(image_paths):
-                images.append(get_image(image_path))
-                content.append({"type": "image"})
+        if demonstrations:
+            messages.append({"role": "user", "content": {"type": "text", "text": prompt}})
+            for sample in demonstrations:
+                content_idx, images_idx = process_sample_feature(sample['image_paths'], context, llama)
+                images.extend(images_idx)
+                messages.append({"role": "user", "content": content_idx})
 
-        content.append({"type": "text", "text": prompt})
-        messages.append({"role": "user", "content": content})
+                if not 'label' in sample:
+                    raise ValueError("Label is required for non-test samples!")
+                messages.append({"role": "assistant", "content": sample['label']})
 
+        content_idx, images_idx = process_sample_feature(image_paths, context, llama)
+        messages.append({"role": "user", "content": content_idx})
+        images.extend(images_idx)
+    
+        if not demonstrations: messages.append({"role": "user", "content": {"type": "text", "text": prompt}})
+        
         input_text = processor.apply_chat_template(messages, add_generation_prompt=True)
         inputs = processor(
             images,
@@ -132,11 +140,22 @@ def call_llama(
             messages = history['messages']
         else:
             messages = [{"role": "system", "content": system_prompts['llama'][system_prompt]}]
-        text_prompt = ''
-        for i, image_path in enumerate(image_paths):
-            text_prompt += f"Meme {i+1}: {read_json(image_path)['description']}\n"
-        text_prompt += prompt
+
+        if demonstrations:
+            messages.append({"role": "user", "content": prompt})
+            for sample in demonstrations:
+                text_prompt = process_sample_feature(sample['image_paths'], context, llama)
+                messages.append({"role": "user", "content": text_prompt})
+
+                if not 'label' in sample:
+                    raise ValueError("Label is required for non-test samples!")
+                messages.append({"role": "assistant", "content": sample['label']})
+        
+        text_prompt = process_sample_feature(image_paths, context, llama)
+        if not demonstrations: text_prompt += prompt
         messages.append({"role": "user", "content": text_prompt})
+        pdb.set_trace()
+
         outputs = pipeline(messages, max_new_tokens=max_new_tokens)
         output = outputs[0]['generated_text']
 
