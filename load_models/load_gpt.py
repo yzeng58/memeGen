@@ -128,6 +128,7 @@ def call_gpt(
     )
         
     if not demonstrations: contents.append(process_text(prompt))
+    
     messages.append({
         "role": "user",
         "content": contents,

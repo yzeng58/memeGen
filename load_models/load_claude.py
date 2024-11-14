@@ -65,6 +65,19 @@ def load_claude(
         'model': model,
     }
 
+def process_sample_feature(description, context, image_paths):
+    contents = []
+    for i, image_path in enumerate(image_paths):
+        if description:
+            contents.append(process_text(f"Meme {i+1}: {read_json(image_path)['description']}\n"))
+        elif context:
+            contents.append(process_text(f"Meme {i+1}: {read_json(image_path['description_path'])['description']}\n"))
+            contents.append(process_image(image_path['image_path']))
+        else:
+            contents.append(process_image(image_path))
+
+    return contents
+
 def call_claude(
     claude, 
     prompt, 
@@ -75,26 +88,47 @@ def call_claude(
     context = "",
     temperature = 0,
     max_new_tokens = 1000,
+    demonstrations = [],
     **kwargs,
 ):
     model, client = claude['model'], claude['client']
 
-    # make messages
-    contents = []
-    for i, image_path in enumerate(image_paths):
-        if description:
-            contents.append(process_text(f"Meme {i+1}: {read_json(image_path)['description']}\n"))
-        elif context:
-            contents.append(process_text(f"Meme {i+1}: {read_json(image_path['description_path'])['description']}\n"))
-            contents.append(process_image(image_path['image_path']))
-        else:
-            contents.append(process_image(image_path))
-            
-    contents.append(process_text(prompt))
-    messages = [{
+    messages = []
+    if demonstrations:
+        messages.append({
+            "role": "user",
+            "content": [process_text(prompt)],
+        })
+        for sample in demonstrations:
+            messages.append({
+                "role": "user",
+                "content": process_sample_feature(
+                    description=description, 
+                    context=context, 
+                    image_paths=sample['image_paths'],
+                ),
+            })
+
+            if not 'label' in sample:
+                raise ValueError("Label is required for non-test samples!")
+            messages.append({
+                "role": "assistant",
+                "content": sample['label'],
+            })
+    
+    messages.append({
         "role": "user",
-        "content": contents,
-    }]
+        "content": process_sample_feature(
+            description=description, 
+            context=context, 
+            image_paths=image_paths,
+        ),
+    })
+    if not demonstrations: 
+        messages.append({
+            "role": "user",
+            "content": [process_text(prompt)],
+        })
 
     output_dict = {}
 

@@ -11,6 +11,19 @@ def load_gemini(model, api_key):
     genai.configure(api_key = GEMINI_API_KEY[api_key])
     model = genai.GenerativeModel(model)
     return model
+
+def process_sample_feature(description, context, image_paths):
+    contents = []
+    for i, image_path in enumerate(image_paths):
+        idx_str = f" {i+1}" if len(image_paths) > 1 else ""
+        if description:
+            contents.append(f"Meme{idx_str}: {read_json(image_path)['description']}\n")
+        elif context:
+            contents.append(f"Meme{idx_str}: {read_json(image_path['description_path'])['description']}\n")
+            contents.append(PIL.Image.open(image_path['image_path']))
+        else:
+            contents.append(PIL.Image.open(image_path))
+    return contents
     
 def call_gemini(
     model,
@@ -22,19 +35,31 @@ def call_gemini(
     context = "",
     temperature = 0,
     max_new_tokens = 1000,
+    demonstrations = [],
     **kwargs,
 ):
 
     contents = []
-    for i, image_path in enumerate(image_paths):
-        if description:
-            contents.append(f"Meme {i+1}: {read_json(image_path)['description']}\n")
-        elif context:
-            contents.append(f"Meme {i+1}: {read_json(image_path['description_path'])['description']}\n")
-            contents.append(PIL.Image.open(image_path['image_path']))
-        else:
-            contents.append(PIL.Image.open(image_path))
-    contents.append(prompt)
+    
+    if demonstrations:
+        contents.append(prompt)
+        for sample in demonstrations:
+            contents.extend(process_sample_feature(
+                description=description, 
+                context=context, 
+                image_paths=sample['image_paths'],
+            ))
+
+            if not 'label' in sample:
+                raise ValueError("Label is required for non-test samples!")
+            contents.append(sample['label'])
+    
+    contents.extend(process_sample_feature(
+        description=description, 
+        context=context, 
+        image_paths=image_paths,
+    ))
+    if not demonstrations: contents.append(prompt)
     
     output_dict = {}
         
@@ -57,6 +82,5 @@ def call_gemini(
         output_dict['output'] = ''
     
     if save_history: output_dict['history'] = contents + [output_dict['output']]
-    print(output_dict)
     
     return output_dict
