@@ -110,7 +110,7 @@ def call_qwen(
 
         if demonstrations:
             messages.append({"role": "user", "content": [process_text_qwen2(prompt)]})
-            for sample_idx, sample in enumerate(demonstrations):
+            for sample in demonstrations:
                 contents = []
                 image_paths = sample['image_paths']
                 contents.extend(process_sample_feature(
@@ -122,20 +122,18 @@ def call_qwen(
                 
                 messages.append({"role": "user", "content": contents})
 
-                if sample_idx < len(demonstrations) - 1:
-                    # this is not the test sample
-                    if not 'label' in sample:
-                        raise ValueError("Label is required for non-test samples!")
-                    messages.append({"role": "assistant", "content": [process_text_qwen2(sample['label'])]})
-        else:
-            contents = process_sample_feature(
-                image_paths=image_paths, 
-                qwen=qwen, 
-                description=description,
-                context=context,
-            )
-            contents.append(process_text_qwen2(prompt))
-            messages.append({"role": "user", "content": contents})
+                if not 'label' in sample:
+                    raise ValueError("Label is required for non-test samples!")
+                messages.append({"role": "assistant", "content": [process_text_qwen2(sample['label'])]})
+
+        contents = process_sample_feature(
+            image_paths=image_paths, 
+            qwen=qwen, 
+            description=description,
+            context=context,
+        )
+        if not demonstrations: contents.append(process_text_qwen2(prompt))
+        messages.append({"role": "user", "content": contents})
 
         text = processor.apply_chat_template(messages, tokenize=False, add_generation_timestamp=True) + 'assistant\n'
         image_inputs, video_inputs = process_vision_info(messages)
@@ -177,7 +175,7 @@ def call_qwen(
 
         if demonstrations:
             messages.append({"role": "user", "content": prompt})
-            for sample_idx, sample in enumerate(demonstrations):
+            for sample in demonstrations:
                 image_paths = sample['image_paths']
                 user_prompt = process_sample_feature(
                     image_paths=image_paths, 
@@ -187,21 +185,19 @@ def call_qwen(
                 )
                 messages.append({"role": "user", "content": user_prompt})
 
-                if sample_idx < len(demonstrations) - 1:
-                    # this is not the test sample
-                    if not 'label' in sample:
-                        raise ValueError("Label is required for non-test samples!")
-                    messages.append({"role": "assistant", "content": sample['label']})
+                if not 'label' in sample:
+                    raise ValueError("Label is required for non-test samples!")
+                messages.append({"role": "assistant", "content": sample['label']})
 
-        else:
-            user_prompt = process_sample_feature(
-                image_paths=image_paths, 
-                qwen=qwen,
-                description=description,
-                context=context,
-            )
-            messages.append({"role": "user", "content": user_prompt})
-
+        
+        user_prompt = process_sample_feature(
+            image_paths=image_paths, 
+            qwen=qwen,
+            description=description,
+            context=context,
+        )
+        messages.append({"role": "user", "content": user_prompt})
+        if not demonstrations: messages.append({"role": "user", "content": prompt})
 
         text = tokenizer.apply_chat_template(
             messages,

@@ -279,6 +279,8 @@ def evaluate(
                     "image_paths": [get_file_path(dataset, context, description, idx)],
                     "label": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](dataset.loc[idx, 'label']),
                 })
+        else:
+            demonstrations = []
 
         corr = 0
         tqdm_bar = tqdm(range(len(dataset)))

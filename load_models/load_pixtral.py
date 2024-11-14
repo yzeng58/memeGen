@@ -115,8 +115,8 @@ def call_pixtral(
         context=context,
         image_paths=image_paths,
     )
-    if not demonstrations: contents.append(TextChunk(text=prompt))
     messages.append(UserMessage(content=contents))
+    if not demonstrations: contents.append(TextChunk(text=prompt))
 
     request = ChatCompletionRequest(messages=messages)
     encoded = tokenizer.encode_chat_completion(request)
