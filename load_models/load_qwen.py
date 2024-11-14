@@ -61,12 +61,17 @@ def process_sample_feature(
     image_paths,
     qwen,
     description,
+    context,
 ):
     if qwen['type'] in ['qwen2-vl']:
         contents = []
         for i, image_path in enumerate(image_paths):
+            idx_str = f" {i+1}" if len(image_paths) > 1 else ""
             if description:
-                contents.append(process_text_qwen2(f"Meme {i+1}: {read_json(image_path)['description']}\n"))
+                contents.append(process_text_qwen2(f"Meme{idx_str}: {read_json(image_path)['description']}\n"))
+            elif context:
+                contents.append(process_text_qwen2(f"Meme{idx_str}: {read_json(image_path)['description']}\n"))
+                contents.append(process_image_qwen2(image_path))
             else:
                 contents.append(process_image_qwen2(image_path))
         return contents
@@ -112,6 +117,7 @@ def call_qwen(
                     image_paths=image_paths, 
                     qwen=qwen,
                     description=description,
+                    context=context,
                 ))
                 
                 messages.append({"role": "user", "content": contents})
@@ -126,6 +132,7 @@ def call_qwen(
                 image_paths=image_paths, 
                 qwen=qwen, 
                 description=description,
+                context=context,
             )
             contents.append(process_text_qwen2(prompt))
             messages.append({"role": "user", "content": contents})
@@ -176,6 +183,7 @@ def call_qwen(
                     image_paths=image_paths, 
                     qwen=qwen,
                     description=description,
+                    context=context,
                 )
                 messages.append({"role": "user", "content": user_prompt})
 
@@ -190,6 +198,7 @@ def call_qwen(
                 image_paths=image_paths, 
                 qwen=qwen,
                 description=description,
+                context=context,
             )
             messages.append({"role": "user", "content": user_prompt})
 

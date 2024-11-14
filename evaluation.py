@@ -264,9 +264,13 @@ def evaluate(
         if n_demos > 0:
             demonstration_idxs = []
             n_class = len(dataset['label'].unique())
-            for label in dataset['label'].unique():
+            n_per_class = n_demos // n_class
+            remaining = n_demos % n_class
+            for i, label in enumerate(dataset['label'].unique()):
                 label_dataset = dataset[dataset['label'] == label]
-                demonstration_idxs.extend(label_dataset.sample(n=n_demos // n_class, random_state=seed, replace=False).index.tolist())
+                # Add one extra example to some classes if n_demos doesn't divide evenly
+                n_samples = n_per_class + (1 if i < remaining else 0)
+                demonstration_idxs.extend(label_dataset.sample(n=n_samples, random_state=seed, replace=False).index.tolist())
             random.shuffle(demonstration_idxs)
 
             demonstrations = []

@@ -99,42 +99,39 @@ def call_gpt(
 ):
     model, client, api_key = gpt['model'], gpt['client'], gpt['api_key']
 
+    messages = []
     if demonstrations:
-        messages = []
-        contents = [process_text(prompt)]
+        messages.append({"role": "user", "content": [process_text(prompt)]})
 
-        for sample_idx, sample in enumerate(demonstrations):
+        for sample in demonstrations:
             image_paths = sample['image_paths']
-            contents.extend(process_sample_feature(
+            contents = process_sample_feature(
                 description = description, 
                 context = context, 
                 image_input_detail = image_input_detail, 
                 image_mode = image_mode, 
                 image_paths = image_paths,
-            ))
+            )
             messages.append({"role": "user", "content": contents})
 
-            if sample_idx < len(demonstrations) - 1:
-                # this is not the test sample
-                if not 'label' in sample:
-                    raise ValueError("Label is required for non-test samples!")
-                messages.append({"role": "assistant", "content": sample['label']})
+            if not 'label' in sample:
+                raise ValueError("Label is required for non-test samples!")
+            messages.append({"role": "assistant", "content": sample['label']})
 
-    else:
-        contents = []
-        contents.extend(process_sample_feature(
-            description = description, 
-            context = context, 
-            image_input_detail = image_input_detail, 
-            image_mode = image_mode, 
-            image_paths = image_paths,
-        ))
-            
-        contents.append(process_text(prompt))
-        messages = [{
-            "role": "user",
-            "content": contents,
-        }]
+
+    contents = process_sample_feature(
+        description = description, 
+        context = context, 
+        image_input_detail = image_input_detail, 
+        image_mode = image_mode, 
+        image_paths = image_paths,
+    )
+        
+    if not demonstrations: contents.append(process_text(prompt))
+    messages.append({
+        "role": "user",
+        "content": contents,
+    })
 
     output_dict = {}
 

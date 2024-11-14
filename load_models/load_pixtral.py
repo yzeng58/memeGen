@@ -47,6 +47,28 @@ def load_pixtral(model_name):
         'tokenizer': tokenizer,
     }
 
+def process_sample_feature(
+    description,
+    context,
+    image_paths,
+):
+    content = []
+    for i, image_path in enumerate(image_paths):
+        idx_str = f" {i+1}" if len(image_paths) > 1 else ""
+        if description:
+            content.append(TextChunk(text=f"Meme{idx_str}: {read_json(image_path)['description']}"))
+        elif context:
+            content.append(TextChunk(text=f"Meme{idx_str}: {read_json(image_path['description_path'])['description']}"))
+            content.append(ImageURLChunk(
+                image_url=f"data:image/{image_path['image_path'].split('.')[-1].lower()};base64,{encode_image(image_path['image_path'])}"
+            ))
+        else:
+            content.append(ImageURLChunk(
+                image_url=f"data:image/{image_path.split('.')[-1].lower()};base64,{encode_image(image_path)}"
+            ))
+
+    return content
+
 def call_pixtral(
     pixtral,
     prompt,
@@ -59,6 +81,7 @@ def call_pixtral(
     seed = 42,
     temperature = 0.1,
     context = "",
+    demonstrations = None,
     **kwargs,
 ):
     set_seed(seed)
@@ -73,22 +96,27 @@ def call_pixtral(
             )
         ]
 
-    content = []
-    for i, image_path in enumerate(image_paths):
-        if description:
-            content.append(TextChunk(text=f"Meme {i+1}: {read_json(image_path)['description']}"))
-        elif context:
-            content.append(TextChunk(text=f"Meme {i+1}: {read_json(image_path['description_path'])['description']}"))
-            content.append(ImageURLChunk(
-                image_url=f"data:image/{image_path['image_path'].split('.')[-1].lower()};base64,{encode_image(image_path['image_path'])}"
-            ))
-        else:
-            content.append(ImageURLChunk(
-                image_url=f"data:image/{image_path.split('.')[-1].lower()};base64,{encode_image(image_path)}"
-            ))
+    if demonstrations:
+        messages.append(UserMessage(content = [TextChunk(text=prompt)]))
+        for sample in demonstrations:
+            contents = process_sample_feature(
+                description=description,
+                context=context,
+                image_paths=sample['image_paths'],
+            )
+            messages.append(UserMessage(content=contents))  
 
-    content.append(TextChunk(text=prompt))
-    messages.append(UserMessage(content=content))
+            if not 'label' in sample:
+                raise ValueError("Label is required for non-test samples!")
+            messages.append(AssistantMessage(content=[TextChunk(text=sample['label'])]))
+
+    contents = process_sample_feature(
+        description=description,
+        context=context,
+        image_paths=image_paths,
+    )
+    if not demonstrations: contents.append(TextChunk(text=prompt))
+    messages.append(UserMessage(content=contents))
 
     request = ChatCompletionRequest(messages=messages)
     encoded = tokenizer.encode_chat_completion(request)
