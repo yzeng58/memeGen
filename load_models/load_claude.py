@@ -1,5 +1,3 @@
-from typing import Literal
-
 import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
@@ -7,8 +5,8 @@ sys.path.append(root_dir)
 from environment import CLAUDE_API_KEY
 import anthropic, base64
 from PIL import Image
-from helper import retry_if_fail, read_json
-
+from helper import read_json
+import pdb
 def ensure_jpeg(image_path):
     try:
         with Image.open(image_path) as img:
