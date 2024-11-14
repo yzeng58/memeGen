@@ -61,6 +61,25 @@ def load_gpt(
         'api_key': OPENAI_API_KEY[api_key],
     }
 
+def process_sample_feature(
+    description,
+    context,
+    image_input_detail,
+    image_mode,
+    image_paths,
+):
+    contents = []
+    for image_idx, image_path in enumerate(image_paths):
+        if description:
+            contents.append(process_text(f"Meme {image_idx+1}: {read_json(image_path)['description']}\n"))
+        elif context:
+            contents.append(process_text(f"Meme {image_idx+1}: {read_json(image_path['description_path'])['description']}\n"))
+            contents.append(process_image(image_path['image_path'], image_input_detail, image_mode))
+        else:
+            contents.append(process_image(image_path, image_input_detail, image_mode))
+
+    return contents
+
 def call_gpt(
     gpt,
     prompt,
@@ -78,20 +97,43 @@ def call_gpt(
     **kwargs,
 ):
     model, client, api_key = gpt['model'], gpt['client'], gpt['api_key']
-    contents = []
-    for i, image_path in enumerate(image_paths):
-        if description:
-            contents.append(process_text(f"Meme {i+1}: {read_json(image_path)['description']}\n"))
-        elif context:
-            contents.append(process_text(f"Meme {i+1}: {read_json(image_path['description_path'])['description']}\n"))
-            contents.append(process_image(image_path['image_path'], image_input_detail, image_mode))
-        else:
-            contents.append(process_image(image_path, image_input_detail, image_mode))
-    contents.append(process_text(prompt))
-    messages = [{
-        "role": "user",
-        "content": contents,
-    }]
+
+    if demonstrations:
+        messages = []
+        contents = [process_text(prompt)]
+
+        for sample_idx, sample in enumerate(demonstrations):
+            image_paths = sample['image_paths']
+            contents.extend(process_sample_feature(
+                description = description, 
+                context = context, 
+                image_input_detail = image_input_detail, 
+                image_mode = image_mode, 
+                image_paths = image_paths,
+            ))
+            messages.append({"role": "user", "content": contents})
+
+            if sample_idx < len(demonstrations) - 1:
+                # this is not the test sample
+                if not 'label' in sample:
+                    raise ValueError("Label is required for non-test samples!")
+                messages.append({"role": "assistant", "content": sample['label']})
+
+    else:
+        contents = []
+        contents.extend(process_sample_feature(
+            description = description, 
+            context = context, 
+            image_input_detail = image_input_detail, 
+            image_mode = image_mode, 
+            image_paths = image_paths,
+        ))
+            
+        contents.append(process_text(prompt))
+        messages = [{
+            "role": "user",
+            "content": contents,
+        }]
 
     output_dict = {}
 

@@ -111,7 +111,7 @@ prompt_processor_default["funniness"] = {
         'standard': {
             'prompt': "Is this meme funny? Please respond with a single letter, 'Y' for yes, 'N' for no.",
             'output_processor': lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1),
-            'label_processor': lambda x: {1: 'y', 0: 'n'}[x],
+            'label_processor': lambda x: {1: 'Y', 0: 'N'}[x],
         }
     },
     'pairwise': {
