@@ -270,7 +270,23 @@ def evaluate(
                 label_dataset = dataset[dataset['label'] == label]
                 # Add one extra example to some classes if n_demos doesn't divide evenly
                 n_samples = n_per_class + (1 if i < remaining else 0)
-                demonstration_idxs.extend(label_dataset.sample(n=n_samples, random_state=seed, replace=False).index.tolist())
+                available_idxs = label_dataset.index.tolist()
+                selected_idxs = []
+                
+                while len(selected_idxs) < n_samples and available_idxs:
+                    # Sample one index
+                    idx = random.choice(available_idxs)
+                    available_idxs.remove(idx)
+                    
+                    # Check its size
+                    file_path = get_file_path(dataset, context, description, idx)
+                    if os.path.getsize(file_path) < image_size_threshold * 2 / (n_demos + 1):
+                        selected_idxs.append(idx)
+                
+                if len(selected_idxs) < n_samples:
+                    raise ValueError(f"Not enough valid examples under threshold for label {label}")
+                    
+                demonstration_idxs.extend(selected_idxs)
             random.shuffle(demonstration_idxs)
 
             demonstrations = []
@@ -327,7 +343,18 @@ def evaluate(
         random.shuffle(all_pairs_idx)
 
         if n_demos > 0:
-            demonstration_idxs = random.sample(all_pairs_idx, n_demos)
+            demonstration_idxs = []
+            remaining_pairs = all_pairs_idx.copy()
+            while len(demonstration_idxs) < n_demos and remaining_pairs:
+                pair_idx = random.choice(remaining_pairs)
+                remaining_pairs.remove(pair_idx)
+                i, j = pair_idx
+                funny_image_size = get_image_size(funny_data.loc[i, 'image_path'])
+                not_funny_image_size = get_image_size(not_funny_data.loc[j, 'image_path'])
+                if (funny_image_size <= (image_size_threshold / n_demos)) and (not_funny_image_size <= (image_size_threshold / n_demos)):
+                    demonstration_idxs.append(pair_idx)
+            if len(demonstration_idxs) < n_demos:
+                raise ValueError(f'Could only find {len(demonstration_idxs)} valid demonstration pairs out of requested {n_demos}')
 
             n_true = n_demos // 2
             n_false = n_demos - n_true
