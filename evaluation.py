@@ -12,6 +12,33 @@ from tqdm import tqdm
 from itertools import product
 import random, warnings
 
+def get_file_path(
+    dataset,
+    context,
+    description,
+    idx,
+):
+    if context:
+        return {
+            "image_path": dataset.loc[idx, 'image_path'],
+            "description_path": dataset.loc[idx, 'description_path'],
+        }
+    elif description:
+        return dataset.loc[idx, 'description_path']
+    else:
+        return dataset.loc[idx, 'image_path']
+    
+def get_folder_name(
+    description,
+    context,
+):
+    if description:
+        return f'description_{description}'
+    elif context:
+        return f'context_{context}'
+    else:
+        return 'multimodal'
+
 def get_single_output(
     file_path,
     label,
@@ -28,10 +55,11 @@ def get_single_output(
     metric,
     eval_mode,
     theory_version,
+    demonstrations = [],
 ):
     file_name = file_path.split('/')[-1].split('.')[0]
     
-    new_result_dir = f"{os.path.dirname(result_dir)}/single_standard"
+    new_result_dir = f"{os.path.dirname(os.path.dirname(result_dir))}/single_standard/{len(demonstrations)}_shot"
     os.makedirs(new_result_dir, exist_ok=True)
     result_file = f'{new_result_dir}/{file_name}.json'
 
@@ -59,6 +87,7 @@ def get_single_output(
             result_dir = result_dir,
             overwrite = overwrite,
             theory_version = theory_version,
+            demonstrations = demonstrations,
         )
 
         pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
@@ -85,6 +114,7 @@ def get_output(
     result_dir = None,
     overwrite = False,
     theory_version = 'v1',
+    demonstrations = [],
 ):
     if prompt_name == "cot":
         output_1 = call_model(
@@ -94,6 +124,7 @@ def get_output(
             save_history=True,
             description=description,
             context=context,
+            demonstrations = demonstrations,
         )
         output_2 = call_model(
             prompt[1], 
@@ -103,6 +134,7 @@ def get_output(
             save_history=True,
             description=description,
             context=context,
+            demonstrations = demonstrations,
         )
         output_dict = {
             'output': output_2['output'],
@@ -115,6 +147,7 @@ def get_output(
             max_new_tokens=max_new_tokens,
             description=description,
             context=context,
+            demonstrations = demonstrations,
         )
         output_dict = {
             'output': output_dict_all['output'],
@@ -131,6 +164,7 @@ def get_output(
             context = context,
             overwrite = overwrite,
             version = theory_version,
+            demonstrations = demonstrations,
         )
     else:
         raise ValueError(f"Prompt name {prompt_name} not supported")
@@ -150,10 +184,11 @@ def evaluate(
     description = '',
     context = "",
     max_new_tokens = 1000,
-    example = False,
+    theory_example = False,
     not_load_model = False,
     theory_version = 'v1',
     ensemble = False,
+    n_demos = 0,
 ):    
     if ensemble:
         if len(model_name) <= 1:
@@ -170,6 +205,14 @@ def evaluate(
         raise ValueError(f'Eval mode {eval_mode} not supported by {dataset_name}, please choose from {support_datasets[dataset_name]["eval_mode"]}')
     if prompt_name not in eval_modes[eval_mode]:
         raise ValueError(f'Prompt name {prompt_name} not supported, please choose from {eval_modes[eval_mode]}')
+    if support_datasets[dataset_name] is None:
+        raise ValueError(f'Dataset {dataset_name} is not supported for evaluation!')
+    
+    if n_demos > 0:
+        if eval_mode != 'single':
+            raise ValueError('Demonstrations are only supported in single evaluation mode!')
+        if prompt_name != 'standard':
+            raise ValueError('Demonstrations are only supported in standard prompt!')
 
     set_seed(seed)
     dataset = load_dataset(dataset_name, binary_classification=True, description=description or context, eval_mode=eval_mode)
@@ -189,6 +232,7 @@ def evaluate(
                 raise ValueError(f"Dataset {dataset_name} does not have enough samples for label {label}")
             sampled_label_dataset = label_dataset.sample(n=n_per_class, random_state=seed, replace=False)
             sampled_datasets.append(sampled_label_dataset)
+
         dataset = pd.concat(sampled_datasets, ignore_index=True).reset_index(drop=True)
         dataset = dataset.sample(frac=1, random_state=seed).reset_index(drop=True)
 
@@ -207,40 +251,42 @@ def evaluate(
     if ensemble:
         result_dirs = []
         for i, model in enumerate(model_name):
-            if description[i]:
-                folder_name = f'description_{description[i]}'
-            elif context[i]:
-                folder_name = f'context_{context[i]}'
-            else:
-                folder_name = 'multimodal'
-
-            result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model}/{folder_name}/{eval_mode}_{prompt_name}' 
+            folder_name = get_folder_name(description[i], context[i])
+            result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model}/{folder_name}/{eval_mode}_{prompt_name}/{n_demos}_shot' 
             result_dirs.append(result_dir)
     else:
-        if description:
-            folder_name = f'description_{description}'
-        elif context:
-            folder_name = f'context_{context}'
-        else:
-            folder_name = 'multimodal'
+        folder_name = get_folder_name(description, context)
 
-        result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_name}/{folder_name}/{eval_mode}_{prompt_name}'
+        result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_name}/{folder_name}/{eval_mode}_{prompt_name}/{n_demos}_shot'
         os.makedirs(result_dir, exist_ok=True)
 
     if eval_mode == 'single':
+        if n_demos > 0:
+            demonstration_idxs = []
+            n_class = len(dataset['label'].unique())
+            for label in dataset['label'].unique():
+                label_dataset = dataset[dataset['label'] == label]
+                demonstration_idxs.extend(label_dataset.sample(n=n_demos // n_class, random_state=seed, replace=False).index.tolist())
+            random.shuffle(demonstration_idxs)
+
+            demonstrations = []
+            for idx in demonstration_idxs:
+                demonstrations.append({
+                    "image_paths": [get_file_path(dataset, context, description, idx)],
+                    "label": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](dataset.loc[idx, 'label']),
+                })
+
         corr = 0
         tqdm_bar = tqdm(range(len(dataset)))
         for i in tqdm_bar:
-            if context:
-                file_path = {
-                    "image_path": dataset.loc[i, 'image_path'],
-                    "description_path": dataset.loc[i, 'description_path'],
-                }
-            elif description:
-                file_path = dataset.loc[i, 'description_path']
-            else:
-                file_path = dataset.loc[i, 'image_path']
+            file_path = get_file_path(
+                dataset = dataset,
+                context = context,
+                description = description,
+                idx = i,
+            )
             label = dataset.loc[i, 'label']
+
             result = get_single_output(
                 file_path = file_path,
                 label = label,
@@ -252,11 +298,12 @@ def evaluate(
                 description = description,
                 max_new_tokens = max_new_tokens,
                 context = context,
-                example = example, 
+                example = theory_example, 
                 model_name = model_name,
                 metric = metric,
                 eval_mode = eval_mode,
                 theory_version = theory_version,
+                demonstrations = demonstrations,
             )
 
             if result['pred_label'] == label: corr += 1
@@ -271,7 +318,6 @@ def evaluate(
         not_funny_data = dataset[dataset['label'] == 0].reset_index(drop=True)
 
         all_pairs_idx = list(product(range(len(funny_data)), range(len(not_funny_data))))
-        # Shuffle the pairs
         random.shuffle(all_pairs_idx)
 
         tqdm_bar, idx = tqdm(all_pairs_idx), 0
@@ -288,21 +334,8 @@ def evaluate(
             else:
                 idx += 1
 
-            if description:
-                funny_path = funny_data.loc[i, 'description_path']
-                not_funny_path = not_funny_data.loc[j, 'description_path']
-            elif context:
-                funny_path = {
-                    "image_path": funny_image_path,
-                    "description_path": funny_data.loc[i, 'description_path'],
-                }
-                not_funny_path = {
-                    "image_path": not_funny_image_path,
-                    "description_path": not_funny_data.loc[j, 'description_path'],
-                }
-            else:
-                funny_path = funny_image_path
-                not_funny_path = not_funny_image_path
+            funny_path = get_file_path(funny_data, context, description, i)
+            not_funny_path = get_file_path(not_funny_data, context, description, j)
 
             funny_file_name = funny_image_path.split("/")[-1].split(".")[0]
             not_funny_file_name = not_funny_image_path.split("/")[-1].split(".")[0]
@@ -347,7 +380,7 @@ def evaluate(
                         description=description,
                         max_intermediate_tokens=max_new_tokens,
                         context=context,
-                        example = example,
+                        example = theory_example,
                         result_dir = result_dir,
                         overwrite = overwrite,
                         theory_version = theory_version,
@@ -364,7 +397,7 @@ def evaluate(
                         description=description,
                         max_intermediate_tokens=max_new_tokens,
                         context=context,
-                        example = example,
+                        example = theory_example,
                         result_dir = result_dir,
                         overwrite = overwrite,
                         theory_version = theory_version,
@@ -381,7 +414,7 @@ def evaluate(
                         description=description,
                         max_intermediate_tokens=max_new_tokens,
                         context=context,
-                        example = example,
+                        example = theory_example,
                         result_dir = result_dir,
                         overwrite = overwrite,
                         theory_version = theory_version,
@@ -395,7 +428,7 @@ def evaluate(
                         description=description,
                         max_intermediate_tokens=max_new_tokens,
                         context=context,
-                        example = example,
+                        example = theory_example,
                         result_dir = result_dir,
                         overwrite = overwrite,
                         theory_version = theory_version,
@@ -416,7 +449,7 @@ def evaluate(
                         description = description,
                         max_new_tokens = max_new_tokens,
                         context = context,
-                        example = example,
+                        example = theory_example,
                         model_name = model_name,
                         metric = metric,
                         eval_mode = eval_mode,
@@ -434,7 +467,7 @@ def evaluate(
                         description = description,
                         max_new_tokens = max_new_tokens,
                         context = context,
-                        example = example,
+                        example = theory_example,
                         model_name = model_name,
                         metric = metric,
                         eval_mode = eval_mode,
@@ -531,7 +564,7 @@ def evaluate(
                     description=description,
                     max_intermediate_tokens=max_new_tokens,
                     context=context,
-                    example = example,
+                    example = theory_example,
                     result_dir = result_dir,
                     overwrite = overwrite,
                     theory_version = theory_version,
@@ -577,10 +610,11 @@ if __name__ == '__main__':
     parser.add_argument('--description', type=str, nargs='+', default = [''])
     parser.add_argument('--context', type=str, nargs='+', default = [""])
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
-    parser.add_argument('--example', action='store_true')
+    parser.add_argument('--theory_example', action='store_true')
     parser.add_argument('--not_load_model', action='store_true', help="Do not load the model. Use this option only when results have already been stored and you want to read the existing results.")
     parser.add_argument('--theory_version', type=str, default='v1', choices=['v1', 'v2'])
     parser.add_argument('--ensemble', action='store_true')
+    parser.add_argument('--n_demos', type=int, default=0)
     args = parser.parse_args()
 
     print(__file__)
@@ -620,13 +654,14 @@ if __name__ == '__main__':
         log_wandb=args.wandb,
         overwrite=args.overwrite,
         eval_mode=args.eval_mode,
-        description=args.description,
-        context=args.context,
+        description=description,
+        context=context,
         max_new_tokens=args.max_new_tokens,
-        example = args.example,
+        theory_example = args.theory_example,
         not_load_model = args.not_load_model,
         theory_version = args.theory_version,
         ensemble = args.ensemble,
+        n_demos = args.n_demos,
     )
 
     if args.wandb:

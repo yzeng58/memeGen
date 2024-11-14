@@ -80,6 +80,7 @@ def call_qwen(
     seed = 42,  
     temperature = 0.1,
     context = "",
+    demonstrations = None,
     **kwargs,
 ):
     set_seed(seed)
@@ -153,6 +154,7 @@ def call_qwen(
         if save_history:
             messages.append({"role": "assistant", "content": output_dict['output']})
             output_dict['history'] = messages
+            
     elif qwen['type'] in ['qwen2.5']:
         if description == "" and image_paths: raise ValueError("Description is required for qwen2.5 series model!")
 
@@ -161,11 +163,33 @@ def call_qwen(
             messages = history
         else:
             messages = [{"role": "system", "content": system_prompts['qwen'][system_prompt]}]
-        user_prompt = ""
-        for i, image_path in enumerate(image_paths):
-            user_prompt += f"Meme {i+1}: {read_json(image_path)['description']}\n"
-        user_prompt += prompt
-        messages.append({"role": "user", "content": user_prompt})
+
+        if demonstrations:
+            messages.append({"role": "user", "content": prompt})
+            for sample_idx, sample in enumerate(demonstrations):
+                image_paths = sample['image_paths']
+
+                if len(image_paths) > 1:
+                    for image_idx, image_path in enumerate(image_paths):
+                        user_prompt = f"Meme {image_idx+1}: {read_json(image_path)['description']}"
+                else:
+                    user_prompt = f"Meme: {read_json(image_paths[0])['description']}"
+
+                messages.append({"role": "user", "content": user_prompt})
+
+                if sample_idx < len(demonstrations) - 1:
+                    # this is not the test sample
+                    if not 'label' in sample:
+                        raise ValueError("Label is required for non-test samples!")
+                    messages.append({"role": "assistant", "content": sample['label']})
+        else:
+            user_prompt = ""
+            for i, image_path in enumerate(image_paths):
+                user_prompt += f"Meme {i+1}: {read_json(image_path)['description']}\n"
+            user_prompt += prompt
+            messages.append({"role": "user", "content": user_prompt})
+
+
         text = tokenizer.apply_chat_template(
             messages,
             tokenize=False,

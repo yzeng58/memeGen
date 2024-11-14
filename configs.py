@@ -87,6 +87,9 @@ model_size = {
     "Mistral-Large-Instruct-2407": 123000000000,
     "Mistral-Small-Instruct-2409": 22000000000,
     'Pixtral-12B-2409': 12000000000,
+    "gemini-1.5-flash": 32000000000,
+    "gemini-1.5-flash-8b": 8000000000,
+    "gemini-1.5-pro": 120000000000,
     'stable-diffusion-3-medium-diffusers': 2000000000,
 }
 
@@ -108,6 +111,7 @@ prompt_processor_default["funniness"] = {
         'standard': {
             'prompt': "Is this meme funny? Please respond with a single letter, 'Y' for yes, 'N' for no.",
             'output_processor': lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1),
+            'label_processor': lambda x: {1: 'y', 0: 'n'}[x],
         }
     },
     'pairwise': {

@@ -74,6 +74,7 @@ def call_gpt(
     description = '',
     context = "",
     temperature: float = 0.0,
+    demonstrations = None,
     **kwargs,
 ):
     model, client, api_key = gpt['model'], gpt['client'], gpt['api_key']
