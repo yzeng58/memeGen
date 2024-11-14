@@ -209,8 +209,8 @@ def evaluate(
         raise ValueError(f'Dataset {dataset_name} is not supported for evaluation!')
     
     if n_demos > 0:
-        if eval_mode != 'single':
-            raise ValueError('Demonstrations are only supported in single evaluation mode!')
+        if eval_mode == 'threeway':
+            raise ValueError('Demonstrations are not supported in threeway evaluation mode!')
         if prompt_name != 'standard':
             raise ValueError('Demonstrations are only supported in standard prompt!')
 
@@ -326,6 +326,32 @@ def evaluate(
         all_pairs_idx = list(product(range(len(funny_data)), range(len(not_funny_data))))
         random.shuffle(all_pairs_idx)
 
+        if n_demos > 0:
+            demonstration_idxs = random.sample(all_pairs_idx, n_demos)
+
+            n_true = n_demos // 2
+            n_false = n_demos - n_true
+            demonstration_labels = [0] * n_true + [1] * n_false
+            random.shuffle(demonstration_labels)
+
+            if random.choice([True, False]): demonstration_labels = [1 - label for label in demonstration_labels]
+
+            demonstrations = []
+            for idx, (demonstration_idx, demonstration_label) in enumerate(zip(demonstration_idxs, demonstration_labels)):
+                images_paths = [
+                    get_file_path(funny_data, context, description, demonstration_idx[0]), 
+                    get_file_path(not_funny_data, context, description, demonstration_idx[1])
+                ]
+                if demonstration_label: images_paths = images_paths[::-1]
+
+                demonstrations.append({
+                    "image_paths": images_paths,
+                    "label": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](demonstration_label),
+                })
+
+        else:
+            demonstrations = []
+
         tqdm_bar, idx = tqdm(all_pairs_idx), 0
         for i, j in tqdm_bar:
             if n_pairs >=0 and idx >= n_pairs: break
@@ -390,6 +416,7 @@ def evaluate(
                         result_dir = result_dir,
                         overwrite = overwrite,
                         theory_version = theory_version,
+                        demonstrations = demonstrations,
                     )
         
                     pred_label_1 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
@@ -407,6 +434,7 @@ def evaluate(
                         result_dir = result_dir,
                         overwrite = overwrite,
                         theory_version = theory_version,
+                        demonstrations = demonstrations,
                     )
                     pred_label_2 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_2['output'])
 
@@ -424,6 +452,7 @@ def evaluate(
                         result_dir = result_dir,
                         overwrite = overwrite,
                         theory_version = theory_version,
+                        demonstrations = demonstrations,
                     )
                     compare_output_dict_2 = get_output(
                         call_model, 
@@ -438,6 +467,7 @@ def evaluate(
                         result_dir = result_dir,
                         overwrite = overwrite,
                         theory_version = theory_version,
+                        demonstrations = demonstrations,
                     )
 
                     pred_label_1 = int(compare_output_dict_1['output'] <= compare_output_dict_2['output'])
@@ -460,6 +490,7 @@ def evaluate(
                         metric = metric,
                         eval_mode = eval_mode,
                         theory_version = theory_version,
+                        demonstrations = demonstrations,
                     )
 
                     compare_output_dict_2 = get_single_output(
@@ -478,6 +509,7 @@ def evaluate(
                         metric = metric,
                         eval_mode = eval_mode,
                         theory_version = theory_version,
+                        demonstrations = demonstrations,
                     )
 
                     pred_label_1 = int(compare_output_dict_1['pred_label'] <= compare_output_dict_2['pred_label'])

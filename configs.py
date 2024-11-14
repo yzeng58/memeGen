@@ -117,6 +117,7 @@ prompt_processor_default["funniness"] = {
         'standard': {
             'prompt': "Which meme is more funny? Please respond with a single letter, 1 for the first meme, 2 for the second meme. Pleae do not generate any other thing and just answer with 1 or 2 so I can handle your response easily.",
             'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1),
+            'label_processor': lambda x: {0: '1', 1: '2'}[x],
         },
         'cot': {
             'prompt': [
