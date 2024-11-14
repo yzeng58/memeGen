@@ -154,7 +154,6 @@ def call_llama(
         text_prompt = process_sample_feature(image_paths, context, llama)
         if not demonstrations: text_prompt += prompt
         messages.append({"role": "user", "content": text_prompt})
-        pdb.set_trace()
 
         outputs = pipeline(messages, max_new_tokens=max_new_tokens)
         output = outputs[0]['generated_text']
