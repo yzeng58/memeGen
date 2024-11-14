@@ -10,7 +10,7 @@ from environment import WANDB_INFO
 import pandas as pd
 from tqdm import tqdm
 from itertools import product
-import random
+import random, warnings
 
 def get_single_output(
     file_path,
@@ -153,11 +153,30 @@ def evaluate(
     example = False,
     not_load_model = False,
     theory_version = 'v1',
+    ensemble = False,
 ):    
+    if ensemble:
+        if len(model_name) <= 1:
+            raise ValueError('Ensemble evaluation mode requires multiple model names!')
+        if len(description) != len(model_name) or len(context) != len(model_name):
+            raise ValueError('Ensemble evaluation mode requires the same number of descriptions and contexts for each model!')
+        if prompt_name != "standard" or eval_mode != "pairwise":
+            raise ValueError('Ensemble evaluation mode only supports standard prompt and pairwise evaluation mode!')
+        if not not_load_model:
+            warnings.warn('Ensemble evaluation mode does not support loading models. Setting not_load_model=True.')
+            not_load_model = True
+        
+    if eval_mode not in support_datasets[dataset_name]["eval_mode"]:
+        raise ValueError(f'Eval mode {eval_mode} not supported by {dataset_name}, please choose from {support_datasets[dataset_name]["eval_mode"]}')
+    if prompt_name not in eval_modes[eval_mode]:
+        raise ValueError(f'Prompt name {prompt_name} not supported, please choose from {eval_modes[eval_mode]}')
+
     set_seed(seed)
     dataset = load_dataset(dataset_name, binary_classification=True, description=description or context, eval_mode=eval_mode)
     metric = support_datasets[dataset_name]["metric"]
     sampled_datasets = []
+    if (not ensemble) and (eval_mode not in prompt_processor[model_name][metric]):
+        raise ValueError(f'Eval mode {eval_mode} not supported, please choose from {list(prompt_processor[model_name][metric].keys())}')
     
     if n_per_class >= 0:
         if eval_mode == 'threeway':
@@ -178,29 +197,35 @@ def evaluate(
     else:
         call_model = load_model(model_name, api_key=api_key)
 
-    if eval_mode not in support_datasets[dataset_name]["eval_mode"]:
-        raise ValueError(f'Eval mode {eval_mode} not supported by {dataset_name}, please choose from {support_datasets[dataset_name]["eval_mode"]}')
-    if eval_mode not in prompt_processor[model_name][metric]:
-        raise ValueError(f'Eval mode {eval_mode} not supported, please choose from {list(prompt_processor[model_name][metric].keys())}')
-    if prompt_name not in eval_modes[eval_mode]:
-        raise ValueError(f'Prompt name {prompt_name} not supported, please choose from {eval_modes[eval_mode]}')
-
-    if prompt_name == "theory":
+    if prompt_name == "theory" or ensemble:
         # the pipeline is implemented in the score_meme_based_on_theory function
         prompt = None
     else:
         prompt = prompt_processor[model_name][metric][eval_mode][prompt_name]['prompt']
 
-    if description:
-        folder_name = f'description_{description}'
-    elif context:
-        folder_name = f'context_{context}'
+
+    if ensemble:
+        result_dirs = []
+        for i, model in enumerate(model_name):
+            if description[i]:
+                folder_name = f'description_{description[i]}'
+            elif context[i]:
+                folder_name = f'context_{context[i]}'
+            else:
+                folder_name = 'multimodal'
+
+            result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model}/{folder_name}/{eval_mode}_{prompt_name}' 
+            result_dirs.append(result_dir)
     else:
-        folder_name = 'multimodal'
+        if description:
+            folder_name = f'description_{description}'
+        elif context:
+            folder_name = f'context_{context}'
+        else:
+            folder_name = 'multimodal'
 
-    result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_name}/{folder_name}/{eval_mode}_{prompt_name}'
-
-    os.makedirs(result_dir, exist_ok=True)
+        result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_name}/{folder_name}/{eval_mode}_{prompt_name}'
+        os.makedirs(result_dir, exist_ok=True)
 
     if eval_mode == 'single':
         corr = 0
@@ -283,17 +308,33 @@ def evaluate(
             not_funny_file_name = not_funny_image_path.split("/")[-1].split(".")[0]
 
             result_name = f'{funny_file_name}_{not_funny_file_name}'
-            result_file = f'{result_dir}/{result_name}.json'
+
 
             read_result = False
-            if os.path.exists(result_file) and not overwrite and not prompt_name == "theory":
-                try:
+            if ensemble:
+                best_consistency_idx = []
+                for i, result_dir in enumerate(result_dirs):
+                    result_file = f'{result_dir}/{result_name}.json'
                     result = read_json(result_file)
-                    read_result = True
-                except KeyboardInterrupt:
-                    raise KeyboardInterrupt
-                except:
-                    pass
+                    if result['pred_label_1'] == 1 - result['pred_label_2']:
+                        best_consistency_idx.append(i)
+                if len(best_consistency_idx) == 0:
+                    best_consistency_idx = list(range(len(result_dirs)))
+
+                used_idx = random.choice(best_consistency_idx)
+                result = read_json(f'{result_dirs[used_idx]}/{result_name}.json')
+                read_result = True
+            else:
+                result_file = f'{result_dir}/{result_name}.json'
+
+                if os.path.exists(result_file) and not overwrite and not prompt_name == "theory":
+                    try:
+                        result = read_json(result_file)
+                        read_result = True
+                    except KeyboardInterrupt:
+                        raise KeyboardInterrupt
+                    except:
+                        pass
             
             if not read_result:
                 if not prompt_name in ["theory", "single"]:
@@ -523,7 +564,7 @@ if __name__ == '__main__':
     for model in support_llms:
         model_names.extend(support_llms[model])
 
-    parser.add_argument('--model_name', type=str, default='gpt-4o-mini', choices=model_names)
+    parser.add_argument('--model_name', type=str, nargs='+', default=['gpt-4o-mini'], choices=model_names)
     parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=list(support_datasets.keys()))
     parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--api_key', type=str, default='yz')
@@ -533,26 +574,43 @@ if __name__ == '__main__':
     parser.add_argument('--wandb', action='store_true')
     parser.add_argument('--overwrite', action='store_true')
     parser.add_argument('--eval_mode', type=str, default='pairwise', choices=list(eval_modes.keys()))
-    parser.add_argument('--description', type=str, default = '')
-    parser.add_argument('--context', type=str, default = "")
+    parser.add_argument('--description', type=str, nargs='+', default = [''])
+    parser.add_argument('--context', type=str, nargs='+', default = [""])
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
     parser.add_argument('--example', action='store_true')
     parser.add_argument('--not_load_model', action='store_true', help="Do not load the model. Use this option only when results have already been stored and you want to read the existing results.")
     parser.add_argument('--theory_version', type=str, default='v1', choices=['v1', 'v2'])
+    parser.add_argument('--ensemble', action='store_true')
     args = parser.parse_args()
 
     print(__file__)
     print_configs(args)
 
+    if args.ensemble:
+        model_name = args.model_name
+        description = args.description
+        context = args.context
+    else:
+        model_name = args.model_name[0]
+        description = args.description[0]
+        context = args.context[0]
+
     if args.wandb:
+        config = {k:v for k,v in vars(args).items()}
+        config.update({
+            'model_name': model_name,
+            'description': description,
+            'context': context,
+        })
+        
         wandb.init(
             project = WANDB_INFO['project'],
             entity = WANDB_INFO['entity'],
-            config = vars(args),
+            config = config,
         )
     
     evaluate(
-        model_name=args.model_name,
+        model_name=model_name,
         dataset_name=args.dataset_name,
         prompt_name=args.prompt_name,
         api_key=args.api_key,
@@ -568,6 +626,7 @@ if __name__ == '__main__':
         example = args.example,
         not_load_model = args.not_load_model,
         theory_version = args.theory_version,
+        ensemble = args.ensemble,
     )
 
     if args.wandb:

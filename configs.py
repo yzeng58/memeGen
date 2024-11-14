@@ -195,7 +195,7 @@ prompt_processor_default["generation"] = {
             TEXT OVERLAY: 
             TOP TEXT: "[Text to be placed on the top of the image]"
             BOTTOM TEXT: "[Text to be placed on the bottom of the image]"
-            """,
+        """,
         "output_processor": lambda x: {
             'image_description': re.search(r'IMAGE DESCRIPTION:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
             'top_text': re.search(r'TOP TEXT:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
