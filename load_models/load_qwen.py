@@ -3,7 +3,6 @@ root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
 from transformers import AutoModelForCausalLM, AutoTokenizer, Qwen2VLForConditionalGeneration, AutoProcessor
-from transformers.generation import GenerationConfig
 from configs import system_prompts
 from helper import read_json, set_seed
 from qwen_vl_utils import process_vision_info
@@ -35,15 +34,6 @@ def load_qwen(
             'model': model,
             'processor': processor,
             'type': 'qwen2-vl',
-        }
-    elif 'qwen-vl' in model_name.lower():
-        tokenizer = AutoTokenizer.from_pretrained(f"Qwen/{model_name}", trust_remote_code=True)
-        model = AutoModelForCausalLM.from_pretrained(f"Qwen/{model_name}", device_map='auto', trust_remote_code=True).eval()
-        model.generation_config = GenerationConfig.from_pretrained(f"Qwen/{model_name}", trust_remote_code=True)
-        qwen = {
-            'model': model,
-            'tokenizer': tokenizer,
-            'type': 'qwen-vl',
         }
     else:
         raise ValueError(f"Model {model_name} not found")
@@ -103,32 +93,9 @@ def call_qwen(
     **kwargs,
 ):
     set_seed(seed)
-    if qwen['type'] in ['qwen-vl']:
-        model, tokenizer = qwen['model'], qwen['tokenizer']  
-        # make messages
-        contents = []
-        for i, image_path in enumerate(image_paths):
-            if description:
-                contents.append(process_text_qwen(f"Meme {i+1}: {read_json(image_path)['description']}\n"))
-            elif context:
-                contents.append(process_text_qwen(f"Meme {i+1}: {read_json(image_path['description_path'])['description']}\n"))
-                contents.append(process_image_qwen(image_path['image_path']))
-            else:
-                contents.append(process_image_qwen(image_path))
-        contents.append(process_text_qwen(prompt))
-        
-        query = tokenizer.from_list_format(contents)
-        output_dict = {}
-        output_dict['output'], output_dict['history'] = model.chat(
-            tokenizer, 
-            query=query, 
-            history=history,
-            system = system_prompts['qwen'][system_prompt],
-        )
 
-        if not save_history: output_dict.pop('history')
 
-    elif qwen['type'] in ['qwen2-vl']:
+    if qwen['type'] in ['qwen2-vl']:
         model, processor = qwen['model'], qwen['processor']
         
         if history:

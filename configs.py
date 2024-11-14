@@ -26,7 +26,6 @@ support_llms = {
         "Llama-3.2-90B-Vision-Instruct",
     ],
     'qwen': [
-        'Qwen-VL-Chat',
         'Qwen2-VL-2B-Instruct',
         'Qwen2-VL-7B-Instruct',
         'Qwen2-VL-72B-Instruct',
