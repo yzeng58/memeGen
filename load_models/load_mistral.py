@@ -25,6 +25,15 @@ def load_mistral(
 
     return mistral
 
+def process_sample_feature(
+    image_paths,
+):
+    user_prompt = ""
+    for i, image_path in enumerate(image_paths):
+        idx_str = f" {i+1}" if len(image_paths) > 1 else ""
+        user_prompt += f"Meme{idx_str}: {read_json(image_path)['description']}\n"
+    return user_prompt
+
 def call_mistral(
     mistral,
     prompt,
@@ -36,6 +45,7 @@ def call_mistral(
     max_new_tokens = 500,
     seed = 42,  
     temperature = 0.1,
+    demonstrations = [],
     **kwargs,
 ):
     set_seed(seed)
@@ -48,10 +58,18 @@ def call_mistral(
     else:
         conversation = [{"role": "system", "content": system_prompts['mistral'][system_prompt]}]
 
-    user_prompt = ""
-    for i, image_path in enumerate(image_paths):
-        user_prompt += f"Meme {i+1}: {read_json(image_path)['description']}\n"
-    user_prompt += prompt
+    if demonstrations:
+        for sample_idx, sample in enumerate(demonstrations):
+            user_prompt = process_sample_feature(sample['image_paths'])
+            if sample_idx == 0: user_prompt = prompt + user_prompt
+            conversation.append({"role": "user", "content": user_prompt})
+
+            if not 'label' in sample:
+                raise ValueError("Label is required for non-test samples!")
+            conversation.append({"role": "assistant", "content": sample['label']})
+
+    user_prompt = process_sample_feature(image_paths)
+    if not demonstrations: user_prompt = user_prompt + prompt
     conversation.append({"role": "user", "content": user_prompt})
     
     inputs = tokenizer.apply_chat_template(

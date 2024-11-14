@@ -55,6 +55,7 @@ def call_llama(
     system_prompt = 'evaluator',
     seed = 42,
     context = "",
+    demonstrations = [],
     **kwargs,
 ):
     set_seed(seed)

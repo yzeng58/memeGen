@@ -108,7 +108,7 @@ def call_pixtral(
 
             if not 'label' in sample:
                 raise ValueError("Label is required for non-test samples!")
-            messages.append(AssistantMessage(content=[TextChunk(text=sample['label'])]))
+            messages.append(AssistantMessage(content=sample['label']))
 
     contents = process_sample_feature(
         description=description,
