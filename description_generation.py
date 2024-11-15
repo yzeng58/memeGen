@@ -46,7 +46,12 @@ def generate_dataset_details(
             continue
         
         # Generate description
-        description = call_model(prompt, [image_path], max_new_tokens=max_new_tokens)
+        description = call_model(
+            prompt, 
+            [image_path], 
+            max_new_tokens=max_new_tokens,
+            system_prompt = 'evaluator',
+        )
         
         # Save result
         result = {

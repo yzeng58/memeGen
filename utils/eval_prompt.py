@@ -22,6 +22,7 @@ def get_output(
             image_paths, 
             max_new_tokens=max_intermediate_tokens,
             save_history=True,
+            system_prompt = 'evaluator',
         )
         print("======================================================")
         print('First step output:')
@@ -32,6 +33,7 @@ def get_output(
             max_new_tokens=max_new_tokens,
             history=output_dict_1['history'],
             save_history=True,
+            system_prompt = 'evaluator',
         )
         print("======================================================")
         print('Second step output:')
@@ -42,6 +44,7 @@ def get_output(
             prompt, 
             image_paths, 
             max_new_tokens=max_new_tokens,
+            system_prompt = 'evaluator',
         )
         print("======================================================")
         print('Output:')

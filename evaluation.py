@@ -125,6 +125,7 @@ def get_output(
             description=description,
             context=context,
             demonstrations = demonstrations,
+            system_prompt = 'evaluator',
         )
         output_2 = call_model(
             prompt[1], 
@@ -135,6 +136,7 @@ def get_output(
             description=description,
             context=context,
             demonstrations = demonstrations,
+            system_prompt = 'evaluator',
         )
         output_dict = {
             'output': output_2['output'],
@@ -148,6 +150,7 @@ def get_output(
             description=description,
             context=context,
             demonstrations = demonstrations,
+            system_prompt = 'evaluator',
         )
         output_dict = {
             'output': output_dict_all['output'],
@@ -662,7 +665,7 @@ if __name__ == '__main__':
     for model in support_llms:
         model_names.extend(support_llms[model])
 
-    parser.add_argument('--model_name', type=str, nargs='+', default=['gpt-4o-mini'], choices=model_names)
+    parser.add_argument('--model_name', type=str, nargs='+', default=['gemini-1.5-flash'], choices=model_names)
     parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=list(support_datasets.keys()))
     parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--api_key', type=str, default='yz')

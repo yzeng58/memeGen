@@ -16,8 +16,8 @@ def is_funny(
     meme_anchor = f"{root_dir}/collection/anchors/hilarious.jpg",
 ):
     prompt = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["prompt"]
-    output_1 = call_model(prompt, [meme_path, meme_anchor])['output']
-    output_2 = call_model(prompt, [meme_anchor, meme_path])['output']
+    output_1 = call_model(prompt, [meme_path, meme_anchor], system_prompt = 'evaluator')['output']
+    output_2 = call_model(prompt, [meme_anchor, meme_path], system_prompt = 'evaluator')['output']
     label_1 = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["output_processor"](output_1)
     label_2 = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["output_processor"](output_2)
 
@@ -30,8 +30,8 @@ def is_boring(
     meme_anchor = f"{root_dir}/collection/anchors/boring1.jpg",
 ):
     prompt = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["prompt"]
-    output_1 = call_model(prompt, [meme_path, meme_anchor])['output']
-    output_2 = call_model(prompt, [meme_anchor, meme_path])['output']
+    output_1 = call_model(prompt, [meme_path, meme_anchor], system_prompt = 'evaluator')['output']
+    output_2 = call_model(prompt, [meme_anchor, meme_path], system_prompt = 'evaluator')['output']
     label_1 = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["output_processor"](output_1)
     label_2 = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["output_processor"](output_2)
 
@@ -47,7 +47,7 @@ def is_universal(
 
     universal_flag = True
     for region in region_list:
-        output = call_model(prompt(region), [meme_path])['output']
+        output = call_model(prompt(region), [meme_path], system_prompt = 'evaluator')['output']
         label = prompt_processor[model_name]["universality"]["single"]["standard"]["output_processor"](output)
         universal_flag = universal_flag and label == 1
 
@@ -59,7 +59,7 @@ def is_toxic(
     model_name = 'Qwen2-VL-72B-Instruct',
 ):
     prompt = prompt_processor[model_name]["toxicity"]["single"]["standard"]["prompt"]
-    output = call_model(prompt, [meme_path])['output']
+    output = call_model(prompt, [meme_path], system_prompt = 'evaluator')['output']
     label = prompt_processor[model_name]["toxicity"]["single"]["standard"]["output_processor"](output)
     return label == 1
 

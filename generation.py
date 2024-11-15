@@ -10,14 +10,14 @@ def generate_meme_llm(
     call_gen_llm,
     output_path: str,
     gen_llm_name: str = "gpt-4o-mini",
-    context: str = "Working hours are too long",
+    topic: str = "Working hours are too long",
     prompt_name: str = "standard",
     max_new_tokens: int = 200,
     meme_path: str = None,
     temperature: float = 0.5,
     seed: int = 42,
 ):
-    prompt = prompt_processor[gen_llm_name]["generation"][prompt_name]["prompt"](context)
+    prompt = prompt_processor[gen_llm_name]["generation"][prompt_name]["prompt"](topic)
     gen_llm_output = call_gen_llm(
         prompt = prompt,
         max_new_tokens = max_new_tokens,
@@ -32,7 +32,7 @@ def generate_meme_llm(
         "image_description": gen_llm_output_dict['image_description'],
         "top_text": gen_llm_output_dict['top_text'],
         "bottom_text": gen_llm_output_dict['bottom_text'],
-        "context": context,
+        "topic": topic,
         "llm_output": gen_llm_output,
         "meme_path": meme_path,
         "description": f"\n* image description: {gen_llm_output_dict['image_description']}\n* top text: {gen_llm_output_dict['top_text']}\n* bottom text: {gen_llm_output_dict['bottom_text']}",
@@ -81,10 +81,10 @@ def generate_meme_basic(
     result_dir: str,
     call_gen_llm,
     gen_llm_name: str,
-    context: str,
+    topic: str,
     prompt_name: str,
     max_new_tokens: int,
-    short_context: str,
+    short_topic: str,
     description_only: bool = False,
     call_dm = None,
     height: int = 300,
@@ -97,8 +97,8 @@ def generate_meme_basic(
     image_style: str = "cartoon",
 ): 
     time_string = time.strftime('%Y%m%d_%H%M%S')
-    meme_path = f"{result_dir}/meme/{short_context}_{time_string}.png"
-    output_path = f"{result_dir}/output/{short_context}_{time_string}.json"
+    meme_path = f"{result_dir}/meme/{short_topic}_{time_string}.png"
+    output_path = f"{result_dir}/output/{short_topic}_{time_string}.json"
     os.makedirs(f"{result_dir}/meme", exist_ok=True)
     os.makedirs(f"{result_dir}/output", exist_ok=True)
 
@@ -106,7 +106,7 @@ def generate_meme_basic(
         call_gen_llm = call_gen_llm,
         output_path = output_path,
         gen_llm_name = gen_llm_name,
-        context = context,
+        topic = topic,
         prompt_name = prompt_name,
         max_new_tokens = max_new_tokens,
         meme_path = meme_path,
@@ -130,13 +130,25 @@ def generate_meme_basic(
 
     return gen_llm_output_dict
 
-def generate_meme_good(
+def summarize_topic(
+    call_model,
+    content, 
+    max_new_tokens: int = 10,
+):
+    return call_model(
+        prompt = content,
+        image_paths = [],
+        max_new_tokens = max_new_tokens,
+        system_prompt = 'summarizer',
+    )
+
+def generate_meme_topic(
     call_gen_llm,
     description_only: bool = False,
     call_dm = None,
     gen_llm_name: str = "gpt-4o-mini",
     dm_name: str = "stable-diffusion-3-medium-diffusers",
-    context: str = "Working hours are too long",
+    topic: str = "Working hours are too long",
     prompt_name: str = "standard",
     height: int = 300,
     width: int = 300,
@@ -146,7 +158,7 @@ def generate_meme_good(
     seed: int = 1234,
     n_words_in_filename: int = 5,
     max_new_tokens: int = 200,
-    n_memes_per_context: int = 1,
+    n_memes_per_topic: int = 1,
     gen_mode: str = "standard",
     n_selected_from: int = 2,
     eval_prompt_name: str = "theory",
@@ -172,20 +184,24 @@ def generate_meme_good(
 
     print(
         f"""
-        Generating a meme based on the following context:
+        Generating a meme based on the following topic:
 
-        {context}
+        {topic}
         """
     )
 
     set_seed(seed)
-    context_no_punct = ''.join(c for c in context if c.isalnum() or c.isspace())
-    short_context = "_".join(random.choices(context_no_punct.split(" "), k=n_words_in_filename))
+    topic_no_punct = ''.join(c for c in topic if c.isalnum() or c.isspace())
+    topic_words = topic_no_punct.split()
+    n_words = min(n_words_in_filename, len(topic_words))
+    selected_indices = sorted(random.sample(range(len(topic_words)), n_words))
+    short_topic_words = [topic_words[i] for i in selected_indices]
+    short_topic = "_".join(short_topic_words)
 
     result_dir = f"{root_dir}/results/generation/{gen_llm_name}/{dm_name}/{prompt_name}"
     results = []
 
-    for i in range(n_memes_per_context):
+    for i in range(n_memes_per_topic):
         seed_iter = random.randint(1, 10000)
         print(f"| Generating meme {i+1}")
 
@@ -194,10 +210,10 @@ def generate_meme_good(
                 result_dir = result_dir,
                 call_gen_llm = call_gen_llm,
                 gen_llm_name = gen_llm_name,
-                context = context,
+                topic = topic,
                 prompt_name = prompt_name,
                 max_new_tokens = max_new_tokens,
-                short_context = short_context,
+                short_topic = short_topic,
                 description_only = description_only,
                 call_dm = call_dm,
                 height = height,
@@ -211,7 +227,7 @@ def generate_meme_good(
             )
         elif gen_mode == "selective":
             time_string = time.strftime('%Y%m%d_%H%M%S')
-            output_path = f"{result_dir}/output/final_{short_context}_{time_string}.json"
+            output_path = f"{result_dir}/output/final_{short_topic}_{time_string}.json"
             os.makedirs(f"{result_dir}/output", exist_ok=True)
 
             output_dict, best_idx = {}, 0
@@ -222,10 +238,10 @@ def generate_meme_good(
                     result_dir = result_dir,
                     call_gen_llm = call_gen_llm,
                     gen_llm_name = gen_llm_name,
-                    context = context,
+                    topic = topic,
                     prompt_name = prompt_name,
                     max_new_tokens = max_new_tokens,
-                    short_context = short_context,
+                    short_topic = short_topic,
                     description_only = description_only,
                     call_dm = call_dm,
                     height = height,
@@ -248,7 +264,7 @@ def generate_meme_good(
                             max_new_tokens = 1,
                             example = True,
                             description = gen_llm_output_dict['description'],
-                            context = "",
+                            topic = "",
                             theory_version = theory_version,
                         )
                     elif eval_mode == "meme":
@@ -260,7 +276,7 @@ def generate_meme_good(
                             max_new_tokens = 1,
                             example = True,
                             description = "",
-                            context = "",
+                            topic = "",
                             theory_version = theory_version,
                         )
 
@@ -282,38 +298,64 @@ def generate_meme_good(
         results.append(output_dict)
     return results
 
-def generate_batch_memes(
+def generate_meme_content(
+    call_gen_llm,
+    description_only: bool = False,
+    call_dm = None,
     gen_llm_name: str = "gpt-4o-mini",
     dm_name: str = "stable-diffusion-3-medium-diffusers",
-    contexts: List[str] = ["Working hours are too long", "The boss is too mean"],
-    gen_prompt_name: str = "standard",
-    api_key: str = "yz",
-    gen_mode: str = "standard",
-    eval_llm_name: str = None,
-    eval_prompt_name: str = "standard",
-    n_memes_per_context: int = 1,
-    n_selected_from: int = 3,
+    content: str = "Working hours are too long",
+    prompt_name: str = "standard",
     height: int = 300,
     width: int = 300,
     num_inference_steps: int = 28,
     guidance_scale: float = 7.0,
     negative_prompt: str = "",
+    seed: int = 1234,
     n_words_in_filename: int = 5,
     max_new_tokens: int = 200,
-    seed: int = 1234,
-): 
-    if gen_mode == "selective" and eval_llm_name is None:
-        raise ValueError("eval_llm_name must be provided if gen_mode is selective!")
+    n_memes_per_topic: int = 1,
+    gen_mode: str = "standard",
+    n_selected_from: int = 2,
+    eval_prompt_name: str = "theory",
+    eval_llm_name: str = None,
+    call_eval_llm = None,
+    temperature: float = 0.5,
+    eval_mode: Literal["description", "meme"] = "description",
+    theory_version: str = 'v1',
+    image_style: str = "cartoon",    
+):
+    topic = summarize_topic(
+        call_model = call_gen_llm,
+        content = content,
+        max_new_tokens = 20,
+        model_name = gen_llm_name,
+    )['output']
 
-    call_gen_llm = load_model(gen_llm_name, api_key=api_key)
-    call_dm = load_model(dm_name, api_key=api_key)
-
-    for context in contexts:
-        for _ in range(n_memes_per_context):
-            generate_meme_good(
-                call_gen_llm,
-                gen_mode,
-            )
-
-    if gen_mode == "selective":
-        call_eval_llm = load_model(eval_llm_name, api_key=api_key)
+    return generate_meme_topic(
+        call_gen_llm = call_gen_llm,
+        description_only = description_only,
+        call_dm = call_dm,
+        gen_llm_name = gen_llm_name,
+        dm_name = dm_name,
+        topic = topic,
+        prompt_name = prompt_name,
+        height = height,
+        width = width,
+        num_inference_steps = num_inference_steps,
+        guidance_scale = guidance_scale,
+        negative_prompt = negative_prompt,
+        seed = seed,
+        n_words_in_filename = n_words_in_filename,
+        max_new_tokens = max_new_tokens,
+        n_memes_per_topic = n_memes_per_topic,
+        gen_mode = gen_mode,
+        n_selected_from = n_selected_from,
+        eval_prompt_name = eval_prompt_name,
+        eval_llm_name = eval_llm_name,
+        call_eval_llm = call_eval_llm,
+        temperature = temperature,
+        eval_mode = eval_mode,
+        theory_version = theory_version,
+        image_style = image_style,
+    )
