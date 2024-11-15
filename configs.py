@@ -247,9 +247,9 @@ prompt_processor_default["generation"] = {
             BOTTOM TEXT: "[Text to be placed on the bottom of the image]"
         """,
         "output_processor": lambda x: {
-            'image_description': re.search(r'IMAGE DESCRIPTION:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
-            'top_text': re.search(r'TOP TEXT:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
-            'bottom_text': re.search(r'BOTTOM TEXT:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
+            'image_description': re.search(r'IMAGE DESCRIPTION:\s*([^\n]*)', x).group(1).strip('"[]'),
+            'top_text': re.search(r'TOP TEXT:\s*([^\n]*)', x).group(1).strip('"[]'),
+            'bottom_text': re.search(r'BOTTOM TEXT:\s*([^\n]*)', x).group(1).strip('"[]'),
         },
     },
     "lot": {
@@ -411,10 +411,15 @@ description_prompt = {
     'default': "Describe this meme in detail. Include information about the image content, text content, and any cultural references or context that might be relevant to understanding the humor."
 }
 
+summarizer_prompt_default = "Come up with up to three keywords that best describe the social post. Your response should only contain the keywords, and nothing else."
+summarizer_prompts = {}
+for support_model_category in support_llms:
+    for support_model in support_llms[support_model_category]:
+        summarizer_prompts[support_model] = summarizer_prompt_default
+
 system_prompts_default = {
     'evaluator': "You are a meme evaluation expert. You will follow the user's instruction and give your evaluation directly.",
     'default': "You are a helpful AI assistant. You will follow the user's instructions carefully and provide thoughtful responses.",
-    'summarizer': "Summarize the social post. Your response should be in less than 5 words.",
 }
 
 system_prompts = deepcopy(system_prompts_default)

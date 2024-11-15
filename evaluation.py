@@ -6,7 +6,7 @@ from helper import save_json, read_json, print_configs, set_seed, get_image_size
 from rate_meme.rate_meme import score_meme_based_on_theory
 from configs import support_llms, support_eval_datasets, prompt_processor, image_size_threshold, eval_modes
 
-from environment import WANDB_INFO
+from environment import WANDB_INFO_EVAL
 import pandas as pd
 from tqdm import tqdm
 from itertools import product
@@ -706,8 +706,8 @@ if __name__ == '__main__':
         })
         
         wandb.init(
-            project = WANDB_INFO['project'],
-            entity = WANDB_INFO['entity'],
+            project = WANDB_INFO_EVAL['project'],
+            entity = WANDB_INFO_EVAL['entity'],
             config = config,
         )
     

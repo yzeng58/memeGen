@@ -1,15 +1,17 @@
 import os, time, random
 root_dir = os.path.dirname(__file__)
-from configs import prompt_processor, support_gen_datasets, support_llms, support_diffusers
+from configs import prompt_processor, support_gen_datasets, support_llms, support_diffusers, summarizer_prompts
 from load_model import load_model
-from helper import combine_text_and_image, set_seed, save_json, print_configs
+from helper import combine_text_and_image, set_seed, save_json, print_configs, retry_if_fail
 from rate_meme.rate_meme import score_meme_based_on_theory
 from typing import List, Literal
 from load_dataset import load_dataset
 from load_model import load_model
 import argparse, wandb
-from environment import WANDB_INFO
+from environment import WANDB_INFO_GEN
 
+
+@retry_if_fail(max_retries=10, sleep_time=0.1)
 def generate_meme_llm(
     call_gen_llm,
     output_path: str,
@@ -24,6 +26,7 @@ def generate_meme_llm(
     prompt = prompt_processor[gen_llm_name]["generation"][prompt_name]["prompt"](topic)
     gen_llm_output = call_gen_llm(
         prompt = prompt,
+        description = "True",
         max_new_tokens = max_new_tokens,
         temperature = temperature,
         seed = seed,
@@ -112,6 +115,7 @@ def generate_meme_basic(
     os.makedirs(f"{result_dir}/meme", exist_ok=True)
     os.makedirs(f"{result_dir}/output", exist_ok=True)
 
+
     gen_llm_output_dict = generate_meme_llm(
         call_gen_llm = call_gen_llm,
         output_path = output_path,
@@ -123,6 +127,13 @@ def generate_meme_basic(
         temperature = temperature,
         seed = seed,
     )   
+
+    if wandb.run is not None:
+        wandb_step_log.update({
+            "image_description": gen_llm_output_dict['image_description'],
+            "top_text": gen_llm_output_dict['top_text'],
+            "bottom_text": gen_llm_output_dict['bottom_text'],
+        })
 
     if not description_only:
         generate_meme_dm(
@@ -138,18 +149,28 @@ def generate_meme_basic(
             seed = seed,
         )
 
+        if wandb.run is not None:
+            wandb_step_log.update({
+                "meme": wandb.Image(meme_path, caption=file_name),
+            })
+
+    if wandb.run is not None:
+        wandb.log(wandb_step_log)
+
     return gen_llm_output_dict
 
 def summarize_topic(
     call_model,
     content, 
     max_new_tokens: int = 10,
+    gen_llm_name: str = "gpt-4o-mini",
 ):
     return call_model(
-        prompt = content,
+        prompt = summarizer_prompts[gen_llm_name] + "\n" + content,
         image_paths = [],
         max_new_tokens = max_new_tokens,
-        system_prompt = 'summarizer',
+        system_prompt = 'default',
+        description = "True",
     )
 
 def generate_meme_topic(
@@ -350,20 +371,16 @@ def generate_meme_content(
         call_model = call_gen_llm,
         content = content,
         max_new_tokens = 20,
+        gen_llm_name = gen_llm_name,
     )['output']
-
     if wandb.run is not None:
-        wandb.log({
+        wandb_step_log.update({
             "content": content,
             "summarized_topic": topic,
-            "gen_llm_name": gen_llm_name,
-            "dm_name": dm_name,
-            "prompt_name": prompt_name,
-            "gen_mode": gen_mode,
-            "eval_mode": eval_mode,
-            "theory_version": theory_version,
-            "image_style": image_style
+            "file_name": file_name,
         })
+
+    print(f"Summarized topic: {topic}")
 
     return generate_meme_topic(
         call_gen_llm = call_gen_llm,
@@ -419,6 +436,7 @@ def generate(
     n_words_in_filename: int = 5,
     max_new_tokens: int = 200,
     n_memes_per_content: int = 1,
+    overwrite: bool = False,
 ):
     if dataset_name not in support_gen_datasets:
         raise ValueError(f"Dataset {dataset_name} not supported!")
@@ -436,6 +454,11 @@ def generate(
         for i in range(min(n_per_topic, len(dataset[topic]))):
             content = dataset[topic][i]
             file_name = f"{topic}_{i+1}"
+
+            if os.path.exists(f"{result_dir}/output/{file_name}.json") and os.path.exists(f"{result_dir}/meme/{file_name}.png") and not overwrite:
+                print(f"Meme {file_name} already exists, skipping...")
+                continue
+
             generate_meme_content(
                 call_gen_llm = call_gen_llm,
                 description_only = False,
@@ -501,6 +524,7 @@ if __name__ == "__main__":
     parser.add_argument('--max_new_tokens', type=int, default=200)
     parser.add_argument('--n_memes_per_content', type=int, default=1)
     parser.add_argument('--wandb', action='store_true')
+    parser.add_argument('--overwrite', action='store_true')
     args = parser.parse_args()
 
     print(__file__)
@@ -508,10 +532,11 @@ if __name__ == "__main__":
 
     if args.wandb:
         wandb.init(
-            project = WANDB_INFO['project'],
-            entity = WANDB_INFO['entity'],
+            project = WANDB_INFO_GEN['project'],
+            entity = WANDB_INFO_GEN['entity'],
             config = vars(args),
         )
+        wandb_step_log = {}
 
     generate(
         gen_llm_name = args.gen_llm_name,
@@ -537,4 +562,5 @@ if __name__ == "__main__":
         n_words_in_filename = args.n_words_in_filename,
         max_new_tokens = args.max_new_tokens,
         n_memes_per_content = args.n_memes_per_content,
+        overwrite = args.overwrite,
     )
