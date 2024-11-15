@@ -2,7 +2,7 @@ import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
-from configs import prompt_processor, get_dataset_dir, support_llms, support_datasets, meme_anchors, image_size_threshold
+from configs import prompt_processor, get_dataset_dir, support_llms, support_eval_datasets, meme_anchors, image_size_threshold
 from tqdm import tqdm
 from load_model import load_model
 from load_dataset import load_dataset
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     for model in support_llms:
         model_names.extend(support_llms[model])
 
-    parser.add_argument("--dataset_name", type=str, default="memotion", choices=list(support_datasets.keys()))
+    parser.add_argument("--dataset_name", type=str, default="memotion", choices=list(support_eval_datasets.keys()))
     parser.add_argument("--model_name", type=str, default="Qwen2-VL-72B-Instruct", choices=model_names)
     parser.add_argument("--api_key", type=str, default="yz")
     parser.add_argument("--description", type=str, default="")

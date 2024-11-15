@@ -4,7 +4,7 @@ import os, wandb, argparse, pdb
 root_dir = os.path.dirname(__file__)
 from helper import save_json, read_json, print_configs, set_seed, get_image_size
 from rate_meme.rate_meme import score_meme_based_on_theory
-from configs import support_llms, support_datasets, prompt_processor, image_size_threshold, eval_modes
+from configs import support_llms, support_eval_datasets, prompt_processor, image_size_threshold, eval_modes
 
 from environment import WANDB_INFO
 import pandas as pd
@@ -204,11 +204,11 @@ def evaluate(
             warnings.warn('Ensemble evaluation mode does not support loading models. Setting not_load_model=True.')
             not_load_model = True
         
-    if eval_mode not in support_datasets[dataset_name]["eval_mode"]:
-        raise ValueError(f'Eval mode {eval_mode} not supported by {dataset_name}, please choose from {support_datasets[dataset_name]["eval_mode"]}')
+    if eval_mode not in support_eval_datasets[dataset_name]["eval_mode"]:
+        raise ValueError(f'Eval mode {eval_mode} not supported by {dataset_name}, please choose from {support_eval_datasets[dataset_name]["eval_mode"]}')
     if prompt_name not in eval_modes[eval_mode]:
         raise ValueError(f'Prompt name {prompt_name} not supported, please choose from {eval_modes[eval_mode]}')
-    if support_datasets[dataset_name] is None:
+    if support_eval_datasets[dataset_name] is None:
         raise ValueError(f'Dataset {dataset_name} is not supported for evaluation!')
     
     if n_demos > 0:
@@ -219,7 +219,7 @@ def evaluate(
 
     set_seed(seed)
     dataset = load_dataset(dataset_name, binary_classification=True, description=description or context, eval_mode=eval_mode)
-    metric = support_datasets[dataset_name]["metric"]
+    metric = support_eval_datasets[dataset_name]["metric"]
     sampled_datasets = []
     if (not ensemble) and (eval_mode not in prompt_processor[model_name][metric]):
         raise ValueError(f'Eval mode {eval_mode} not supported, please choose from {list(prompt_processor[model_name][metric].keys())}')
@@ -666,7 +666,7 @@ if __name__ == '__main__':
         model_names.extend(support_llms[model])
 
     parser.add_argument('--model_name', type=str, nargs='+', default=['gemini-1.5-flash'], choices=model_names)
-    parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=list(support_datasets.keys()))
+    parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=list(support_eval_datasets.keys()))
     parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--n_per_class', type=int, default=-1, help='-1 for all, otherwise random sample n_per_class for each class')

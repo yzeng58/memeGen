@@ -430,7 +430,7 @@ eval_modes = {
     "threeway": ["standard", "cot"],
 }
 
-support_datasets = {
+support_eval_datasets = {
     'memotion': {
         "metric": "funniness",
         "eval_mode": ["single", "pairwise"],
@@ -463,6 +463,9 @@ support_datasets = {
         "metric": "alignment",
         "eval_mode": ["single", "threeway"],
     },
+}
+
+support_gen_datasets = {
     'ours_gen_v1': None,
 }
 

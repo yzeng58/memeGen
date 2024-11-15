@@ -4,7 +4,7 @@ sys.path.append(root_dir)
 from load_dataset import load_dataset
 from load_model import load_model
 from helper import print_configs
-from configs import support_models, support_datasets, prompt_processor
+from configs import support_models, support_eval_datasets, prompt_processor
 import pandas as pd
 from tqdm import tqdm
 
@@ -161,7 +161,7 @@ if __name__ == '__main__':
         model_names.extend(support_models[model])
 
     parser.add_argument('--model_name', type=str, default='gpt-4o-mini', choices=model_names)
-    parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=support_datasets)
+    parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=support_eval_datasets)
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--n_per_class', type=int, default=2)
     parser.add_argument('--seed', type=int, default=42)
