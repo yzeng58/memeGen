@@ -439,18 +439,26 @@ support_eval_datasets = {
     'memotion': {
         "metric": "funniness",
         "eval_mode": ["single", "pairwise"],
+        "train_test_split": False,
+        "difficulty": ["easy"],
     },
     'relca': {
         "metric": "funniness",
         "eval_mode": ["single", "pairwise"],
+        "train_test_split": True,
+        "difficulty": ["easy", "medium", "hard"],
     },
     'ours_v2': {
         "metric": "funniness",
         "eval_mode": ["single", "pairwise"],
+        "train_test_split": False,
+        "difficulty": ["easy"],
     },
     'ours_v3': {
         "metric": "funniness",
         "eval_mode": ["single", "pairwise"],
+        "train_test_split": False,
+        "difficulty": ["easy"],
     },
     '130k': None,
     'vineeth': None,

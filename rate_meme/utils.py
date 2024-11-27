@@ -117,3 +117,4 @@ def get_score_v3(
         }
 
     return parsed_data
+

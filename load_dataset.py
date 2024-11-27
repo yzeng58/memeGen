@@ -3,6 +3,8 @@ def load_dataset(
     description: str = '',
     binary_classification: bool = False,
     eval_mode: str = 'pairwise',
+    train_test_split: bool = False,
+    difficulty: str = 'easy',
 ):
     if dataset_name == 'memotion':
         from load_datasets.load_memotion import load_memotion
@@ -50,7 +52,11 @@ def load_dataset(
         return load_metmeme()
     elif dataset_name == "relca":
         from load_datasets.load_relca import load_relca
-        return load_relca(description=description)
+        return load_relca(
+            description=description, 
+            train_test_split=train_test_split, 
+            difficulty=difficulty,
+        )
     elif dataset_name == "meta_hateful":
         from load_datasets.load_meta_hateful import load_meta_hateful
         return load_meta_hateful(description=description)

@@ -3,41 +3,15 @@ from load_model import load_model
 import os, wandb, argparse, pdb
 root_dir = os.path.dirname(__file__)
 from helper import save_json, read_json, print_configs, set_seed, get_image_size
-from rate_meme.rate_meme import score_meme_based_on_theory
 from configs import support_llms, support_eval_datasets, prompt_processor, image_size_threshold, eval_modes
 
 from environment import WANDB_INFO_EVAL
 import pandas as pd
 from tqdm import tqdm
 from itertools import product
-import random, warnings
-
-def get_file_path(
-    dataset,
-    context,
-    description,
-    idx,
-):
-    if context:
-        return {
-            "image_path": dataset.loc[idx, 'image_path'],
-            "description_path": dataset.loc[idx, 'description_path'],
-        }
-    elif description:
-        return dataset.loc[idx, 'description_path']
-    else:
-        return dataset.loc[idx, 'image_path']
-    
-def get_folder_name(
-    description,
-    context,
-):
-    if description:
-        return f'description_{description}'
-    elif context:
-        return f'context_{context}'
-    else:
-        return 'multimodal'
+import random, warnings    
+from utils.eval_utils import get_output, get_folder_name, get_file_path
+from rate_meme.train import train
 
 def get_single_output(
     file_path,
@@ -101,76 +75,6 @@ def get_single_output(
         save_json(result, result_file)
     return result
 
-def get_output(
-    call_model, 
-    prompt_name,
-    prompt,
-    image_paths, 
-    max_new_tokens=1,
-    max_intermediate_tokens=300,
-    description = '',
-    context = "",
-    example = False,
-    result_dir = None,
-    overwrite = False,
-    theory_version = 'v1',
-    demonstrations = [],
-):
-    if prompt_name == "cot":
-        output_1 = call_model(
-            prompt[0], 
-            image_paths, 
-            max_new_tokens=max_intermediate_tokens,
-            save_history=True,
-            description=description,
-            context=context,
-            demonstrations = demonstrations,
-            system_prompt = 'evaluator',
-        )
-        output_2 = call_model(
-            prompt[1], 
-            [], 
-            max_new_tokens=max_new_tokens,
-            history=output_1['history'],
-            save_history=True,
-            description=description,
-            context=context,
-            demonstrations = demonstrations,
-            system_prompt = 'evaluator',
-        )
-        output_dict = {
-            'output': output_2['output'],
-            'analysis': output_1['output'] + output_2['output'],
-        }
-    elif prompt_name == "standard":
-        output_dict_all = call_model(
-            prompt, 
-            image_paths, 
-            max_new_tokens=max_new_tokens,
-            description=description,
-            context=context,
-            demonstrations = demonstrations,
-            system_prompt = 'evaluator',
-        )
-        output_dict = {
-            'output': output_dict_all['output'],
-        }
-    elif prompt_name == "theory":
-        output_dict = score_meme_based_on_theory(
-            meme_path = image_paths[0],
-            call_model = call_model,
-            result_dir = result_dir,
-            max_intermediate_tokens = max_intermediate_tokens,
-            max_new_tokens = max_new_tokens,
-            example = example,
-            description = description,
-            context = context,
-            overwrite = overwrite,
-            version = theory_version,
-        )
-    else:
-        raise ValueError(f"Prompt name {prompt_name} not supported")
-    return output_dict
 
 def evaluate(
     model_name, 
@@ -191,7 +95,13 @@ def evaluate(
     theory_version = 'v1',
     ensemble = False,
     n_demos = 0,
-):    
+    train_ml_model = "",
+    difficulty = 'easy',
+):            
+    if "difficulty" in support_eval_datasets[dataset_name]:
+        if difficulty not in support_eval_datasets[dataset_name]["difficulty"]:
+            raise ValueError(f'Difficulty {difficulty} not supported for {dataset_name}, please choose from {support_eval_datasets[dataset_name]["difficulty"]}')
+        
     if ensemble:
         if len(model_name) <= 1:
             raise ValueError('Ensemble evaluation mode requires multiple model names!')
@@ -217,12 +127,52 @@ def evaluate(
             raise ValueError('Demonstrations are only supported in standard prompt!')
 
     set_seed(seed)
-    dataset = load_dataset(dataset_name, binary_classification=True, description=description or context, eval_mode=eval_mode)
+    dataset = load_dataset(
+        dataset_name, 
+        binary_classification=True, 
+        description=description or context, 
+        eval_mode=eval_mode, 
+        train_test_split=train_ml_model,
+        difficulty=difficulty,
+    )
     metric = support_eval_datasets[dataset_name]["metric"]
     sampled_datasets = []
     if (not ensemble) and (eval_mode not in prompt_processor[model_name][metric]):
         raise ValueError(f'Eval mode {eval_mode} not supported, please choose from {list(prompt_processor[model_name][metric].keys())}')
     
+    if not_load_model:
+        call_model = None
+    else:
+        call_model = load_model(model_name, api_key=api_key)
+
+    if train_ml_model:
+        if not support_eval_datasets[dataset_name]["train_test_split"]:
+            raise ValueError('Train ML model is not supported for this dataset!')
+        if prompt_name != "theory" or eval_mode != "pairwise":
+            raise ValueError('Train ML model only supports theory prompt and pairwise evaluation mode!')
+        if n_per_class >= 0 or n_pairs >= 0:
+            raise ValueError('Train ML model does not support n_per_class or n_pairs!')
+        
+        ml_model = train(
+            model_name = model_name,
+            dataset_name = dataset_name,
+            call_model = call_model,
+            dataset = dataset['train'],
+            seed = seed,
+            overwrite = overwrite,
+            description = description,
+            context = context,
+            max_new_tokens = max_new_tokens,
+            theory_example = theory_example,
+            theory_version = theory_version,
+            prompt_name = prompt_name,
+            eval_mode = eval_mode,
+            n_demos = n_demos,
+            train_ml_model = train_ml_model,
+        )
+
+        dataset = dataset["test"]
+
     if n_per_class >= 0:
         if eval_mode == 'threeway':
             raise ValueError('Threeway evaluation mode is not compatible with n_per_class!')
@@ -237,11 +187,6 @@ def evaluate(
 
         dataset = pd.concat(sampled_datasets, ignore_index=True).reset_index(drop=True)
         dataset = dataset.sample(frac=1, random_state=seed).reset_index(drop=True)
-
-    if not_load_model:
-        call_model = None
-    else:
-        call_model = load_model(model_name, api_key=api_key)
 
     if prompt_name == "theory" or ensemble:
         # the pipeline is implemented in the score_meme_based_on_theory function
@@ -499,8 +444,17 @@ def evaluate(
                         demonstrations = demonstrations,
                     )
 
-                    pred_label_1 = int(compare_output_dict_1['output'] <= compare_output_dict_2['output'])
-                    pred_label_2 = int(compare_output_dict_1['output'] > compare_output_dict_2['output'])
+                    if train_ml_model:
+                        pred_proba_funny, pred_proba_not_funny = ml_model.predict_proba([
+                            list(compare_output_dict_1['scores'].values()), 
+                            list(compare_output_dict_2['scores'].values())
+                        ])
+                        pred_label_1 = int(pred_proba_funny[1] <= pred_proba_not_funny[1])
+                        pred_label_2 = int(pred_proba_funny[1] > pred_proba_not_funny[1])
+
+                    else:
+                        pred_label_1 = int(compare_output_dict_1['output'] <= compare_output_dict_2['output'])
+                        pred_label_2 = int(compare_output_dict_1['output'] > compare_output_dict_2['output'])
 
                 elif prompt_name == "single":
                     compare_output_dict_1 = get_single_output(
@@ -679,9 +633,11 @@ if __name__ == '__main__':
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
     parser.add_argument('--theory_example', action='store_true')
     parser.add_argument('--not_load_model', action='store_true', help="Do not load the model. Use this option only when results have already been stored and you want to read the existing results.")
-    parser.add_argument('--theory_version', type=str, default='v1', choices=['v1', 'v2', 'v3'])
+    parser.add_argument('--theory_version', type=str, default='v3', choices=['v1', 'v2', 'v3'])
     parser.add_argument('--ensemble', action='store_true')
     parser.add_argument('--n_demos', type=int, default=0)
+    parser.add_argument('--train_ml_model', type=str, default="", choices=["", "decision_tree", "random_forest", "svm", "knn", "logistic_regression", "gradient_boosting", "mlp", "ada_boost", "extra_trees", "xgboost"])
+    parser.add_argument('--difficulty', type=str, default='easy', choices=['easy', 'medium'])
     args = parser.parse_args()
 
     print(__file__)
@@ -729,6 +685,8 @@ if __name__ == '__main__':
         theory_version = args.theory_version,
         ensemble = args.ensemble,
         n_demos = args.n_demos,
+        train_ml_model = args.train_ml_model,
+        difficulty = args.difficulty,
     )
 
     if args.wandb:
