@@ -604,7 +604,7 @@ if __name__ == '__main__':
         model_names.extend(support_llms[model])
 
     parser.add_argument('--model_name', type=str, nargs='+', default=['gpt-4o-mini'], choices=model_names)
-    parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=list(support_datasets.keys()))
+    parser.add_argument('--dataset_name', type=str, default='relca', choices=list(support_datasets.keys()))
     parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--n_per_class', type=int, default=-1, help='-1 for all, otherwise random sample n_per_class for each class')
@@ -618,7 +618,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
     parser.add_argument('--theory_example', action='store_true')
     parser.add_argument('--not_load_model', action='store_true', help="Do not load the model. Use this option only when results have already been stored and you want to read the existing results.")
-    parser.add_argument('--theory_version', type=str, default='v1', choices=['v1', 'v2'])
+    parser.add_argument('--theory_version', type=str, default='v1', choices=['v1', 'v2', 'v3'])
     parser.add_argument('--ensemble', action='store_true')
     parser.add_argument('--n_demos', type=int, default=0)
     args = parser.parse_args()

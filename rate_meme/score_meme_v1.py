@@ -3,7 +3,7 @@ root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
 from helper import save_json, read_json
-from rate_meme.utils import get_score
+from rate_meme.utils import get_score_v1
 
 def score_meme_based_on_theory_v1(
     meme_path,
@@ -110,7 +110,7 @@ def score_meme_based_on_theory_v1(
     scores, outputs = {}, {}
 
     # Primary factors
-    outputs["ipr1"] = get_score(
+    outputs["ipr1"] = get_score_v1(
         humor_questions["ipr1"],
         meme_path = meme_path,
         call_model = call_model,
@@ -123,7 +123,7 @@ def score_meme_based_on_theory_v1(
     )
     scores["ipr1"] = outputs["ipr1"]["score"]
 
-    outputs["vbn1"] = get_score(
+    outputs["vbn1"] = get_score_v1(
         humor_questions["vbn1"],
         meme_path = meme_path,
         call_model = call_model,
@@ -137,7 +137,7 @@ def score_meme_based_on_theory_v1(
     scores["vbn1"] = outputs["vbn1"]["score"]
 
     if scores["ipr1"] >= 6: 
-        outputs["ipr2"] = get_score(
+        outputs["ipr2"] = get_score_v1(
             humor_questions["ipr2"],
             meme_path = meme_path,
             call_model = call_model,
@@ -155,7 +155,7 @@ def score_meme_based_on_theory_v1(
 
     score_vbn = scores["vbn1"]
     if scores["vbn1"] >= 6:
-        outputs["vbn2"] = get_score(
+        outputs["vbn2"] = get_score_v1(
             humor_questions["vbn2"],
             meme_path = meme_path,
             call_model = call_model,
@@ -184,7 +184,7 @@ def score_meme_based_on_theory_v1(
         return result_dict
 
     for q in ["dr1", "dr2", "ep1", "ep2", "ep3", "ie1", "ie2"]:
-        outputs[q] = get_score(
+        outputs[q] = get_score_v1(
             humor_questions[q],
             meme_path = meme_path,
             call_model = call_model,

@@ -1,3 +1,5 @@
+import json
+
 def process_score(score):
     try:
         return int(score)
@@ -5,7 +7,7 @@ def process_score(score):
         return -1
 
 
-def get_score(
+def get_score_v1(
     q, 
     meme_path,
     call_model,
@@ -41,3 +43,24 @@ def get_score(
     }
 
     return output_dict
+
+def get_score_v3(
+    prompt, 
+    meme_path,
+    call_model,
+    max_new_tokens = 500,
+    description = '',
+    context = '',
+):
+    output = call_model(
+        prompt, 
+        [meme_path], 
+        max_new_tokens=max_new_tokens, 
+        save_history=True, 
+        description = description, 
+        context = context
+    )
+    # Parsing the JSON string
+    parsed_data = json.loads(output['output'])
+
+    return parsed_data
