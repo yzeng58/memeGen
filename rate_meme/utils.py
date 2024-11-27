@@ -1,4 +1,4 @@
-import json
+import json, pdb, os
 
 def process_score(score):
     try:
@@ -62,7 +62,58 @@ def get_score_v3(
         description = description, 
         context = context
     )
-    # Parsing the JSON string
-    parsed_data = json.loads(output['output'])
+
+    try:
+        parsed_data = json.loads(output['output'].replace("```json", "").replace("```", "").strip())
+    except KeyboardInterrupt:
+        raise KeyboardInterrupt
+    except:
+        print(f"Error parsing the output of {os.path.basename(meme_path)}, using default values")
+        parsed_data = {
+            'Expectation_Punchline': {
+                'comment': '',
+                'score': -1,
+            },
+            'Incongruity_Resolution': {
+                'comment': '',
+                'score': -1,
+            },
+            'Norm_Violation': {
+                'comment': '',
+                'score': -1,
+            },
+            'Playfulness': {
+                'comment': '',
+                'score': -1,
+            },
+            'Reduction_of_Seriousness': {
+                'comment': '',
+                'score': -1,
+            },
+            'Transformation_to_Humor': {
+                'comment': '',
+                'score': -1,
+            },
+            'Ambiguity': {
+                'comment': '',
+                'score': -1,
+            },
+            'Cultural_Connection': {
+                'comment': '',
+                'score': -1,
+            },
+            'Creative_Potential': {
+                'comment': '',
+                'score': -1,
+            },
+            'Visual_Textual_Synergy': {
+                'comment': '',
+                'score': -1,
+            },
+            'Combined_Meaning': {
+                'comment': '',
+                'score': -1,
+            },
+        }
 
     return parsed_data

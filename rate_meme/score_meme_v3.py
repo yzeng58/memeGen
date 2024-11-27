@@ -9,13 +9,14 @@ def score_meme_based_on_theory_v3(
     meme_path,
     call_model,
     result_dir = None,
-    max_intermediate_tokens=300,
     max_new_tokens=1,
     example = False,
     description = '',
     context = '',
     overwrite = False,
 ):
+    if example:
+        raise ValueError("Example is not supported for score meme algorithm v3")
 
     if result_dir:
         img_name = meme_path.split("/")[-1].split(".")[0]
@@ -102,7 +103,6 @@ def score_meme_based_on_theory_v3(
         output_control + humor_questions,
         meme_path = meme_path,
         call_model = call_model,
-        max_intermediate_tokens = max_intermediate_tokens,
         max_new_tokens = max_new_tokens,
         description = description,
         context = context,

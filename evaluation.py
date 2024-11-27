@@ -167,7 +167,6 @@ def get_output(
             context = context,
             overwrite = overwrite,
             version = theory_version,
-            demonstrations = demonstrations,
         )
     else:
         raise ValueError(f"Prompt name {prompt_name} not supported")

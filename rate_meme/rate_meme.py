@@ -4,6 +4,7 @@ sys.path.append(root_dir)
 
 from rate_meme.score_meme_v1 import score_meme_based_on_theory_v1
 from rate_meme.score_meme_v2 import score_meme_based_on_theory_v2
+from rate_meme.score_meme_v3 import score_meme_based_on_theory_v3
 
 def score_meme_based_on_theory(
     meme_path,
@@ -39,6 +40,18 @@ def score_meme_based_on_theory(
             example = example,
             description = description,
             context = context,
+            overwrite = overwrite,
+        )
+    elif version == 'v3':
+        return score_meme_based_on_theory_v3(
+            meme_path = meme_path,
+            call_model = call_model,
+            result_dir = result_dir,
+            max_new_tokens = max_intermediate_tokens,
+            example = example,
+            description = description,
+            context = context,
+            overwrite = overwrite,
         )
     else:
         raise ValueError(f"Version {version} not supported!")
