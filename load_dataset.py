@@ -57,9 +57,9 @@ def load_dataset(
     elif dataset_name == "devastator":
         from load_datasets.load_devastator import load_devastator
         return load_devastator(description=description, eval_mode=eval_mode)
-    elif dataset_name == "ours_gen":
-        from load_datasets.load_ours_gen import load_ours_gen
-        return load_ours_gen()
+    elif dataset_name == "ours_gen_v1":
+        from load_datasets.load_ours_gen_v1 import load_ours_gen_v1
+        return load_ours_gen_v1()
     else:
         raise ValueError(f"Dataset {dataset_name} not found")
     

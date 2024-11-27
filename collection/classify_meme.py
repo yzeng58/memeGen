@@ -2,7 +2,7 @@ import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
-from configs import prompt_processor, get_dataset_dir, support_llms, support_datasets, meme_anchors, image_size_threshold
+from configs import prompt_processor, get_dataset_dir, support_llms, support_eval_datasets, meme_anchors, image_size_threshold
 from tqdm import tqdm
 from load_model import load_model
 from load_dataset import load_dataset
@@ -16,8 +16,8 @@ def is_funny(
     meme_anchor = f"{root_dir}/collection/anchors/hilarious.jpg",
 ):
     prompt = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["prompt"]
-    output_1 = call_model(prompt, [meme_path, meme_anchor])['output']
-    output_2 = call_model(prompt, [meme_anchor, meme_path])['output']
+    output_1 = call_model(prompt, [meme_path, meme_anchor], system_prompt = 'evaluator')['output']
+    output_2 = call_model(prompt, [meme_anchor, meme_path], system_prompt = 'evaluator')['output']
     label_1 = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["output_processor"](output_1)
     label_2 = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["output_processor"](output_2)
 
@@ -30,8 +30,8 @@ def is_boring(
     meme_anchor = f"{root_dir}/collection/anchors/boring1.jpg",
 ):
     prompt = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["prompt"]
-    output_1 = call_model(prompt, [meme_path, meme_anchor])['output']
-    output_2 = call_model(prompt, [meme_anchor, meme_path])['output']
+    output_1 = call_model(prompt, [meme_path, meme_anchor], system_prompt = 'evaluator')['output']
+    output_2 = call_model(prompt, [meme_anchor, meme_path], system_prompt = 'evaluator')['output']
     label_1 = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["output_processor"](output_1)
     label_2 = prompt_processor[model_name]["funniness"]["pairwise"]["standard"]["output_processor"](output_2)
 
@@ -47,7 +47,7 @@ def is_universal(
 
     universal_flag = True
     for region in region_list:
-        output = call_model(prompt(region), [meme_path])['output']
+        output = call_model(prompt(region), [meme_path], system_prompt = 'evaluator')['output']
         label = prompt_processor[model_name]["universality"]["single"]["standard"]["output_processor"](output)
         universal_flag = universal_flag and label == 1
 
@@ -59,7 +59,7 @@ def is_toxic(
     model_name = 'Qwen2-VL-72B-Instruct',
 ):
     prompt = prompt_processor[model_name]["toxicity"]["single"]["standard"]["prompt"]
-    output = call_model(prompt, [meme_path])['output']
+    output = call_model(prompt, [meme_path], system_prompt = 'evaluator')['output']
     label = prompt_processor[model_name]["toxicity"]["single"]["standard"]["output_processor"](output)
     return label == 1
 
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     for model in support_llms:
         model_names.extend(support_llms[model])
 
-    parser.add_argument("--dataset_name", type=str, default="memotion", choices=list(support_datasets.keys()))
+    parser.add_argument("--dataset_name", type=str, default="memotion", choices=list(support_eval_datasets.keys()))
     parser.add_argument("--model_name", type=str, default="Qwen2-VL-72B-Instruct", choices=model_names)
     parser.add_argument("--api_key", type=str, default="yz")
     parser.add_argument("--description", type=str, default="")

@@ -30,30 +30,32 @@ def read_jsonl(file_path):
     return pd.DataFrame(data)
 
 
-def retry_if_fail(func):
-    @functools.wraps(func)
-    def wrapper_retry(*args, **kwargs):
-        retry = 0
-        while retry <= 2:
-            try:
-                out = func(*args, **kwargs)
-                break
-            except KeyboardInterrupt:
-                raise KeyboardInterrupt
-            except pdb.bdb.BdbQuit:
-                raise pdb.bdb.BdbQuit
-            except Exception as e:
-                retry += 1
-                time.sleep(10)
-                print(f"Exception occurred: {type(e).__name__}, {e.args}")
-                print(f"Retry {retry} times...")
+def retry_if_fail(max_retries=3, sleep_time=10):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper_retry(*args, **kwargs):
+            retry = 0
+            while retry < max_retries:
+                try:
+                    out = func(*args, **kwargs)
+                    break
+                except KeyboardInterrupt:
+                    raise KeyboardInterrupt
+                except pdb.bdb.BdbQuit:
+                    raise pdb.bdb.BdbQuit
+                except Exception as e:
+                    retry += 1
+                    time.sleep(sleep_time)
+                    print(f"Exception occurred: {type(e).__name__}, {e.args}")
+                    print(f"Retry {retry} times...")
 
-        if retry > 10:
-            out = {'output': 'ERROR'}
-            print('ERROR')
-        
-        return out
-    return wrapper_retry
+            if retry >= max_retries:
+                out = {'output': 'ERROR'}
+                print('ERROR')
+            
+            return out
+        return wrapper_retry
+    return decorator
 
 def get_image(image_path: str):
     if image_path.startswith('http://') or image_path.startswith('https://'):

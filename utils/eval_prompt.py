@@ -4,7 +4,7 @@ sys.path.append(root_dir)
 from load_dataset import load_dataset
 from load_model import load_model
 from helper import print_configs
-from configs import support_models, support_datasets, prompt_processor
+from configs import support_models, support_eval_datasets, prompt_processor
 import pandas as pd
 from tqdm import tqdm
 
@@ -22,6 +22,7 @@ def get_output(
             image_paths, 
             max_new_tokens=max_intermediate_tokens,
             save_history=True,
+            system_prompt = 'evaluator',
         )
         print("======================================================")
         print('First step output:')
@@ -32,6 +33,7 @@ def get_output(
             max_new_tokens=max_new_tokens,
             history=output_dict_1['history'],
             save_history=True,
+            system_prompt = 'evaluator',
         )
         print("======================================================")
         print('Second step output:')
@@ -42,6 +44,7 @@ def get_output(
             prompt, 
             image_paths, 
             max_new_tokens=max_new_tokens,
+            system_prompt = 'evaluator',
         )
         print("======================================================")
         print('Output:')
@@ -158,7 +161,7 @@ if __name__ == '__main__':
         model_names.extend(support_models[model])
 
     parser.add_argument('--model_name', type=str, default='gpt-4o-mini', choices=model_names)
-    parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=support_datasets)
+    parser.add_argument('--dataset_name', type=str, default='ours_v2', choices=support_eval_datasets)
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--n_per_class', type=int, default=2)
     parser.add_argument('--seed', type=int, default=42)

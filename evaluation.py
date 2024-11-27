@@ -4,9 +4,9 @@ import os, wandb, argparse, pdb
 root_dir = os.path.dirname(__file__)
 from helper import save_json, read_json, print_configs, set_seed, get_image_size
 from rate_meme.rate_meme import score_meme_based_on_theory
-from configs import support_llms, support_datasets, prompt_processor, image_size_threshold, eval_modes
+from configs import support_llms, support_eval_datasets, prompt_processor, image_size_threshold, eval_modes
 
-from environment import WANDB_INFO
+from environment import WANDB_INFO_EVAL
 import pandas as pd
 from tqdm import tqdm
 from itertools import product
@@ -125,6 +125,7 @@ def get_output(
             description=description,
             context=context,
             demonstrations = demonstrations,
+            system_prompt = 'evaluator',
         )
         output_2 = call_model(
             prompt[1], 
@@ -135,6 +136,7 @@ def get_output(
             description=description,
             context=context,
             demonstrations = demonstrations,
+            system_prompt = 'evaluator',
         )
         output_dict = {
             'output': output_2['output'],
@@ -148,6 +150,7 @@ def get_output(
             description=description,
             context=context,
             demonstrations = demonstrations,
+            system_prompt = 'evaluator',
         )
         output_dict = {
             'output': output_dict_all['output'],
@@ -201,22 +204,22 @@ def evaluate(
             warnings.warn('Ensemble evaluation mode does not support loading models. Setting not_load_model=True.')
             not_load_model = True
         
-    if eval_mode not in support_datasets[dataset_name]["eval_mode"]:
-        raise ValueError(f'Eval mode {eval_mode} not supported by {dataset_name}, please choose from {support_datasets[dataset_name]["eval_mode"]}')
+    if eval_mode not in support_eval_datasets[dataset_name]["eval_mode"]:
+        raise ValueError(f'Eval mode {eval_mode} not supported by {dataset_name}, please choose from {support_eval_datasets[dataset_name]["eval_mode"]}')
     if prompt_name not in eval_modes[eval_mode]:
         raise ValueError(f'Prompt name {prompt_name} not supported, please choose from {eval_modes[eval_mode]}')
-    if support_datasets[dataset_name] is None:
+    if support_eval_datasets[dataset_name] is None:
         raise ValueError(f'Dataset {dataset_name} is not supported for evaluation!')
     
     if n_demos > 0:
-        if eval_mode != 'single':
-            raise ValueError('Demonstrations are only supported in single evaluation mode!')
+        if eval_mode == 'threeway':
+            raise ValueError('Demonstrations are not supported in threeway evaluation mode!')
         if prompt_name != 'standard':
             raise ValueError('Demonstrations are only supported in standard prompt!')
 
     set_seed(seed)
     dataset = load_dataset(dataset_name, binary_classification=True, description=description or context, eval_mode=eval_mode)
-    metric = support_datasets[dataset_name]["metric"]
+    metric = support_eval_datasets[dataset_name]["metric"]
     sampled_datasets = []
     if (not ensemble) and (eval_mode not in prompt_processor[model_name][metric]):
         raise ValueError(f'Eval mode {eval_mode} not supported, please choose from {list(prompt_processor[model_name][metric].keys())}')
@@ -270,7 +273,23 @@ def evaluate(
                 label_dataset = dataset[dataset['label'] == label]
                 # Add one extra example to some classes if n_demos doesn't divide evenly
                 n_samples = n_per_class + (1 if i < remaining else 0)
-                demonstration_idxs.extend(label_dataset.sample(n=n_samples, random_state=seed, replace=False).index.tolist())
+                available_idxs = label_dataset.index.tolist()
+                selected_idxs = []
+                
+                while len(selected_idxs) < n_samples and available_idxs:
+                    # Sample one index
+                    idx = random.choice(available_idxs)
+                    available_idxs.remove(idx)
+                    
+                    # Check its size
+                    file_path = get_file_path(dataset, context, description, idx)
+                    if os.path.getsize(file_path) < image_size_threshold * 2 / (n_demos + 1):
+                        selected_idxs.append(idx)
+                
+                if len(selected_idxs) < n_samples:
+                    raise ValueError(f"Not enough valid examples under threshold for label {label}")
+                    
+                demonstration_idxs.extend(selected_idxs)
             random.shuffle(demonstration_idxs)
 
             demonstrations = []
@@ -325,6 +344,43 @@ def evaluate(
 
         all_pairs_idx = list(product(range(len(funny_data)), range(len(not_funny_data))))
         random.shuffle(all_pairs_idx)
+
+        if n_demos > 0:
+            demonstration_idxs = []
+            remaining_pairs = all_pairs_idx.copy()
+            while len(demonstration_idxs) < n_demos and remaining_pairs:
+                pair_idx = random.choice(remaining_pairs)
+                remaining_pairs.remove(pair_idx)
+                i, j = pair_idx
+                funny_image_size = get_image_size(funny_data.loc[i, 'image_path'])
+                not_funny_image_size = get_image_size(not_funny_data.loc[j, 'image_path'])
+                if (funny_image_size <= (image_size_threshold / n_demos)) and (not_funny_image_size <= (image_size_threshold / n_demos)):
+                    demonstration_idxs.append(pair_idx)
+            if len(demonstration_idxs) < n_demos:
+                raise ValueError(f'Could only find {len(demonstration_idxs)} valid demonstration pairs out of requested {n_demos}')
+
+            n_true = n_demos // 2
+            n_false = n_demos - n_true
+            demonstration_labels = [0] * n_true + [1] * n_false
+            random.shuffle(demonstration_labels)
+
+            if random.choice([True, False]): demonstration_labels = [1 - label for label in demonstration_labels]
+
+            demonstrations = []
+            for idx, (demonstration_idx, demonstration_label) in enumerate(zip(demonstration_idxs, demonstration_labels)):
+                images_paths = [
+                    get_file_path(funny_data, context, description, demonstration_idx[0]), 
+                    get_file_path(not_funny_data, context, description, demonstration_idx[1])
+                ]
+                if demonstration_label: images_paths = images_paths[::-1]
+
+                demonstrations.append({
+                    "image_paths": images_paths,
+                    "label": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](demonstration_label),
+                })
+
+        else:
+            demonstrations = []
 
         tqdm_bar, idx = tqdm(all_pairs_idx), 0
         for i, j in tqdm_bar:
@@ -390,6 +446,7 @@ def evaluate(
                         result_dir = result_dir,
                         overwrite = overwrite,
                         theory_version = theory_version,
+                        demonstrations = demonstrations,
                     )
         
                     pred_label_1 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
@@ -407,6 +464,7 @@ def evaluate(
                         result_dir = result_dir,
                         overwrite = overwrite,
                         theory_version = theory_version,
+                        demonstrations = demonstrations,
                     )
                     pred_label_2 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_2['output'])
 
@@ -424,6 +482,7 @@ def evaluate(
                         result_dir = result_dir,
                         overwrite = overwrite,
                         theory_version = theory_version,
+                        demonstrations = demonstrations,
                     )
                     compare_output_dict_2 = get_output(
                         call_model, 
@@ -438,6 +497,7 @@ def evaluate(
                         result_dir = result_dir,
                         overwrite = overwrite,
                         theory_version = theory_version,
+                        demonstrations = demonstrations,
                     )
 
                     pred_label_1 = int(compare_output_dict_1['output'] <= compare_output_dict_2['output'])
@@ -460,6 +520,7 @@ def evaluate(
                         metric = metric,
                         eval_mode = eval_mode,
                         theory_version = theory_version,
+                        demonstrations = demonstrations,
                     )
 
                     compare_output_dict_2 = get_single_output(
@@ -478,6 +539,7 @@ def evaluate(
                         metric = metric,
                         eval_mode = eval_mode,
                         theory_version = theory_version,
+                        demonstrations = demonstrations,
                     )
 
                     pred_label_1 = int(compare_output_dict_1['pred_label'] <= compare_output_dict_2['pred_label'])
@@ -603,8 +665,8 @@ if __name__ == '__main__':
     for model in support_llms:
         model_names.extend(support_llms[model])
 
-    parser.add_argument('--model_name', type=str, nargs='+', default=['gpt-4o-mini'], choices=model_names)
-    parser.add_argument('--dataset_name', type=str, default='relca', choices=list(support_datasets.keys()))
+    parser.add_argument('--model_name', type=str, nargs='+', default=['gemini-1.5-flash'], choices=model_names)
+    parser.add_argument('--dataset_name', type=str, default='relca', choices=list(support_eval_datasets.keys()))
     parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--n_per_class', type=int, default=-1, help='-1 for all, otherwise random sample n_per_class for each class')
@@ -644,8 +706,8 @@ if __name__ == '__main__':
         })
         
         wandb.init(
-            project = WANDB_INFO['project'],
-            entity = WANDB_INFO['entity'],
+            project = WANDB_INFO_EVAL['project'],
+            entity = WANDB_INFO_EVAL['entity'],
             config = config,
         )
     

@@ -1,4 +1,4 @@
-import os, re
+import os, re, random
 root_dir = os.path.dirname(os.path.abspath(__file__))
 dataset_dir = f'{root_dir}/resources/datasets'
 from copy import deepcopy
@@ -109,21 +109,22 @@ prompt_processor_default["funniness"] = {
     'single': {
         'standard': {
             'prompt': "Is this meme funny? Please respond with a single letter, 'Y' for yes, 'N' for no.",
-            'output_processor': lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1),
+            'output_processor': lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1) if x else -1,
             'label_processor': lambda x: {1: 'Y', 0: 'N'}[x],
         }
     },
     'pairwise': {
         'standard': {
             'prompt': "Which meme is more funny? Please respond with a single letter, 1 for the first meme, 2 for the second meme. Pleae do not generate any other thing and just answer with 1 or 2 so I can handle your response easily.",
-            'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1),
+            'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1) if x else -1,
+            'label_processor': lambda x: {0: '1', 1: '2'}[x],
         },
         'cot': {
             'prompt': [
                 "You are a random person who knows a lot about memes. Now you are participating in a survey of selecting funny memes based on your own preference. Do not concentrate on any identities of the human face, just consider the funniness of memes by the context. Now two memes are provided. Which one is more funny? Let's think step by step.",
                 "Based on your reasoning, please select one meme as the funnier one, 1 for the first meme, 2 for the second meme. Pleae do not generate any other thing and just answer with 1 or 2 so I can handle your response easily.",
             ],
-            'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1),
+            'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1) if x else -1,
         },
     },
 }
@@ -132,7 +133,7 @@ prompt_processor_default["universality"] = {
     'single': {
         "standard": {       
             "prompt": lambda country: f"Many memes nowadays require specific cultural background. Assume you are an ordinary person who grew up in {country}. Without any additional context, can you quickly understand the meaning of this meme? If so, reply with 1, otherwise reply with 0: (0/1)",
-            "output_processor": lambda x: {'1': 1, '0': 0}.get(x[-1], -1),
+            "output_processor": lambda x: {'1': 1, '0': 0}.get(x[-1], -1) if x else -1,
         },
     },
 }
@@ -140,7 +141,7 @@ prompt_processor_default["toxicity"] = {
     'single': {
         "standard": {
             "prompt": "Is this meme toxic? Please respond with a single letter, 'Y' for yes, 'N' for no. (Y/N)",
-            "output_processor": lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1),
+            "output_processor": lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1) if x else -1,
         },
     }
 }
@@ -149,7 +150,7 @@ prompt_processor_default["hatefulness"] = {
     'single': {
         "standard": {
             "prompt": "Is this meme hateful? Please respond with a single letter, 'Y' for yes, 'N' for no. (Y/N)",
-            "output_processor": lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1),
+            "output_processor": lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1) if x else -1,
         },
     }
 }
@@ -158,16 +159,62 @@ prompt_processor_default["alignment"] = {
     'single': {
         "standard": {
             "prompt": "Is this meme aligned with the context? Please respond with a single letter, 'Y' for yes, 'N' for no. (Y/N)",
-            "output_processor": lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1),
+            "output_processor": lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1) if x else -1,
         },
     },
     'threeway': {
         "standard": {
             "prompt": lambda context: f"Context: {context}\n\nWhich meme is more aligned with the context? Please respond with a single letter, 1 for the first meme, 2 for the second meme, 3 for the third meme. (1/2/3)",
-            "output_processor": lambda x: {'1': 0, '2': 1, '3': 2}.get(x[-1], -1),
+            "output_processor": lambda x: {'1': 0, '2': 1, '3': 2}.get(x[-1], -1) if x else -1,
         },
     }
 }
+
+inspiration_objs = [
+    "bread", 
+    "headphone", 
+    "shoes",
+    "heart",
+    "phone",
+    "computer",
+    "book",
+    "wine",
+    "glasses",
+    "watch",
+    "candle",
+    "plant",
+    "flower",
+    "pillow",
+    "brush",
+    "mirror",
+    "lamp",
+    "chair",
+    "table",
+    "toilet",
+    "shower",
+    "toy",
+    "car",
+    "rocket",
+    "tree",
+    "building",
+    "museum",
+    "park",
+    "road",
+    "bridge",
+    "towel",
+    "jewelry",
+    "helmet",
+    "guitar",
+    "umbrella",
+    "basket",
+    "picture",
+    "mountain",
+    "blanket",
+    "crystal",
+    "rainbow",
+    "candle",
+    "bottle",
+]
 
 prompt_processor_default["generation"] = {
     "standard": {
@@ -188,7 +235,7 @@ prompt_processor_default["generation"] = {
 
             I will use a diffusion model to generate an image, and the overlay the image with the text. 
             Therefore, the image we are going to generate should with no text (only digits and symbols are allowed) and as simple as possible.
-            The image itself should not be a visualization of tex, but it should cause **incongruity** or **exaggeration** with the text to make the meme funnier.
+            The image itself should not be a visualization of text, but it should cause **incongruity** or **exaggeration** with the text to make the meme funnier.
             The bottom text should be a punchline that is **unexpected** and **surprising** to the reader, and better to be a concrete unnormal example.
             For instance, when the topic is "social media addiction", the text could be "I'm deleting Instagram for my mental health" and "Notification: you have 200 new followers", and the image could be "A person with an exaggerated gleeful expression staring at their phone screen, with floating heart emojis surrounding".
 
@@ -198,6 +245,97 @@ prompt_processor_default["generation"] = {
             TEXT OVERLAY: 
             TOP TEXT: "[Text to be placed on the top of the image]"
             BOTTOM TEXT: "[Text to be placed on the bottom of the image]"
+        """,
+        "output_processor": lambda x: {
+            'image_description': re.search(r'IMAGE DESCRIPTION:\s*([^\n]*)', x).group(1).strip('"[]'),
+            'top_text': re.search(r'TOP TEXT:\s*([^\n]*)', x).group(1).strip('"[]'),
+            'bottom_text': re.search(r'BOTTOM TEXT:\s*([^\n]*)', x).group(1).strip('"[]'),
+        },
+    },
+    "lot": {
+        "prompt": lambda topic :f"""
+            MEME GENERATION INSTRUCTION:
+
+            Given any topic/context, generate the description of a hilarious meme related to the topic/context, inspired by another term.
+
+            A detailed description of what the image should look like
+            The exact text that should overlay the image
+
+
+            TOPIC/CONTEXT
+
+            {topic}
+
+            INSPIRATION TERM
+
+            {random.choice(inspiration_objs)}
+
+            REQUIREMENTS
+
+            I will use a diffusion model to generate an image, and the overlay the image with the text. 
+            Therefore, the image we are going to generate should with no text (only digits and symbols are allowed) and as simple as possible.
+            The image itself should not be a visualization of text, but it should cause **incongruity** or **exaggeration** with the text to make the meme funnier.
+            The bottom text should be a punchline that is **unexpected** and **surprising** to the reader, and better to be a concrete unnormal example.
+            For instance, when the topic is "social media addiction", and the inspiration term is "heart", the text could be "I'm deleting Instagram for my mental health" and "Notification: you have 200 new followers", and the image could be "A person with an exaggerated gleeful expression staring at their phone screen, with floating heart emojis surrounding".
+
+            **Please provide your response in this format, and ensure to include the quotation marks in your response:**
+            IMAGE DESCRIPTION: "[Detailed description of the required image]"
+
+            TEXT OVERLAY: 
+            TOP TEXT: "[Text to be placed on the top of the image]"
+            BOTTOM TEXT: "[Text to be placed on the bottom of the image]"
+        """,
+        "output_processor": lambda x: {
+            'image_description': re.search(r'IMAGE DESCRIPTION:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
+            'top_text': re.search(r'TOP TEXT:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
+            'bottom_text': re.search(r'BOTTOM TEXT:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
+        },
+    },
+    "reversal": {
+        "prompt": lambda context: f"""
+            MEME GENERATION INSTRUCTION:
+
+            Given any topic/context, generate the description of a hilarious meme related to the topic/context.
+
+            A detailed description of what the image should look like
+            The exact text that should overlay the image
+
+
+            TOPIC/CONTEXT
+
+            {context}
+
+            REQUIREMENTS
+
+            I will use a diffusion model to generate an image, and the overlay the image with the text. 
+            Therefore, the image we are going to generate should with no text (only digits and symbols are allowed) and as simple as possible.
+            The image itself should not be a visualization of text, but it should cause **incongruity** or **exaggeration** with the text to make the meme funnier.
+            The bottom text should be a punchline that is **unexpected** and **surprising** to the reader, and better to be a concrete unnormal example.
+
+            **Please provide your response in this format, and ensure to include the quotation marks in your response:**
+            IMAGE DESCRIPTION: "[to be generated]"
+
+            TEXT OVERLAY: 
+            TOP TEXT: "Expectation: [to be generated]"
+            BOTTOM TEXT: "Reality: [to be generated]"
+        """,
+        "output_processor": lambda x: {
+            'image_description': re.search(r'IMAGE DESCRIPTION:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
+            'top_text': re.search(r'TOP TEXT:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
+            'bottom_text': re.search(r'BOTTOM TEXT:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
+        },
+    },
+    "benign_violation": {
+        "prompt": lambda context: f"""
+            In terms of {context}, come up with a norm-breaking bad behavior/phenomenon that can be described in less than 10 words. Then describe it in a funny way and turn it into a meme. Please strictly format your response including the quotation marks as follows:
+
+            NORM-BREAKING BEHAVIOR/PHENOMENON: [generated text]
+
+            MEME FORMAT:
+
+            IMAGE DESCRIPTION: "[generated text]"
+            TOP TEXT: "[generated text]" 
+            BOTTOM TEXT: "[generated text]"
         """,
         "output_processor": lambda x: {
             'image_description': re.search(r'IMAGE DESCRIPTION:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
@@ -273,10 +411,15 @@ description_prompt = {
     'default': "Describe this meme in detail. Include information about the image content, text content, and any cultural references or context that might be relevant to understanding the humor."
 }
 
+summarizer_prompt_default = "Come up with up to three keywords that best describe the social post. Your response should only contain the keywords, and nothing else."
+summarizer_prompts = {}
+for support_model_category in support_llms:
+    for support_model in support_llms[support_model_category]:
+        summarizer_prompts[support_model] = summarizer_prompt_default
+
 system_prompts_default = {
     'evaluator': "You are a meme evaluation expert. You will follow the user's instruction and give your evaluation directly.",
     'default': "You are a helpful AI assistant. You will follow the user's instructions carefully and provide thoughtful responses.",
-    'summarizer': "Summarize the social post. Your response should be in less than 5 words.",
 }
 
 system_prompts = deepcopy(system_prompts_default)
@@ -292,7 +435,7 @@ eval_modes = {
     "threeway": ["standard", "cot"],
 }
 
-support_datasets = {
+support_eval_datasets = {
     'memotion': {
         "metric": "funniness",
         "eval_mode": ["single", "pairwise"],
@@ -325,6 +468,10 @@ support_datasets = {
         "metric": "alignment",
         "eval_mode": ["single", "threeway"],
     },
+}
+
+support_gen_datasets = {
+    'ours_gen_v1': None,
 }
 
 dataset_dir_dict = {

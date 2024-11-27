@@ -1,14 +1,14 @@
 import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
-from environment import WANDB_INFO
+from environment import WANDB_INFO_EVAL
 
 import pandas as pd 
 import wandb
 api = wandb.Api(timeout=300)
 
 # Project is specified by <entity/project-name>
-runs = api.runs(f"{WANDB_INFO['entity']}/{WANDB_INFO['project']}")
+runs = api.runs(f"{WANDB_INFO_EVAL['entity']}/{WANDB_INFO_EVAL['project']}")
 
 summary_list, config_list, name_list, id_list = [], [], [], []
 for run in runs: 

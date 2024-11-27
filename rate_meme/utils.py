@@ -25,6 +25,7 @@ def get_score_v1(
         save_history=True,
         description = description,
         context = context,
+        system_prompt = 'evaluator',
     )
 
     output_2 = call_model(
@@ -35,6 +36,7 @@ def get_score_v1(
         save_history = True,
         description = description,
         context = context,
+        system_prompt = 'evaluator',
     )
 
     output_dict = {

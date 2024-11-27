@@ -3,11 +3,11 @@ root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
 import wandb
-from environment import WANDB_INFO
+from environment import WANDB_INFO_EVAL
 
 api = wandb.Api()
 
-runs = api.runs(f"{WANDB_INFO['entity']}/{WANDB_INFO['project']}")
+runs = api.runs(f"{WANDB_INFO_EVAL['entity']}/{WANDB_INFO_EVAL['project']}")
 
 for run in runs:
     # if not 'description' in run.config:
