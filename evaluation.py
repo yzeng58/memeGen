@@ -3,7 +3,7 @@ from load_model import load_model
 import os, wandb, argparse, pdb
 root_dir = os.path.dirname(__file__)
 from helper import save_json, read_json, print_configs, set_seed, get_image_size
-from configs import support_llms, support_eval_datasets, prompt_processor, image_size_threshold, eval_modes
+from configs import support_llms, support_eval_datasets, prompt_processor, image_size_threshold, eval_modes, support_ml_models
 
 from environment import WANDB_INFO_EVAL
 import pandas as pd
@@ -636,7 +636,7 @@ if __name__ == '__main__':
     parser.add_argument('--theory_version', type=str, default='v3', choices=['v1', 'v2', 'v3'])
     parser.add_argument('--ensemble', action='store_true')
     parser.add_argument('--n_demos', type=int, default=0)
-    parser.add_argument('--train_ml_model', type=str, default="", choices=["", "decision_tree", "random_forest", "svm", "knn", "logistic_regression", "gradient_boosting", "mlp", "ada_boost", "extra_trees", "xgboost"])
+    parser.add_argument('--train_ml_model', type=str, default="", choices=list(support_ml_models.keys()) + [""])
     parser.add_argument('--difficulty', type=str, default='easy', choices=['easy', 'medium'])
     args = parser.parse_args()
 

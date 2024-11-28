@@ -2,7 +2,13 @@ import os, re, random
 root_dir = os.path.dirname(os.path.abspath(__file__))
 dataset_dir = f'{root_dir}/resources/datasets'
 from copy import deepcopy
-
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, ExtraTreesClassifier, GradientBoostingClassifier
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import LogisticRegression
+from xgboost import XGBClassifier
+from sklearn.neural_network import MLPClassifier
 
 ########################
 # Model Configurations # 
@@ -58,6 +64,19 @@ support_diffusers = {
     'sd': [
         'stable-diffusion-3-medium-diffusers',
     ],
+}
+
+support_ml_models = {
+    "decision_tree": DecisionTreeClassifier,
+    "random_forest": RandomForestClassifier,
+    "svm": SVC,
+    "knn": KNeighborsClassifier,
+    "logistic_regression": LogisticRegression,
+    "gradient_boosting": GradientBoostingClassifier,
+    "mlp": MLPClassifier,
+    "ada_boost": AdaBoostClassifier,
+    "extra_trees": ExtraTreesClassifier,
+    "xgboost": XGBClassifier,
 }
 
 model_size = {

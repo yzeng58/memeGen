@@ -10,38 +10,13 @@ from tqdm import tqdm
 from itertools import product
 import random
 from utils.eval_utils import get_output, get_folder_name, get_file_path
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, ExtraTreesClassifier, GradientBoostingClassifier
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.linear_model import LogisticRegression
-from xgboost import XGBClassifier
-from sklearn.neural_network import MLPClassifier
-
+from configs import support_ml_models
 
 def get_ml_model(
     model_name = 'decision_tree',
 ):
-    if model_name == 'decision_tree':
-        return DecisionTreeClassifier()
-    elif model_name == 'random_forest':
-        return RandomForestClassifier()
-    elif model_name == 'svm':
-        return SVC()
-    elif model_name == 'knn':
-        return KNeighborsClassifier()
-    elif model_name == 'logistic_regression':
-        return LogisticRegression()
-    elif model_name == 'gradient_boosting':
-        return GradientBoostingClassifier()
-    elif model_name == 'mlp':
-        return MLPClassifier()
-    elif model_name == 'ada_boost':
-        return AdaBoostClassifier()
-    elif model_name == 'extra_trees':
-        return ExtraTreesClassifier()
-    elif model_name == 'xgboost':
-        return XGBClassifier()
+    if model_name in support_ml_models:
+        return support_ml_models[model_name]()
     else:
         raise ValueError(f'Model {model_name} is not supported!')
 
@@ -173,3 +148,4 @@ def train(
     ml_model.fit(X, y)
     print("----------------------------------")
     return ml_model
+

@@ -3,6 +3,8 @@ import json, pdb, os
 def process_score(score):
     try:
         return int(score)
+    except KeyboardInterrupt:
+        raise KeyboardInterrupt
     except:
         return -1
 
