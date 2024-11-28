@@ -1,3 +1,5 @@
+from itertools import tee
+import profile
 import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
@@ -5,7 +7,7 @@ sys.path.append(root_dir)
 from helper import save_json, read_json
 from rate_meme.utils import get_score_v3
 
-def score_meme_based_on_theory_v3(
+def score_meme_based_on_theory_v4(
     meme_path,
     call_model,
     result_dir = None,
@@ -16,109 +18,93 @@ def score_meme_based_on_theory_v3(
     overwrite = False,
 ):
     if example:
-        raise ValueError("Example is not supported for score meme algorithm v3")
+        raise ValueError("Example is not supported for score meme algorithm v4")
 
     if result_dir:
         img_name = meme_path.split("/")[-1].split(".")[0]
         example_flag = "example" if example else "plain"
-        result_file = f'{result_dir}/scores/{example_flag}/{img_name}_v3.json'
+        result_file = f'{result_dir}/scores/{example_flag}/{img_name}_v4.json'
         if os.path.exists(result_file) and not overwrite:
             return read_json(result_file)
 
     output_control = """
-    Please analyze the given meme using the evaluation criteria below.  Be **critical and objective** in your assessment, and **use the full range** of the scoring scale. Provide the output in the specified JSON format to facilitate easy parsing.
-
-    Important Instructions:
-
-    Use the Full Scoring Scale (0-9):
-
-    * 0-2 (Poor): The meme does not meet the criterion or does so very poorly.
-    * 3-5 (Average): The meme meets the criterion to a moderate extent.
-    * 6-7 (Good): The meme meets the criterion well.
-    * 8-9 (Excellent): The meme meets the criterion exceptionally well.
-
-    Be Critical and Unbiased:
-
-    * Avoid score inflation; do not hesitate to assign low scores where appropriate.
-    * Provide honest and objective comments that justify the scores given.
-
-    Calibrate Your Scores:
-
-    * Consider how the meme compares to a wide range of memes, from poor to excellent.
-    * Use the examples provided below as a reference for scoring.
-
-    JSON Output Format:
-    {
-        "Expectation_Punchline": {
-            "comment": "<your comment here>"
-            "score": <0-9>,
-        },
-        "Incongruity_Resolution": {
-            "comment": "<your comment here>",
-            "score": <0-9>,
-        },
-        "Norm_Violation": {
-            "comment": "<your comment here>",
-            "score": <0-9>,
-        },
-        "Playfulness": {
-            "comment": "<your comment here>",
-            "score": <0-9>,
-        },
-        "Reduction_of_Seriousness": {
-            "comment": "<your comment here>",
-            "score": <0-9>,
-        },
-        "Transformation_to_Humor": {
-            "comment": "<your comment here>",
-            "score": <0-9>,
-        },
-        "Ambiguity": {
-            "comment": "<your comment here>",
-            "score": <0-9>,
-        },
-        "Cultural_Connection": {
-            "comment": "<your comment here>",
-            "score": <0-9>,
-        },
-        "Creative_Potential": {
-            "comment": "<your comment here>",
-            "score": <0-9>,
-        },
-        "Visual_Textual_Synergy": {
-            "comment": "<your comment here>",
-            "score": <0-9>,
-        },
-        "Combined_Meaning": {
-            "comment": "<your comment here>",
-            "score": <0-9>,
+    Please objectively answer the following questions about the meme and provide an option from 0 to 3 for each.
+    * Option Scale:
+        - 0: Not at all
+        - 1: A bit
+        - 2: Moderately
+        - 3: Very much
+    * Instructions:
+        - Provide specific and detailed comments for each choice to justify your assessment.
+        - Start by assuming a score of 0 unless there is strong, explicit evidence that justifies a higher score.
+        - Assign low scores (0 or 1) by default unless the meme clearly demonstrates an effective setup, a twist, or an element that adds humor.
+        - Be skeptical: Most memes should not score highly. Only assign a score of 2 or 3 if the meme is genuinely surprising, clever, and meets the criteria effectively.
+        - Use the example scoring provided to calibrate your assessment of the meme's qualities. Remember: a high score should be rare and requires clear justification.
+    * JSON Output Format:
+        ```json
+        { 
+            "a": { "comment": "<your comment here>", "option": <0-3> }, 
+            "b": { "comment": "<your comment here>", "option": <0-3> }, 
+            "c": { "comment": "<your comment here>", "option": <0-3> }, 
+            "d": { "comment": "<your comment here>", "option": <0-3> } 
         }
-    }
+        ```
+    * Evaluation Questions:
+        a. Is there a clear and explicit setup that creates an expectation which is humorously contradicted by a surprising twist? Note: Only rate positively if the contradiction or twist is unexpected and adds humor. Default to 0 unless the setup and contradiction are explicitly evident.
+        b. Does the meme explicitly include a surprising twist that adds cleverness or insight? Note: The twist should offer something beyond a simple answer—it must be creative or add a clever layer to the humor. Default to 0 unless the twist is genuinely clever.
+        c. Does the meme contain something sensitive, offensive, or norm-breaking? Note: Evaluate if there are elements that could be seen as inappropriate or offensive in context. Score 0 if there is no norm-breaking or sensitive content.
+        d. If the meme contains sensitive or offensive content, to what extent can the violation be interpreted as playful or non-threatening? Note: If there is no violation, assign an option of 0.
+    * Example Scoring for Calibration:
+        - Meme 1 (Morpheus Meme): "What if I told you that every 60 seconds in Africa... a minute passes":
+            ```json
+            { 
+                "a": { "comment": "The meme sets up an expectation by using the familiar 'What if I told you' phrase. The humor lies in the expectation of something profound being humorously contradicted by a trivial fact.", "option": 1 }, 
+                "b": { "comment": "The twist is surprising because it contrasts the serious tone with an obvious and mundane fact, adding a layer of clever humor.", "option": 1 }, 
+                "c": { "comment": "There is no sensitive or potentially offensive content in the meme. It is benign and norm-abiding.", "option": 0 }, 
+                "d": { "comment": "No violation of norms or negative content is present, so this question is not applicable.", "option": 0 } 
+            }
+            ```
+        - Meme 2 (Rage Comic Meme): "When can we hang out?" - "IDK":
+            ```json
+            { 
+                "a": { "comment": "There is a setup, but the answer 'IDK' is a typical response with no real contradiction or twist. The answer is mundane and expected.", "option": 0 }, 
+                "b": { "comment": "There is no surprising twist or clever insight here. The answer is straightforward and lacks an element of humor or subversion.", "option": 0 }, 
+                "c": { "comment": "The meme does not contain any offensive or norm-breaking content.", "option": 0 }, 
+                "d": { "comment": "Since there is no offensive content, this question is not applicable.", "option": 0 } 
+            }
+            ```
+    * Guidelines for Avoiding High Scores:
+Start with 0: Begin each evaluation by assuming the meme deserves a 0 and only increase the score if explicit evidence is found that meets the criteria.
+Justification for High Scores: Before assigning a 2 or 3, ensure the meme has a significant, explicit, and clever twist that is genuinely funny and surprising. High scores are rare and must be clearly justified.
+No Assumed Humor: If humor is not explicitly evident, default to 0 or 1. Simple answers or typical responses should not receive higher scores.
+Usage Notes:
+Use the above examples as references when evaluating new memes.
+The comment field should provide a brief but specific rationale for the chosen option.
+Options should reflect the actual qualities of the meme, avoiding score inflation and being grounded in clear evidence.
     """
     humor_questions = """
-    a. Expectation & Punchline: Does the setup create an initial expectation, followed by a punchline that subverts these expectations?
+    a. Is there a setup with an expectation that is later humorously contradicted?
 
-    b. Incongruity Resolution: Does it provide a reinterpretation that resolves the surprising ending in a meaningful way?
+    b. Does the meme offer a surprising twist that is also clever or insightful?
 
-    c. Norm Violation: Does the meme contain something wrong, unexpected, or norm-breaking?
+    c. Is there an element in the meme that breaks common norms, expectations, or conventions?
 
-    d. Playfulness: To what extent can the violation be interpreted as playful or non-threatening?
+    d. Can the norm violation in the meme be interpreted as harmless or playful rather than offensive or aggressive?
 
-    e. Reduction of Seriousness: How effectively does the meme downplay the seriousness of its subject?
+    e. Does the meme effectively use absurdity or exaggerated ridiculousness to create humor?
 
-    f. Transformation to Humor: How well does the meme transform a serious topic into something humorous?
+    f. How effectively do the visual and textual elements complement each other to deliver the intended humor?
 
-    g. Ambiguity: Can the meme be interpreted in multiple valid ways?
+    g. Can the meme be interpreted in more than one way, giving it a deeper or alternative layer of meaning?
 
-    h. Cultural Connection: How well does it connect to other memes, cultural references, or shared experiences?
+    h. Does the meme reference shared cultural events, common experiences, or other memes, enhancing its humor through recognizability?
 
-    i. Creative Potential: What is the potential for creative variations or responses to this meme?
+    i. Does the meme demonstrate originality in how it delivers its humor? Is there potential for interesting variations or responses?
 
-    j. Visual & Textual Synergy: How well do the visual and textual elements work together?
-
-    k. Combined Meaning: Does the combination of elements create a meaning beyond their individual parts?
+    j. Does the combination of text, visuals, and context contribute to an overall meaning that is greater than the sum of its parts?
     """
     
+
 
     outputs = get_score_v3(
         output_control + humor_questions,

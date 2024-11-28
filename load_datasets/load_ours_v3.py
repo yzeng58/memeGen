@@ -10,7 +10,11 @@ def get_description_path(image_path: str, description: str):
     description_path = re.sub(r'\.(jpeg|jpg|png|gif|bmp|webp)$', '.json', description_path, flags=re.IGNORECASE)
     return description_path
 
-def load_ours_v3(description: str = ''):
+def load_ours_v3(
+    description: str = '', 
+    train_test_split: bool = False,
+    difficulty: str = 'easy',
+):
     files = glob.glob(f'{get_dataset_dir("ours_v3")}/images/*/*')
     data = []
     for file in files:

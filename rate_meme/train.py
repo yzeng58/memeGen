@@ -1,11 +1,7 @@
-from load_dataset import load_dataset
-from load_model import load_model
-import os, pdb
+import os, pdb, wandb
 root_dir = os.path.dirname(os.path.dirname(__file__))
 from helper import save_json, set_seed, get_image_size
 from configs import support_eval_datasets, image_size_threshold
-
-import pandas as pd
 from tqdm import tqdm
 from itertools import product
 import random
@@ -146,6 +142,12 @@ def train(
     X, y = zip(*combined)
     X, y = list(X), list(y)
     ml_model.fit(X, y)
+    # accuracy on train set
+    train_pred = ml_model.predict(X)
+    train_acc = (train_pred == y).mean()
+    print(f'Accuracy on train set: {train_acc}')
+    if wandb.run is not None:
+        wandb.log({'train_acc': train_acc})
     print("----------------------------------")
     return ml_model
 
