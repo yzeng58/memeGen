@@ -45,6 +45,7 @@ def get_output(
     overwrite = False,
     theory_version = 'v1',
     demonstrations = [],
+    system_prompt_name = "default",
 ):
     if prompt_name == "cot":
         output_1 = call_model(
@@ -55,7 +56,7 @@ def get_output(
             description=description,
             context=context,
             demonstrations = demonstrations,
-            system_prompt = 'evaluator',
+            system_prompt = system_prompt_name,
         )
         output_2 = call_model(
             prompt[1], 
@@ -66,7 +67,7 @@ def get_output(
             description=description,
             context=context,
             demonstrations = demonstrations,
-            system_prompt = 'evaluator',
+            system_prompt = system_prompt_name,
         )
         output_dict = {
             'output': output_2['output'],
@@ -80,7 +81,7 @@ def get_output(
             description=description,
             context=context,
             demonstrations = demonstrations,
-            system_prompt = 'evaluator',
+            system_prompt = system_prompt_name,
         )
         output_dict = {
             'output': output_dict_all['output'],
@@ -97,6 +98,7 @@ def get_output(
             context = context,
             overwrite = overwrite,
             version = theory_version,
+            system_prompt_name = system_prompt_name,
         )
     else:
         raise ValueError(f"Prompt name {prompt_name} not supported")

@@ -3,7 +3,7 @@ from load_model import load_model
 import os, wandb, argparse, pdb
 root_dir = os.path.dirname(__file__)
 from helper import save_json, read_json, print_configs, set_seed, get_image_size
-from configs import support_llms, support_eval_datasets, prompt_processor, image_size_threshold, eval_modes, support_ml_models
+from configs import support_llms, support_eval_datasets, prompt_processor, image_size_threshold, eval_modes, support_ml_models, system_prompts_default
 
 from environment import WANDB_INFO_EVAL
 import pandas as pd
@@ -30,6 +30,7 @@ def get_single_output(
     eval_mode,
     theory_version,
     demonstrations = [],
+    system_prompt_name = 'default',
 ):
     file_name = file_path.split('/')[-1].split('.')[0]
     
@@ -62,6 +63,7 @@ def get_single_output(
             overwrite = overwrite,
             theory_version = theory_version,
             demonstrations = demonstrations,
+            system_prompt_name = system_prompt_name,
         )
 
         pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
@@ -97,6 +99,7 @@ def evaluate(
     n_demos = 0,
     train_ml_model = "",
     difficulty = 'easy',
+    system_prompt_name = "",
 ):            
     if "difficulty" in support_eval_datasets[dataset_name]:
         if difficulty not in support_eval_datasets[dataset_name]["difficulty"]:
@@ -169,6 +172,7 @@ def evaluate(
             eval_mode = eval_mode,
             n_demos = n_demos,
             train_ml_model = train_ml_model,
+            system_prompt_name = system_prompt_name,
         )
 
         dataset = dataset["test"]
@@ -273,6 +277,7 @@ def evaluate(
                 eval_mode = eval_mode,
                 theory_version = theory_version,
                 demonstrations = demonstrations,
+                system_prompt_name = system_prompt_name,
             )
 
             if result['pred_label'] == label: corr += 1
@@ -391,6 +396,7 @@ def evaluate(
                         overwrite = overwrite,
                         theory_version = theory_version,
                         demonstrations = demonstrations,
+                        system_prompt_name = system_prompt_name,
                     )
         
                     pred_label_1 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
@@ -409,6 +415,7 @@ def evaluate(
                         overwrite = overwrite,
                         theory_version = theory_version,
                         demonstrations = demonstrations,
+                        system_prompt_name = system_prompt_name,
                     )
                     pred_label_2 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_2['output'])
 
@@ -427,6 +434,7 @@ def evaluate(
                         overwrite = overwrite,
                         theory_version = theory_version,
                         demonstrations = demonstrations,
+                        system_prompt_name = system_prompt_name,
                     )
                     compare_output_dict_2 = get_output(
                         call_model, 
@@ -442,6 +450,7 @@ def evaluate(
                         overwrite = overwrite,
                         theory_version = theory_version,
                         demonstrations = demonstrations,
+                        system_prompt_name = system_prompt_name,
                     )
 
                     if train_ml_model:
@@ -474,6 +483,7 @@ def evaluate(
                         eval_mode = eval_mode,
                         theory_version = theory_version,
                         demonstrations = demonstrations,
+                        system_prompt_name = system_prompt_name,
                     )
 
                     compare_output_dict_2 = get_single_output(
@@ -493,6 +503,7 @@ def evaluate(
                         eval_mode = eval_mode,
                         theory_version = theory_version,
                         demonstrations = demonstrations,
+                        system_prompt_name = system_prompt_name,
                     )
 
                     pred_label_1 = int(compare_output_dict_1['pred_label'] <= compare_output_dict_2['pred_label'])
@@ -589,6 +600,7 @@ def evaluate(
                     result_dir = result_dir,
                     overwrite = overwrite,
                     theory_version = theory_version,
+                    system_prompt_name = system_prompt_name,
                 )
                 pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
 
@@ -633,11 +645,12 @@ if __name__ == '__main__':
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
     parser.add_argument('--theory_example', action='store_true')
     parser.add_argument('--not_load_model', action='store_true', help="Do not load the model. Use this option only when results have already been stored and you want to read the existing results.")
-    parser.add_argument('--theory_version', type=str, default='v3', choices=['v1', 'v2', 'v3'])
+    parser.add_argument('--theory_version', type=str, default='v4', choices=['v1', 'v2', 'v3', 'v4'])
     parser.add_argument('--ensemble', action='store_true')
     parser.add_argument('--n_demos', type=int, default=0)
     parser.add_argument('--train_ml_model', type=str, default="", choices=list(support_ml_models.keys()) + [""])
     parser.add_argument('--difficulty', type=str, default='easy', choices=['easy', 'medium'])
+    parser.add_argument('--system_prompt_name', type=str, default='evaluator', choices=list(system_prompts_default.keys()))
     args = parser.parse_args()
 
     print(__file__)
@@ -687,6 +700,7 @@ if __name__ == '__main__':
         n_demos = args.n_demos,
         train_ml_model = args.train_ml_model,
         difficulty = args.difficulty,
+        system_prompt_name = args.system_prompt_name,
     )
 
     if args.wandb:

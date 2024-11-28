@@ -5,6 +5,7 @@ sys.path.append(root_dir)
 from rate_meme.score_meme_v1 import score_meme_based_on_theory_v1
 from rate_meme.score_meme_v2 import score_meme_based_on_theory_v2
 from rate_meme.score_meme_v3 import score_meme_based_on_theory_v3
+from rate_meme.score_meme_v4 import score_meme_based_on_theory_v4
 
 def score_meme_based_on_theory(
     meme_path,
@@ -17,6 +18,7 @@ def score_meme_based_on_theory(
     context = '',
     overwrite = False,
     version = 'v1',
+    system_prompt_name = 'default',
 ):
     if version == 'v1':
         return score_meme_based_on_theory_v1(
@@ -29,6 +31,7 @@ def score_meme_based_on_theory(
             description = description,
             context = context,
             overwrite = overwrite,
+            system_prompt_name = system_prompt_name,
         )
     elif version == 'v2':
         return score_meme_based_on_theory_v2(
@@ -41,6 +44,7 @@ def score_meme_based_on_theory(
             description = description,
             context = context,
             overwrite = overwrite,
+            system_prompt_name = system_prompt_name,
         )
     elif version == 'v3':
         return score_meme_based_on_theory_v3(
@@ -52,6 +56,19 @@ def score_meme_based_on_theory(
             description = description,
             context = context,
             overwrite = overwrite,
+            system_prompt_name = system_prompt_name,
+        )
+    elif version == 'v4':
+        return score_meme_based_on_theory_v4(
+            meme_path = meme_path,
+            call_model = call_model,
+            result_dir = result_dir,
+            max_new_tokens = max_intermediate_tokens,
+            example = example,
+            description = description,
+            context = context,
+            overwrite = overwrite,
+            system_prompt_name = system_prompt_name,
         )
     else:
         raise ValueError(f"Version {version} not supported!")

@@ -439,6 +439,7 @@ for support_model_category in support_llms:
 system_prompts_default = {
     'evaluator': "You are a meme evaluation expert. You will follow the user's instruction and give your evaluation directly.",
     'default': "You are a helpful AI assistant. You will follow the user's instructions carefully and provide thoughtful responses.",
+    'strict_scorer': "You are a person who is strict, and think most of memes are boring give 0 to every question with 90% possibility. "
 }
 
 system_prompts = deepcopy(system_prompts_default)

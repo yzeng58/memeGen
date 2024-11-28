@@ -19,6 +19,7 @@ def get_score_v1(
     max_new_tokens = 1,
     description = '',
     context = '',
+    system_prompt_name = 'default',
 ):
     output_1 = call_model(
         f"{q['question']} {q['rating']}" + (" " + q['example'] if example else ''),
@@ -27,7 +28,7 @@ def get_score_v1(
         save_history=True,
         description = description,
         context = context,
-        system_prompt = 'evaluator',
+        system_prompt = system_prompt_name,
     )
 
     output_2 = call_model(
@@ -38,7 +39,7 @@ def get_score_v1(
         save_history = True,
         description = description,
         context = context,
-        system_prompt = 'evaluator',
+        system_prompt = system_prompt_name,
     )
 
     output_dict = {
@@ -55,6 +56,7 @@ def get_score_v3(
     max_new_tokens = 500,
     description = '',
     context = '',
+    system_prompt_name = 'default',
 ):
     output = call_model(
         prompt, 
@@ -62,7 +64,8 @@ def get_score_v3(
         max_new_tokens=max_new_tokens, 
         save_history=True, 
         description = description, 
-        context = context
+        context = context,
+        system_prompt = system_prompt_name,
     )
 
     try:
@@ -120,3 +123,37 @@ def get_score_v3(
 
     return parsed_data
 
+
+def get_score_v4(
+    prompt, 
+    meme_path,
+    call_model,
+    max_new_tokens = 500,
+    description = '',
+    context = '',
+    system_prompt_name = 'default',
+):
+    output = call_model(
+        prompt, 
+        [meme_path], 
+        max_new_tokens=max_new_tokens, 
+        save_history=True, 
+        description = description, 
+        context = context,
+        system_prompt = system_prompt_name,
+    )
+
+    try:
+        parsed_data = json.loads(output['output'].replace("```json", "").replace("```", "").strip())
+    except KeyboardInterrupt:
+        raise KeyboardInterrupt
+    except:
+        print(f"Error parsing the output of {os.path.basename(meme_path)}, using default values")
+        parsed_data = {
+            "a": { "comment": "", "score": -1 },
+            "b": { "comment": "", "score": -1 },
+            "c": { "comment": "", "score": -1 },
+            "d": { "comment": "", "score": -1 },
+        }
+
+    return parsed_data

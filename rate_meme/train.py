@@ -32,6 +32,7 @@ def train(
     eval_mode = "pairwise",
     n_demos = 0,
     train_ml_model = "xgboost",
+    system_prompt_name = "default",
 ):    
     print("----------------------------------")
     print(f'Training ML model for {dataset_name} with {model_name}...')
@@ -100,6 +101,7 @@ def train(
             overwrite = overwrite,
             theory_version = theory_version,
             demonstrations = demonstrations,
+            system_prompt_name = system_prompt_name,
         )
         compare_output_dict_2 = get_output(
             call_model, 
@@ -115,13 +117,11 @@ def train(
             overwrite = overwrite,
             theory_version = theory_version,
             demonstrations = demonstrations,
+            system_prompt_name = system_prompt_name,
         )
 
         X.extend([list(compare_output_dict_1['scores'].values()), list(compare_output_dict_2['scores'].values())])
         y.extend([1, 0])
-
-        pred_label_1 = int(compare_output_dict_1['output'] <= compare_output_dict_2['output'])
-        pred_label_2 = int(compare_output_dict_1['output'] > compare_output_dict_2['output'])
 
             
         result = {
@@ -131,8 +131,6 @@ def train(
             'label_2': 1,
             'output_1': compare_output_dict_1,
             'output_2': compare_output_dict_2,
-            'pred_label_1': int(pred_label_1),
-            'pred_label_2': int(pred_label_2),
         }
         save_json(result, result_file)
     

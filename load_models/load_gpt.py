@@ -95,6 +95,7 @@ def call_gpt(
     context = "",
     temperature: float = 0.0,
     demonstrations = None,
+    system_prompt = '',
     **kwargs,
 ):
     model, client, api_key = gpt['model'], gpt['client'], gpt['api_key']
@@ -137,6 +138,7 @@ def call_gpt(
     output_dict = {}
 
     if history is not None: messages = history + messages
+    if system_prompt: messages.insert(0, {"role": "system", "content": system_prompt})
 
     payload = {
         'model': model,

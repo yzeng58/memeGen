@@ -14,6 +14,7 @@ def score_meme_based_on_theory_v3(
     description = '',
     context = '',
     overwrite = False,
+    system_prompt_name = 'default',
 ):
     if example:
         raise ValueError("Example is not supported for score meme algorithm v3")
@@ -127,6 +128,7 @@ def score_meme_based_on_theory_v3(
         max_new_tokens = max_new_tokens,
         description = description,
         context = context,
+        system_prompt_name = system_prompt_name,
     )
 
     scores = {}

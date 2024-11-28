@@ -1,6 +1,6 @@
-import os, time, random
+import os, time, random, itertools
 root_dir = os.path.dirname(__file__)
-from configs import prompt_processor, support_gen_datasets, support_llms, support_diffusers, summarizer_prompts
+from configs import prompt_processor, support_gen_datasets, support_llms, support_diffusers, summarizer_prompts, system_prompts_default
 from load_model import load_model
 from helper import combine_text_and_image, set_seed, save_json, print_configs, retry_if_fail
 from rate_meme.rate_meme import score_meme_based_on_theory
@@ -9,6 +9,7 @@ from load_dataset import load_dataset
 from load_model import load_model
 import argparse, wandb
 from environment import WANDB_INFO_GEN
+from utils.eval_utils import get_output
 
 
 @retry_if_fail(max_retries=10, sleep_time=0.1)
@@ -201,6 +202,8 @@ def generate_meme_topic(
     image_style: str = "cartoon",
     result_dir: str = None,
     file_name: str = None,
+    system_prompt_name: str = 'strict_scorer',
+
 ): 
     if gen_mode == "selective":
         if eval_llm_name is None:
@@ -209,8 +212,10 @@ def generate_meme_topic(
             raise ValueError("call_eval_llm must be provided if gen_mode is selective!")
         if n_selected_from <= 1:
             raise ValueError("n_selected_from must be greater than 1 if gen_mode is selective!")
-        if not eval_prompt_name in ["theory"]:
+        if not eval_prompt_name in ["theory", "standard"]:
             raise ValueError(f"eval_prompt_name {eval_prompt_name} not supported!")
+        if eval_prompt_name == "standard" and n_selected_from >= 3:
+            raise ValueError("n_selected_from must be less than 3 if eval_prompt_name is standard!")
         
     if not description_only and call_dm is None:
         raise ValueError("call_dm must be provided if description_only is False!")
@@ -302,10 +307,11 @@ def generate_meme_topic(
                             result_dir = result_dir,
                             max_intermediate_tokens = 300,
                             max_new_tokens = 1,
-                            example = True,
+                            example = False,
                             description = gen_llm_output_dict['description'],
-                            topic = "",
-                            theory_version = theory_version,
+                            context = "",
+                            version = theory_version,
+                            system_prompt_name = system_prompt_name,
                         )
                     elif eval_mode == "meme":
                         eval_llm_output_dict = score_meme_based_on_theory(
@@ -314,20 +320,50 @@ def generate_meme_topic(
                             result_dir = result_dir,
                             max_intermediate_tokens = 300,
                             max_new_tokens = 1,
-                            example = True,
+                            example = False,
                             description = "",
                             topic = "",
                             theory_version = theory_version,
                         )
+                    
 
-                output_dict[j+1] = {
-                    "gen_llm_output": gen_llm_output_dict,
-                    "eval_llm_output": eval_llm_output_dict,
-                }
+                    output_dict[j+1] = {
+                        "gen_llm_output": gen_llm_output_dict,
+                        "eval_llm_output": eval_llm_output_dict,
+                    }
 
-                if eval_llm_output_dict['output'] > output_dict[best_idx+1]['eval_llm_output']['output']:
-                    best_idx = j
+                    if eval_llm_output_dict['output'] > output_dict[best_idx+1]['eval_llm_output']['output']:
+                        best_idx = j
             
+            if eval_prompt_name == "standard":
+                # compare within three
+                # create a list of combination of two of them
+                combinations = list(itertools.combinations(list(range(1, n_selected_from+1)), 2))
+                score = {}
+                for comb in combinations:
+                    compare_output_dict = get_output(
+                        call_model = call_eval_llm,
+                        prompt_name = eval_prompt_name,
+                        prompt = prompt_processor[eval_llm_name]["funniness"][eval_prompt_name]['prompt'],
+                        images = [output_dict[comb[0]]['gen_llm_output']['output_path'], output_dict[comb[1]]['gen_llm_output']['output_path']],
+                        max_new_tokens = 1,
+                        description = gen_llm_output_dict["description"],
+                        max_intermediate_tokens = 300,
+                        context = "",
+                        example = False,
+                        result_dir = result_dir,
+                        overwrite = False,
+                        system_prompt_name = system_prompt_name,
+                    )
+                    pred_label = prompt_processor[eval_llm_name]["funniness"][eval_prompt_name]['output_processor'](compare_output_dict['output'])
+                    if comb[0] not in score:
+                        score[comb[0]] = 0
+                    if comb[1] not in score:
+                        score[comb[1]] = 0
+                    score[comb[pred_label]] += 1
+
+                best_idx = max(score, key=score.get)
+
             output_dict["best_idx"] = best_idx+1
             save_json(output_dict, output_path)
 
@@ -366,6 +402,7 @@ def generate_meme_content(
     image_style: str = "cartoon",    
     result_dir: str = None,
     file_name: str = None,
+    system_prompt_name: str = 'strict_scorer',
 ):
     topic = summarize_topic(
         call_model = call_gen_llm,
@@ -410,6 +447,7 @@ def generate_meme_content(
         image_style = image_style,
         result_dir = result_dir,
         file_name = file_name,
+        system_prompt_name = system_prompt_name,
     )
 
 def generate(
@@ -437,6 +475,7 @@ def generate(
     max_new_tokens: int = 200,
     n_memes_per_content: int = 1,
     overwrite: bool = False,
+    system_prompt_name: str = 'strict_scorer',
 ):
     if dataset_name not in support_gen_datasets:
         raise ValueError(f"Dataset {dataset_name} not supported!")
@@ -487,6 +526,7 @@ def generate(
                 image_style = image_style,    
                 result_dir = result_dir,
                 file_name = file_name,
+                system_prompt_name = system_prompt_name,
             )
 
     
@@ -509,10 +549,10 @@ if __name__ == "__main__":
     parser.add_argument('--gen_mode', type=str, default='standard', choices=['standard', 'selective'])
     parser.add_argument('--n_selected_from', type=int, default=2, help = "For each content, generate n_selected_from meme generations and select the best one")
     parser.add_argument('--eval_prompt_name', type=str, default='theory')
-    parser.add_argument('--eval_llm_name', type=str, default=None)
+    parser.add_argument('--eval_llm_name', type=str, default='gpt-4o', choices=llm_names)
     parser.add_argument('--temperature', type=float, default=0.5)
     parser.add_argument('--eval_mode', type=str, default='description', choices=['description', 'meme'])
-    parser.add_argument('--theory_version', type=str, default='v1', choices=['v1', 'v2'])
+    parser.add_argument('--theory_version', type=str, default='v4', choices=['v1', 'v2', 'v3', 'v4'])
     parser.add_argument('--image_style', type=str, default='realistic')
     parser.add_argument('--height', type=int, default=480)
     parser.add_argument('--width', type=int, default=480)
@@ -525,6 +565,7 @@ if __name__ == "__main__":
     parser.add_argument('--n_memes_per_content', type=int, default=1)
     parser.add_argument('--wandb', action='store_true')
     parser.add_argument('--overwrite', action='store_true')
+    parser.add_argument('--system_prompt_name', type=str, default='strict_scorer', choices=list(system_prompts_default.keys()))
     args = parser.parse_args()
 
     print(__file__)
@@ -563,4 +604,5 @@ if __name__ == "__main__":
         max_new_tokens = args.max_new_tokens,
         n_memes_per_content = args.n_memes_per_content,
         overwrite = args.overwrite,
+        system_prompt_name = args.system_prompt_name,
     )

@@ -15,6 +15,7 @@ def score_meme_based_on_theory_v2(
     description = '',
     context = '',
     overwrite = False,
+    system_prompt_name = 'default',
 ):
 
     if result_dir:
@@ -78,6 +79,7 @@ def score_meme_based_on_theory_v2(
         max_new_tokens = max_new_tokens,
         description = description,
         context = context,
+        system_prompt_name = system_prompt_name,
     )
     score_ipr = outputs["ipr1"]["score"]
 
@@ -91,6 +93,7 @@ def score_meme_based_on_theory_v2(
         max_new_tokens = max_new_tokens,
         description = description,
         context = context,
+        system_prompt_name = system_prompt_name,
     )
     scores["vbn1"] = outputs["vbn1"]["score"]
 
@@ -106,6 +109,7 @@ def score_meme_based_on_theory_v2(
             max_new_tokens = max_new_tokens,
             description = description,
             context = context,
+            system_prompt_name = system_prompt_name,
         )
         scores["vbn2"] = outputs["vbn2"]["score"]
         score_vbn = 9 - abs(scores["vbn1"] - scores["vbn2"])
@@ -135,6 +139,7 @@ def score_meme_based_on_theory_v2(
             max_new_tokens = max_new_tokens,
             description = description,
             context = context,
+            system_prompt_name = system_prompt_name,
         )
         scores[q] = outputs[q]['score']
 
