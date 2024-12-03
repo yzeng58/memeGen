@@ -50,7 +50,6 @@ support_llms = {
         "Mistral-Small-Instruct-2409",
     ],
     'pixtral': [
-        'Pixtral-12B-2409',
         'Pixtral-12B-Chat',
     ],
     'gemini': [
@@ -193,7 +192,7 @@ support_llm_properties = {
     },
     'Pixtral-12B-Chat': {
         'model_size': 12000000000,
-        "huggingface_repo_name": "pixtral/Pixtral-12B-2409",
+        "huggingface_repo_name": "mistral-community/pixtral-12b",
         "chat_template": "pixtral",
     },
     "gemini-1.5-flash": {

@@ -9,8 +9,14 @@ from qwen_vl_utils import process_vision_info
 import pdb
 
 def load_qwen(
-    model_name: str,
+    model_path: str,
 ):  
+    model_name = model_path.split("/")[0]
+    if model_path.endswith('/pretrained'):
+        model_path = f"Qwen/{model_name}"
+    else:
+        model_path = f"{root_dir}/models/{model_path}"
+        
     if 'qwen2.5' in model_name.lower():
         model = AutoModelForCausalLM.from_pretrained(
             f"Qwen/{model_name}",
@@ -24,12 +30,6 @@ def load_qwen(
             'type': 'qwen2.5',
         }
     elif 'qwen2-vl' in model_name.lower():
-        if "/" not in model_name:
-            model_path = f"Qwen/{model_name}"
-        else:
-            model_path = f"{root_dir}/models/{model_name}"
-            print(model_path)
-            model_name = model_name.split("/")[0]
         model = Qwen2VLForConditionalGeneration.from_pretrained(
             model_path, 
             torch_dtype="auto", 
@@ -105,7 +105,6 @@ def call_qwen(
     **kwargs,
 ):
     set_seed(seed)
-
 
     if qwen['type'] in ['qwen2-vl']:
         model, processor, model_name = qwen['model'], qwen['processor'], qwen['model_name']

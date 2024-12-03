@@ -78,7 +78,7 @@ def classify_memes(
     os.makedirs(result_dir, exist_ok=True)
 
     call_model = load_model(
-        model_name = model_name, 
+        model_path = model_name, 
         api_key = api_key,
     )
 
