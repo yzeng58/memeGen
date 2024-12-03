@@ -150,10 +150,10 @@ def get_score_v4(
     except:
         print(f"Error parsing the output of {os.path.basename(meme_path)}, using default values")
         parsed_data = {
-            "a": { "comment": "", "score": -1 },
-            "b": { "comment": "", "score": -1 },
-            "c": { "comment": "", "score": -1 },
-            "d": { "comment": "", "score": -1 },
+            "a": { "comment": "", "option": -1 },
+            "b": { "comment": "", "option": -1 },
+            "c": { "comment": "", "option": -1 },
+            "d": { "comment": "", "option": -1 },
         }
 
     return parsed_data

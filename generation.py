@@ -1,6 +1,6 @@
-import os, time, random, itertools
+import os, time, random, itertools, pdb
 root_dir = os.path.dirname(__file__)
-from configs import prompt_processor, support_gen_datasets, support_llms, support_diffusers, summarizer_prompts, system_prompts_default
+from configs import prompt_processor, support_gen_datasets, support_llms, support_diffusers, summarizer_prompts, system_prompts_default, prompt_processor_default
 from load_model import load_model
 from helper import combine_text_and_image, set_seed, save_json, print_configs, retry_if_fail
 from rate_meme.rate_meme import score_meme_based_on_theory
@@ -214,8 +214,8 @@ def generate_meme_topic(
             raise ValueError("n_selected_from must be greater than 1 if gen_mode is selective!")
         if not eval_prompt_name in ["theory", "standard"]:
             raise ValueError(f"eval_prompt_name {eval_prompt_name} not supported!")
-        if eval_prompt_name == "standard" and n_selected_from >= 3:
-            raise ValueError("n_selected_from must be less than 3 if eval_prompt_name is standard!")
+        if eval_prompt_name == "standard" and n_selected_from > 3:
+            raise ValueError("n_selected_from must be less than or equal to 3 if eval_prompt_name is standard!")
         
     if not description_only and call_dm is None:
         raise ValueError("call_dm must be provided if description_only is False!")
@@ -299,6 +299,10 @@ def generate_meme_topic(
                     image_style = image_style,
                 )
 
+                output_dict[j+1] = {
+                    "gen_llm_output": gen_llm_output_dict,
+                }
+
                 if eval_prompt_name == "theory":
                     if eval_mode == "description":
                         eval_llm_output_dict = score_meme_based_on_theory(
@@ -327,47 +331,47 @@ def generate_meme_topic(
                         )
                     
 
-                    output_dict[j+1] = {
-                        "gen_llm_output": gen_llm_output_dict,
-                        "eval_llm_output": eval_llm_output_dict,
-                    }
+                    output_dict[j+1]["eval_llm_output"] = eval_llm_output_dict
 
-                    if eval_llm_output_dict['output'] > output_dict[best_idx+1]['eval_llm_output']['output']:
-                        best_idx = j
+                    if eval_llm_output_dict['output'] > output_dict[best_idx]['eval_llm_output']['output']:
+                        best_idx = j+1
             
             if eval_prompt_name == "standard":
-                # compare within three
-                # create a list of combination of two of them
-                combinations = list(itertools.combinations(list(range(1, n_selected_from+1)), 2))
-                score = {}
-                for comb in combinations:
-                    compare_output_dict = get_output(
-                        call_model = call_eval_llm,
-                        prompt_name = eval_prompt_name,
-                        prompt = prompt_processor[eval_llm_name]["funniness"][eval_prompt_name]['prompt'],
-                        images = [output_dict[comb[0]]['gen_llm_output']['output_path'], output_dict[comb[1]]['gen_llm_output']['output_path']],
-                        max_new_tokens = 1,
-                        description = gen_llm_output_dict["description"],
-                        max_intermediate_tokens = 300,
-                        context = "",
-                        example = False,
-                        result_dir = result_dir,
-                        overwrite = False,
-                        system_prompt_name = system_prompt_name,
-                    )
-                    pred_label = prompt_processor[eval_llm_name]["funniness"][eval_prompt_name]['output_processor'](compare_output_dict['output'])
-                    if comb[0] not in score:
-                        score[comb[0]] = 0
-                    if comb[1] not in score:
-                        score[comb[1]] = 0
-                    score[comb[pred_label]] += 1
+                if eval_mode == "description":
+                    # compare within three
+                    # create a list of combination of two of them
+                    combinations = list(itertools.combinations(list(range(1, n_selected_from+1)), 2))
+                    score = {}
+                    for comb in combinations:
+                        compare_output_dict = get_output(
+                            call_model = call_eval_llm,
+                            prompt_name = eval_prompt_name,
+                            prompt = prompt_processor[eval_llm_name]["funniness"]["pairwise"][eval_prompt_name]['prompt'],
+                            image_paths = [output_dict[comb[0]]['gen_llm_output']['output_path'], output_dict[comb[1]]['gen_llm_output']['output_path']],
+                            max_new_tokens = 1,
+                            description = gen_llm_output_dict["description"],
+                            max_intermediate_tokens = 300,
+                            context = "",
+                            example = False,
+                            result_dir = result_dir,
+                            overwrite = False,
+                            system_prompt_name = system_prompt_name,
+                        )
+                        pred_label = prompt_processor[eval_llm_name]["funniness"]["pairwise"][eval_prompt_name]['output_processor'](compare_output_dict['output'])
+                        if comb[0] not in score:
+                            score[comb[0]] = 0
+                        if comb[1] not in score:
+                            score[comb[1]] = 0
+                        score[comb[pred_label]] += 1
+                else:
+                    raise ValueError(f"eval_mode {eval_mode} not supported for standard evaluation prompt!")
 
                 best_idx = max(score, key=score.get)
 
-            output_dict["best_idx"] = best_idx+1
+            output_dict["best_idx"] = best_idx
             save_json(output_dict, output_path)
 
-            print(f"Selected meme stored in {output_dict[best_idx+1]['gen_llm_output']['meme_path']}")
+            print(f"Selected meme stored in {output_dict[best_idx]['gen_llm_output']['meme_path']}")
         else:
             raise ValueError(f"gen_mode {gen_mode} not supported!")
         
@@ -540,16 +544,16 @@ if __name__ == "__main__":
     for dm in support_diffusers:
         dm_names.extend(support_diffusers[dm])
 
-    parser.add_argument('--gen_llm_name', type=str, default='gemini-1.5-flash', choices=llm_names)
+    parser.add_argument('--gen_llm_name', type=str, default='gpt-4o', choices=llm_names)
     parser.add_argument('--dm_name', type=str, default='stable-diffusion-3-medium-diffusers', choices=dm_names)
     parser.add_argument('--dataset_name', type=str, default='ours_gen_v1', choices=support_gen_datasets.keys())
-    parser.add_argument('--prompt_name', type=str, default='standard')
+    parser.add_argument('--prompt_name', type=str, default='standard', choices=prompt_processor_default['generation'].keys())
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--n_per_topic', type=int, default=1, help = "Number of social contents to consider per topic")
     parser.add_argument('--gen_mode', type=str, default='standard', choices=['standard', 'selective'])
     parser.add_argument('--n_selected_from', type=int, default=2, help = "For each content, generate n_selected_from meme generations and select the best one")
-    parser.add_argument('--eval_prompt_name', type=str, default='theory')
-    parser.add_argument('--eval_llm_name', type=str, default='gpt-4o', choices=llm_names)
+    parser.add_argument('--eval_prompt_name', type=str, default='theory', choices=['theory', 'standard'])
+    parser.add_argument('--eval_llm_name', type=str, default='gemini-1.5-flash', choices=llm_names)
     parser.add_argument('--temperature', type=float, default=0.5)
     parser.add_argument('--eval_mode', type=str, default='description', choices=['description', 'meme'])
     parser.add_argument('--theory_version', type=str, default='v4', choices=['v1', 'v2', 'v3', 'v4'])

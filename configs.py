@@ -79,37 +79,136 @@ support_ml_models = {
     "xgboost": XGBClassifier,
 }
 
-model_size = {
-    'gpt-4o-mini': 1000000000,
-    'gpt-4-turbo-2024-04-09': 100000000000,
-    'claude-3-haiku-20240307': 20000000000,
-    'claude-3-sonnet-20240229': 70000000000,
-    "Llama-3.1-405B-Instruct": 405000000000,
-    "Llama-3.1-8B-Instruct": 8000000000,
-    "Llama-3.1-70B-Instruct": 70000000000,
-    "Llama-3.2-11B-Vision-Instruct": 11000000000,
-    "Llama-3.2-90B-Vision-Instruct": 90000000000,
-    'Qwen-VL-Chat': 7000000000,
-    'Qwen2-VL-2B-Instruct': 2000000000,
-    'Qwen2-VL-7B-Instruct': 7000000000,
-    'Qwen2-VL-72B-Instruct': 72000000000,
-    'Qwen2.5-0.5B-Instruct': 500000000,
-    'Qwen2.5-1.5B-Instruct': 1500000000,
-    'Qwen2.5-3B-Instruct': 3000000000,
-    'Qwen2.5-7B-Instruct': 7000000000,
-    'Qwen2.5-14B-Instruct': 14000000000,
-    'Qwen2.5-32B-Instruct': 32000000000,
-    'Qwen2.5-72B-Instruct': 72000000000,
-    "Mistral-7B-Instruct-v0.3": 7000000000,
-    "Mixtral-8x22B-Instruct-v0.1": 176000000000,
-    "Mistral-Large-Instruct-2407": 123000000000,
-    "Mistral-Small-Instruct-2409": 22000000000,
-    'Pixtral-12B-2409': 12000000000,
-    "gemini-1.5-flash": 32000000000,
-    "gemini-1.5-flash-8b": 8000000000,
-    "gemini-1.5-pro": 120000000000,
-    'stable-diffusion-3-medium-diffusers': 2000000000,
+support_llm_properties = {
+    'gpt-4o-mini': {
+        'model_size': 1000000000,
+    },
+    'gpt-4o': {
+        'model_size': 1800000000000,
+    },
+    'gpt-4-turbo-2024-04-09': {
+        'model_size': 100000000000,
+    },
+    'claude-3-haiku-20240307': {
+        'model_size': 20000000000,
+    },
+    'claude-3-sonnet-20240229': {
+        'model_size': 70000000000,
+    },
+    "Llama-3.1-405B-Instruct": {
+        'model_size': 405000000000,
+        "huggingface_repo_name": "meta-llama/Meta-Llama-3.1-405B-Instruct",
+        "chat_template": "llama3",
+    },
+    "Llama-3.1-8B-Instruct": {
+        'model_size': 8000000000,
+        "huggingface_repo_name": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "chat_template": "llama3",
+    },
+    "Llama-3.1-70B-Instruct": {
+        'model_size': 70000000000,
+        "huggingface_repo_name": "meta-llama/Meta-Llama-3.1-70B-Instruct",
+        "chat_template": "llama3",
+    },
+    "Llama-3.2-11B-Vision-Instruct": {
+        'model_size': 11000000000,
+        "huggingface_repo_name": "meta-llama/Meta-Llama-3.2-11B-Vision-Instruct",
+        "chat_template": "mllama",
+    },
+    "Llama-3.2-90B-Vision-Instruct": {
+        'model_size': 90000000000,
+        "huggingface_repo_name": "meta-llama/Meta-Llama-3.2-90B-Vision-Instruct",
+        "chat_template": "mllama",
+    },
+    "Qwen2-VL-2B-Instruct": {
+        'model_size': 2000000000,
+        "huggingface_repo_name": "Qwen/Qwen2-VL-2B-Instruct",
+        "chat_template": "qwen2_vl",
+    },
+    "Qwen2-VL-7B-Instruct": {
+        'model_size': 7000000000,
+        "huggingface_repo_name": "Qwen/Qwen2-VL-7B-Instruct",
+        "chat_template": "qwen2_vl",
+    },
+    "Qwen2-VL-72B-Instruct": {
+        'model_size': 72000000000,
+        "huggingface_repo_name": "Qwen/Qwen2-VL-72B-Instruct",
+        "chat_template": "qwen2_vl",
+    },
+    "Qwen2.5-0.5B-Instruct": {
+        'model_size': 500000000,
+        "huggingface_repo_name": "Qwen/Qwen2.5-0.5B-Instruct",
+        "chat_template": "qwen",
+    },
+    "Qwen2.5-1.5B-Instruct": {
+        'model_size': 1500000000,
+        "huggingface_repo_name": "Qwen/Qwen2.5-1.5B-Instruct",
+        "chat_template": "qwen",
+    },
+    "Qwen2.5-3B-Instruct": {
+        'model_size': 3000000000,
+        "huggingface_repo_name": "Qwen/Qwen2.5-3B-Instruct",
+        "chat_template": "qwen",
+    },
+    "Qwen2.5-7B-Instruct": {
+        'model_size': 7000000000,
+        "huggingface_repo_name": "Qwen/Qwen2.5-7B-Instruct",
+        "chat_template": "qwen",
+    },
+    "Qwen2.5-14B-Instruct": {
+        'model_size': 14000000000,
+        "huggingface_repo_name": "Qwen/Qwen2.5-14B-Instruct",
+        "chat_template": "qwen",
+    },
+    "Qwen2.5-32B-Instruct": {
+        'model_size': 32000000000,
+        "huggingface_repo_name": "Qwen/Qwen2.5-32B-Instruct",
+        "chat_template": "qwen",
+    },
+    "Qwen2.5-72B-Instruct": {
+        'model_size': 72000000000,
+        "huggingface_repo_name": "Qwen/Qwen2.5-72B-Instruct",
+        "chat_template": "qwen",
+    },
+    "Mistral-7B-Instruct-v0.3": {
+        'model_size': 7000000000,
+        "huggingface_repo_name": "mistralai/Mistral-7B-Instruct-v0.3",
+        "chat_template": "mistral",
+    },
+    "Mixtral-8x22B-Instruct-v0.1": {
+        'model_size': 176000000000,
+        "huggingface_repo_name": "mistralai/Mixtral-8x22B-Instruct-v0.1",
+        "chat_template": "mistral",
+    },
+    "Mistral-Large-Instruct-2407": {
+        'model_size': 123000000000,
+        "huggingface_repo_name": "mistralai/Mistral-Large-Instruct-2407",
+        "chat_template": "mistral",
+    },
+    "Mistral-Small-Instruct-2409": {
+        'model_size': 22000000000,
+        "huggingface_repo_name": "mistralai/Mistral-Small-Instruct-2409",
+        "chat_template": "mistral",
+    },
+    'Pixtral-12B-Chat': {
+        'model_size': 12000000000,
+        "huggingface_repo_name": "pixtral/Pixtral-12B-2409",
+        "chat_template": "pixtral",
+    },
+    "gemini-1.5-flash": {
+        'model_size': 32000000000,
+    },
+    "gemini-1.5-flash-8b": {
+        'model_size': 8000000000,
+    },
+    "gemini-1.5-pro": {
+        'model_size': 120000000000,
+    },
+    'stable-diffusion-3-medium-diffusers': {
+        'model_size': 2000000000,
+    },
 }
+
 
 def get_model_category(model_name):
     for support_model in support_llms:
@@ -443,8 +542,9 @@ system_prompts_default = {
 }
 
 system_prompts = deepcopy(system_prompts_default)
-for support_model in support_llms:
-    system_prompts[support_model] = deepcopy(system_prompts_default)
+for support_model_category in support_llms:
+    for support_model in support_llms[support_model_category]:
+        system_prompts[support_model] = deepcopy(system_prompts_default)
 
 ##########################
 # Dataset Configurations # 
