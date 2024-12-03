@@ -100,7 +100,16 @@ def evaluate(
     train_ml_model = "",
     difficulty = 'easy',
     system_prompt_name = "",
-):            
+    data_mode = 'both',
+    peft_variant = "",
+):    
+    if isinstance(model_name, str):
+        model_path = f"{model_name}/{peft_variant}" if peft_variant else model_name
+    else:
+        model_path = []
+        for model in model_name:
+            model_path.append(f"{model}/{peft_variant}" if peft_variant else model)
+
     if "difficulty" in support_eval_datasets[dataset_name]:
         if difficulty not in support_eval_datasets[dataset_name]["difficulty"]:
             raise ValueError(f'Difficulty {difficulty} not supported for {dataset_name}, please choose from {support_eval_datasets[dataset_name]["difficulty"]}')
@@ -128,6 +137,9 @@ def evaluate(
             raise ValueError('Demonstrations are not supported in threeway evaluation mode!')
         if prompt_name != 'standard':
             raise ValueError('Demonstrations are only supported in standard prompt!')
+        
+    if train_ml_model and data_mode in ['train', 'test']:
+        raise ValueError('Train ML model does not support train or test data mode!')
 
     set_seed(seed)
     dataset = load_dataset(
@@ -135,9 +147,12 @@ def evaluate(
         binary_classification=True, 
         description=description or context, 
         eval_mode=eval_mode, 
-        train_test_split=train_ml_model,
+        train_test_split=True if train_ml_model or data_mode in ['train', 'test'] else False,
         difficulty=difficulty,
     )
+    if data_mode != 'both':
+        dataset = dataset[data_mode]
+    
     metric = support_eval_datasets[dataset_name]["metric"]
     sampled_datasets = []
     if (not ensemble) and (eval_mode not in prompt_processor[model_name][metric]):
@@ -146,7 +161,7 @@ def evaluate(
     if not_load_model:
         call_model = None
     else:
-        call_model = load_model(model_name, api_key=api_key)
+        call_model = load_model(model_path, api_key=api_key)
 
     if train_ml_model:
         if not support_eval_datasets[dataset_name]["train_test_split"]:
@@ -201,14 +216,14 @@ def evaluate(
 
     if ensemble:
         result_dirs = []
-        for i, model in enumerate(model_name):
+        for i, model in enumerate(model_path):
             folder_name = get_folder_name(description[i], context[i])
             result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model}/{folder_name}/{eval_mode}_{prompt_name}/{n_demos}_shot' 
             result_dirs.append(result_dir)
     else:
         folder_name = get_folder_name(description, context)
 
-        result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_name}/{folder_name}/{eval_mode}_{prompt_name}/{n_demos}_shot'
+        result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_path}/{folder_name}/{eval_mode}_{prompt_name}/{n_demos}_shot'
         os.makedirs(result_dir, exist_ok=True)
 
     if eval_mode == 'single':
@@ -630,7 +645,7 @@ if __name__ == '__main__':
     for model in support_llms:
         model_names.extend(support_llms[model])
 
-    parser.add_argument('--model_name', type=str, nargs='+', default=['gemini-1.5-flash'], choices=model_names)
+    parser.add_argument('--model_name', type=str, nargs='+', default=['gemini-1.5-flash'], choices = model_names)
     parser.add_argument('--dataset_name', type=str, default='relca', choices=list(support_eval_datasets.keys()))
     parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--api_key', type=str, default='yz')
@@ -645,12 +660,14 @@ if __name__ == '__main__':
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
     parser.add_argument('--theory_example', action='store_true')
     parser.add_argument('--not_load_model', action='store_true', help="Do not load the model. Use this option only when results have already been stored and you want to read the existing results.")
-    parser.add_argument('--theory_version', type=str, default='v4', choices=['v1', 'v2', 'v3', 'v4'])
+    parser.add_argument('--theory_version', type=str, default='v4', choices=['v1', 'v2', 'v3', 'v4', 'v5'])
     parser.add_argument('--ensemble', action='store_true')
     parser.add_argument('--n_demos', type=int, default=0)
     parser.add_argument('--train_ml_model', type=str, default="", choices=list(support_ml_models.keys()) + [""])
     parser.add_argument('--difficulty', type=str, default='easy', choices=['easy', 'medium'])
     parser.add_argument('--system_prompt_name', type=str, default='evaluator', choices=list(system_prompts_default.keys()))
+    parser.add_argument('--data_mode', type=str, default='both', choices=['train', 'test', 'both'])
+    parser.add_argument('--peft_variant', type=str, default='', help='peft variant (e.g., qlora_relca_pairwise_standard_0_shot) to use for evaluation')
     args = parser.parse_args()
 
     print(__file__)
@@ -701,6 +718,8 @@ if __name__ == '__main__':
         train_ml_model = args.train_ml_model,
         difficulty = args.difficulty,
         system_prompt_name = args.system_prompt_name,
+        data_mode = args.data_mode,
+        peft_variant = args.peft_variant,
     )
 
     if args.wandb:

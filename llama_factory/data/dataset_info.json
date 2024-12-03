@@ -17,5 +17,23 @@
             "images": "images",
             "chosen": "chosen"
         }
+    },
+    "relca_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train": {
+        "file_name": "relca_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "images": "images",
+            "chosen": "chosen"
+        }
+    },
+    "relca_Pixtral-12B-Chat_multimodal_pairwise_standard_0_shot_train": {
+        "file_name": "relca_Pixtral-12B-Chat_multimodal_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "images": "images",
+            "chosen": "chosen"
+        }
     }
 }

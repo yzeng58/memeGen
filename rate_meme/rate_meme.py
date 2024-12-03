@@ -6,6 +6,7 @@ from rate_meme.score_meme_v1 import score_meme_based_on_theory_v1
 from rate_meme.score_meme_v2 import score_meme_based_on_theory_v2
 from rate_meme.score_meme_v3 import score_meme_based_on_theory_v3
 from rate_meme.score_meme_v4 import score_meme_based_on_theory_v4
+from rate_meme.score_meme_v5 import score_meme_based_on_theory_v5
 
 def score_meme_based_on_theory(
     meme_path,
@@ -64,6 +65,18 @@ def score_meme_based_on_theory(
             call_model = call_model,
             result_dir = result_dir,
             max_new_tokens = max_intermediate_tokens,
+            example = example,
+            description = description,
+            context = context,
+            overwrite = overwrite,
+            system_prompt_name = system_prompt_name,
+        )
+    elif version == 'v5':
+        return score_meme_based_on_theory_v5(
+            meme_path = meme_path,
+            call_model = call_model,
+            result_dir = result_dir,
+            max_new_tokens = max_new_tokens,
             example = example,
             description = description,
             context = context,

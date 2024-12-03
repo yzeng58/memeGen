@@ -317,7 +317,7 @@ def finetune(
         dataset_save_name=dataset_save_name,
     )
 
-    yaml_config = {
+    finetune_config = {
         "model_name_or_path": support_llm_properties[model_name]['huggingface_repo_name'],
         "quantization_bit": 4,
         "quantization_method": "bitsandbytes",
@@ -355,15 +355,44 @@ def finetune(
         "eval_steps": 500
     }
     
-    yaml_path = f"{root_dir}/llama_factory/configs/{dataset_save_name}.yaml"
-    print(f"| Getting Fine-Tuning Configs -- Saving yaml config to {yaml_path}")
-    with open(yaml_path, 'w') as f:
-        yaml.dump(yaml_config, f)
+    finetune_config_path = f"{root_dir}/llama_factory/configs/{dataset_save_name}_finetune.yaml"
+    print(f"| Getting Fine-Tuning Configs -- Saving yaml config to {finetune_config_path}")
+    with open(finetune_config_path, 'w') as f:
+        yaml.dump(finetune_config, f)
 
-    finetune_cmd = f"{CONDA_PATH} run -n meme llamafactory-cli train {yaml_path}"
+    finetune_cmd = f"{CONDA_PATH} run -n meme llamafactory-cli train {finetune_config_path}"
     print(f"| Starting Fine-Tuning -- Running command: {finetune_cmd}")
     subprocess.run(
         finetune_cmd,
+        shell=True,
+        cwd=f"{root_dir}/llama_factory",
+        check=True,
+        stdout=None,
+        stderr=None,
+        bufsize=1,
+        universal_newlines=True
+    )
+
+    merge_config = {
+        "model_name_or_path": support_llm_properties[model_name]["huggingface_repo_name"],
+        "adapter_name_or_path": f"saves/{model_name}/qlora_{dataset_name}_{eval_mode}_{prompt_name}_{n_demos}_shot",
+        "template": support_llm_properties[model_name]["chat_template"],
+        "finetuning_type": "qlora",
+        
+        "export_dir": f"../models/{model_name}/qlora_{dataset_name}_{eval_mode}_{prompt_name}_{n_demos}_shot",
+        "export_size": 2,
+        "export_device": "cpu",
+        "export_legacy_format": False
+    }
+    merge_config_path = f"{root_dir}/llama_factory/configs/{dataset_save_name}_merge.yaml"
+    print(f"| Getting Merge Configs -- Saving yaml config to {merge_config_path}")
+    with open(merge_config_path, 'w') as f:
+        yaml.dump(merge_config, f)  
+
+    merge_cmd = f"{CONDA_PATH} run -n meme llamafactory-cli export {merge_config_path}"
+    print(f"| Starting Merge -- Running command: {merge_cmd}")
+    subprocess.run(
+        merge_cmd,
         shell=True,
         cwd=f"{root_dir}/llama_factory",
         check=True,
@@ -392,8 +421,8 @@ if __name__ == '__main__':
     parser.add_argument('--difficulty', type=str, default='easy', choices=['easy', 'medium'])
     parser.add_argument('--system_prompt_name', type=str, default='evaluator', choices=list(system_prompts_default.keys()))
     parser.add_argument('--data_mode', type=str, default='train', choices=['train', 'test', 'both'])
-    parser.add_argument('--n_per_class', type=int, default=-1)
-    parser.add_argument('--n_pairs', type=int, default=-1)
+    parser.add_argument('--n_per_class', type=int, default=-1, help='-1 for all, otherwise random sample n_per_class for each class')
+    parser.add_argument('--n_pairs', type=int, default=-1, help='-1 for all, otherwise random sample n_pairs pairs')
     args = parser.parse_args()
 
     print(__file__)

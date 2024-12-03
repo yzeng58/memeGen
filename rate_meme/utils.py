@@ -142,6 +142,7 @@ def get_score_v4(
         context = context,
         system_prompt = system_prompt_name,
     )
+    pdb.set_trace()
 
     try:
         parsed_data = json.loads(output['output'].replace("```json", "").replace("```", "").strip())

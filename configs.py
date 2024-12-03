@@ -51,6 +51,7 @@ support_llms = {
     ],
     'pixtral': [
         'Pixtral-12B-2409',
+        'Pixtral-12B-Chat',
     ],
     'gemini': [
         'gemini-1.5-flash',

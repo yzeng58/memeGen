@@ -24,8 +24,14 @@ def load_qwen(
             'type': 'qwen2.5',
         }
     elif 'qwen2-vl' in model_name.lower():
+        if "/" not in model_name:
+            model_path = f"Qwen/{model_name}"
+        else:
+            model_path = f"{root_dir}/models/{model_name}"
+            print(model_path)
+            model_name = model_name.split("/")[0]
         model = Qwen2VLForConditionalGeneration.from_pretrained(
-            f"Qwen/{model_name}", 
+            model_path, 
             torch_dtype="auto", 
             device_map="auto"
         )
@@ -34,6 +40,7 @@ def load_qwen(
             'model': model,
             'processor': processor,
             'type': 'qwen2-vl',
+            "model_name": model_name,
         }
     else:
         raise ValueError(f"Model {model_name} not found")
@@ -101,12 +108,12 @@ def call_qwen(
 
 
     if qwen['type'] in ['qwen2-vl']:
-        model, processor = qwen['model'], qwen['processor']
+        model, processor, model_name = qwen['model'], qwen['processor'], qwen['model_name']
         
         if history:
             messages = history
         else:
-            messages = [{"role": "system", "content": system_prompts['qwen'][system_prompt]}]
+            messages = [{"role": "system", "content": system_prompts[model_name][system_prompt]}]
 
         if demonstrations:
             messages.append({"role": "user", "content": [process_text_qwen2(prompt)]})
