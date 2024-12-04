@@ -26,4 +26,14 @@ def load_ours_v3(
             description_path = get_description_path(file, description)
             file_dict['description_path'] = description_path
         data.append(file_dict)
-    return pd.DataFrame(data)
+
+    df = pd.DataFrame(data)
+    if train_test_split:
+        train_df = df.sample(frac=0.5, random_state=42)
+        test_df = df.drop(train_df.index)
+        return {
+            "train": train_df.reset_index(drop=True), 
+            "test": test_df.reset_index(drop=True),
+        }
+    else:
+        return df

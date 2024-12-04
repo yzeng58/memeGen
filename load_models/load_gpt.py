@@ -51,13 +51,16 @@ def process_text(text_input):
     return text_content
 
 def load_gpt(
-    model: str = 'gpt-4o-mini',
+    model_path,
     api_key: str = 'yz',
 ):
+    model_name = model_path.split('/')[0]
+    if not model_path.endswith('/pretrained'):
+        raise ValueError(f"GPT doesn't support custom models!")
     client = OpenAI(api_key = OPENAI_API_KEY[api_key])
     return {
         'client': client,
-        'model': model,
+        'model': model_name,
         'api_key': OPENAI_API_KEY[api_key],
     }
 

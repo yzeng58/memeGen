@@ -16,7 +16,10 @@ def load_pixtral(model_path):
         model_path = f"{root_dir}/models/{model_path}"
     model_id = f"mistral-community/{model_name}"
 
-    model = LlavaForConditionalGeneration.from_pretrained(model_path)
+    model = LlavaForConditionalGeneration.from_pretrained(
+        model_path,
+        device_map = "auto"
+    )
     processor = AutoProcessor.from_pretrained(model_id)
 
     return {

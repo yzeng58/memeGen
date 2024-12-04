@@ -52,15 +52,18 @@ def process_text(text_input):
     return text_content
 
 def load_claude(
-    model: str = "claude-3-haiku-20240307",
+    model_path,
     api_key: str = 'yz',
 ):
+    model_name = model_path.split('/')[0]
+    if not model_path.endswith('/pretrained'):
+        raise ValueError(f"Claude doesn't support custom models!")
     client = anthropic.Anthropic(
         api_key = CLAUDE_API_KEY[api_key],
     )
     return {
         'client': client,
-        'model': model,
+        'model': model_name,
     }
 
 def process_sample_feature(description, context, image_paths):

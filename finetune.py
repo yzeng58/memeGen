@@ -55,6 +55,7 @@ def get_data_sample_single(
             "system": system_prompts[model_name][system_prompt_name],
         }
     return data_sample
+
 def get_data_sample_pairwise(
     path1,
     path2,
@@ -66,12 +67,13 @@ def get_data_sample_pairwise(
     eval_mode,
     system_prompt_name,
     prompt_name,
+    label,
 ):
     if description:
         data_sample = {
             "conversations": [
                 {"from": "human", "value": f"Meme 1: {read_json(path1)['description']['output']}\nMeme 2: {read_json(path2)['description']['output']}\n{prompt}"},
-                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](0)},
+                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)},
             ],
             "system": system_prompts[model_name][system_prompt_name],
         }
@@ -81,7 +83,7 @@ def get_data_sample_pairwise(
         data_sample = {
             "conversations": [
                 {"from": "human", "value": f"Meme 1: {information_1['description']['output']}\n<image>Meme 2: {information_2['description']['output']}\n<image>{prompt}"},
-                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](0)},
+                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)},
             ],
             "images": [
                 information_1['image_path'],
@@ -93,7 +95,7 @@ def get_data_sample_pairwise(
         data_sample = {
             "conversations": [
                 {"from": "human", "value": f"<image><image>{prompt}"},
-                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](0)},
+                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)},
             ],
             "images": [
                 path1,
@@ -120,6 +122,7 @@ def preprocess(
     system_prompt_name = "",
     data_mode = "train", # "train" or "test" or "both"
     dataset_save_name = "",
+    mix = False,
 ):            
     if "difficulty" in support_eval_datasets[dataset_name]:
         if difficulty not in support_eval_datasets[dataset_name]["difficulty"]:
@@ -336,6 +339,7 @@ def preprocess(
                     eval_mode=eval_mode,
                     system_prompt_name=system_prompt_name,
                     prompt_name=prompt_name,
+                    label=0,
                 ))
                 llm_dataset.append(get_data_sample_pairwise(
                     path1=not_funny_path,
@@ -348,10 +352,15 @@ def preprocess(
                     eval_mode=eval_mode,
                     system_prompt_name=system_prompt_name,
                     prompt_name=prompt_name,
+                    label=1,
                 ))
 
     file_name = f"{dataset_save_name}.json"
-    save_json(llm_dataset, f'{result_dir}/{file_name}')
+    file_path = f'{result_dir}/{file_name}'
+    if os.path.exists(file_path) and mix: 
+        llm_dataset.extend(read_json(file_path))
+        random.shuffle(llm_dataset)
+    save_json(llm_dataset, file_path)
     print(f"Saved {len(llm_dataset)} samples to {result_dir}/{file_name}")
     dataset_info = read_json(f'{root_dir}/llama_factory/data/dataset_info.json')
     if dataset_save_name not in dataset_info:
@@ -384,27 +393,38 @@ def finetune(
     n_pairs,
 ):
     modality_mode = get_folder_name(description, context)
+
+    datasets = dataset_name
+    if len(dataset_name) > 1: 
+        dataset_name = '_mix_'.join(datasets)
+    else:
+        dataset_name = dataset_name[0]
+        
     dataset_save_name = f"{dataset_name}_{model_name}_{modality_mode}_{eval_mode}_{prompt_name}_{n_demos}_shot_{data_mode}"
 
     print(f"| Preprocessing -- Dataset: {dataset_save_name}")
-    preprocess(
-        model_name=model_name,
-        dataset_name=dataset_name,
-        prompt_name=prompt_name,
-        n_per_class=n_per_class,
-        n_pairs=n_pairs,
-        seed=seed,
-        eval_mode=eval_mode,
-        description=description,
-        context=context,
-        not_load_model=not_load_model,
-        ensemble=ensemble,
-        n_demos=n_demos,
-        difficulty=difficulty,
-        system_prompt_name=system_prompt_name,
-        data_mode=data_mode,
-        dataset_save_name=dataset_save_name,
-    )
+    for idx, dataset in enumerate(datasets):
+        mix = idx > 0
+
+        preprocess(
+            model_name=model_name,
+            dataset_name=dataset,
+            prompt_name=prompt_name,
+            n_per_class=n_per_class,
+            n_pairs=n_pairs,
+            seed=seed,
+            eval_mode=eval_mode,
+            description=description,
+            context=context,
+            not_load_model=not_load_model,
+            ensemble=ensemble,
+            n_demos=n_demos,
+            difficulty=difficulty,
+            system_prompt_name=system_prompt_name,
+            data_mode=data_mode,
+            dataset_save_name=dataset_save_name,
+            mix = mix
+        )
 
     finetune_config = {
         "model_name_or_path": support_llm_properties[model_name]['huggingface_repo_name'],
@@ -423,7 +443,7 @@ def finetune(
         "overwrite_cache": True,
         "preprocessing_num_workers": 16,
         
-        "output_dir": f"saves/{model_name}/qlora_{dataset_name}_{eval_mode}_{modality_mode}_{prompt_name}_{n_demos}_shot",
+        "output_dir": f"saves/{model_name}/{dataset_save_name}",
         "logging_steps": 10,
         "save_steps": 500,
         "plot_loss": True,
@@ -498,7 +518,7 @@ if __name__ == '__main__':
         model_names.extend(support_llms[model])
 
     parser.add_argument('--model_name', type=str, nargs='+', default=['Qwen2-VL-2B-Instruct'], choices=model_names)
-    parser.add_argument('--dataset_name', type=str, default='relca', choices=list(support_eval_datasets.keys()))
+    parser.add_argument('--dataset_name', type=str, nargs='+', default=['relca'], choices=list(support_eval_datasets.keys()))
     parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--n_demos', type=int, default=0)
     parser.add_argument('--seed', type=int, default=42)
@@ -511,7 +531,7 @@ if __name__ == '__main__':
     parser.add_argument('--system_prompt_name', type=str, default='evaluator', choices=list(system_prompts_default.keys()))
     parser.add_argument('--data_mode', type=str, default='train', choices=['train', 'test', 'both'])
     parser.add_argument('--n_per_class', type=int, default=-1, help='-1 for all, otherwise random sample n_per_class for each class')
-    parser.add_argument('--n_pairs', type=int, default=-1, help='-1 for all, otherwise random sample n_pairs pairs')
+    parser.add_argument('--n_pairs', type=int, default=5000, help='-1 for all, otherwise random sample n_pairs pairs')
     args = parser.parse_args()
 
     print(__file__)

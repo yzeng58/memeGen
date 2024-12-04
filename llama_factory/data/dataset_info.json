@@ -51,5 +51,14 @@
             "messages": "conversations",
             "chosen": "chosen"
         }
+    },
+    "ours_v3_mix_relca_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train": {
+        "file_name": "ours_v3_mix_relca_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
     }
 }

@@ -7,9 +7,12 @@ import google.generativeai as genai
 import PIL.Image, pdb
 from helper import read_json
 
-def load_gemini(model, api_key):
+def load_gemini(model_path, api_key):
+    model_name = model_path.split('/')[0]
+    if not model_path.endswith('/pretrained'):
+        raise ValueError(f"Gemini doesn't support custom models!")
     genai.configure(api_key = GEMINI_API_KEY[api_key])
-    model = genai.GenerativeModel(model)
+    model = genai.GenerativeModel(model_name)
     return model
 
 def process_sample_feature(description, context, image_paths):
