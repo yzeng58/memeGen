@@ -17,9 +17,9 @@ def process_sample_feature(description, context, image_paths):
     for i, image_path in enumerate(image_paths):
         idx_str = f" {i+1}" if len(image_paths) > 1 else ""
         if description:
-            contents.append(f"Meme{idx_str}: {read_json(image_path)['description']}\n")
+            contents.append(f"Meme{idx_str}: {read_json(image_path)['description']['output']}\n")
         elif context:
-            contents.append(f"Meme{idx_str}: {read_json(image_path['description_path'])['description']}\n")
+            contents.append(f"Meme{idx_str}: {read_json(image_path['description_path'])['description']['output']}\n")
             contents.append(PIL.Image.open(image_path['image_path']))
         else:
             contents.append(PIL.Image.open(image_path))

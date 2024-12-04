@@ -19,7 +19,7 @@ def load_qwen(
         
     if 'qwen2.5' in model_name.lower():
         model = AutoModelForCausalLM.from_pretrained(
-            f"Qwen/{model_name}",
+            model_path,
             torch_dtype="auto",
             device_map="auto"
         )
@@ -66,27 +66,27 @@ def process_image_qwen2(image_path):
 
 def process_sample_feature(
     image_paths,
-    qwen,
+    model_dict,
     description,
     context,
 ):
-    if qwen['type'] in ['qwen2-vl']:
+    if model_dict['type'] in ['qwen2-vl']:
         contents = []
         for i, image_path in enumerate(image_paths):
             idx_str = f" {i+1}" if len(image_paths) > 1 else ""
             if description:
-                contents.append(process_text_qwen2(f"Meme{idx_str}: {read_json(image_path)['description']}\n"))
+                contents.append(process_text_qwen2(f"Meme{idx_str}: {read_json(image_path)['description']['output']}\n"))
             elif context:
-                contents.append(process_text_qwen2(f"Meme{idx_str}: {read_json(image_path)['description']}\n"))
-                contents.append(process_image_qwen2(image_path))
+                contents.append(process_text_qwen2(f"Meme{idx_str}: {read_json(image_path)['description']['output']}\n"))
+                contents.append(process_image_qwen2(read_json(image_path)['image_path']))
             else:
                 contents.append(process_image_qwen2(image_path))
         return contents
-    elif qwen['type'] in ['qwen2.5']:
+    elif model_dict['type'] in ['qwen2.5']:
         user_prompt = ""
         for i, image_path in enumerate(image_paths):
             idx_str = f" {i+1}" if len(image_paths) > 1 else ""
-            user_prompt += f"Meme{idx_str}: {read_json(image_path)['description']}\n"
+            user_prompt += f"Meme{idx_str}: {read_json(image_path)['description']['output']}\n"
         return user_prompt
     
 def call_qwen(
@@ -117,14 +117,12 @@ def call_qwen(
         if demonstrations:
             messages.append({"role": "user", "content": [process_text_qwen2(prompt)]})
             for sample in demonstrations:
-                contents = []
-                image_paths = sample['image_paths']
-                contents.extend(process_sample_feature(
-                    image_paths=image_paths, 
-                    qwen=qwen,
+                contents = process_sample_feature(
+                    image_paths=sample['image_paths'], 
+                    model_dict=qwen,
                     description=description,
                     context=context,
-                ))
+                )
                 
                 messages.append({"role": "user", "content": contents})
 
@@ -134,7 +132,7 @@ def call_qwen(
 
         contents = process_sample_feature(
             image_paths=image_paths, 
-            qwen=qwen, 
+            model_dict=qwen,
             description=description,
             context=context,
         )

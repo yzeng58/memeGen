@@ -72,9 +72,9 @@ def process_sample_feature(
     for image_idx, image_path in enumerate(image_paths):
         idx_str = f" {image_idx+1}" if len(image_paths) > 1 else ""
         if description:
-            contents.append(process_text(f"Meme{idx_str}: {read_json(image_path)['description']}\n"))
+            contents.append(process_text(f"Meme{idx_str}: {read_json(image_path)['description']['output']}\n"))
         elif context:
-            contents.append(process_text(f"Meme{idx_str}: {read_json(image_path['description_path'])['description']}\n"))
+            contents.append(process_text(f"Meme{idx_str}: {read_json(image_path['description_path'])['description']['output']}\n"))
             contents.append(process_image(image_path['image_path'], image_input_detail, image_mode))
         else:
             contents.append(process_image(image_path, image_input_detail, image_mode))
@@ -105,13 +105,12 @@ def call_gpt(
         messages.append({"role": "user", "content": [process_text(prompt)]})
 
         for sample in demonstrations:
-            image_paths = sample['image_paths']
             contents = process_sample_feature(
                 description = description, 
                 context = context, 
                 image_input_detail = image_input_detail, 
                 image_mode = image_mode, 
-                image_paths = image_paths,
+                image_paths = sample['image_paths'],
             )
             messages.append({"role": "user", "content": contents})
 

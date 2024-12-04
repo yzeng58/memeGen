@@ -10,11 +10,17 @@ from helper import read_json, set_seed
 import pdb
 
 def load_mistral(
-    model_name: str,
+    model_path: str,
 ):
+    model_name = model_path.split("/")[0]
+    if model_path.endswith('/pretrained'):
+        model_path = f"mistralai/{model_name}"
+    else:
+        model_path = f"{root_dir}/models/{model_path}"
     model_id = f"mistralai/{model_name}"
+
     model = AutoModelForCausalLM.from_pretrained(
-        model_id, torch_dtype=torch.bfloat16, device_map="auto"
+        model_path, torch_dtype=torch.bfloat16, device_map="auto"
     )
     tokenizer = AutoTokenizer.from_pretrained(model_id)
 
@@ -31,7 +37,7 @@ def process_sample_feature(
     user_prompt = ""
     for i, image_path in enumerate(image_paths):
         idx_str = f" {i+1}" if len(image_paths) > 1 else ""
-        user_prompt += f"Meme{idx_str}: {read_json(image_path)['description']}\n"
+        user_prompt += f"Meme{idx_str}: {read_json(image_path)['description']['output']}\n"
     return user_prompt
 
 def call_mistral(

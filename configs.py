@@ -50,7 +50,7 @@ support_llms = {
         "Mistral-Small-Instruct-2409",
     ],
     'pixtral': [
-        'Pixtral-12B-Chat',
+        'pixtral-12b',
     ],
     'gemini': [
         'gemini-1.5-flash',
@@ -97,27 +97,27 @@ support_llm_properties = {
     },
     "Llama-3.1-405B-Instruct": {
         'model_size': 405000000000,
-        "huggingface_repo_name": "meta-llama/Meta-Llama-3.1-405B-Instruct",
+        "huggingface_repo_name": "meta-llama/Llama-3.1-405B-Instruct",
         "chat_template": "llama3",
     },
     "Llama-3.1-8B-Instruct": {
         'model_size': 8000000000,
-        "huggingface_repo_name": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "huggingface_repo_name": "meta-llama/Llama-3.1-8B-Instruct",
         "chat_template": "llama3",
     },
     "Llama-3.1-70B-Instruct": {
         'model_size': 70000000000,
-        "huggingface_repo_name": "meta-llama/Meta-Llama-3.1-70B-Instruct",
+        "huggingface_repo_name": "meta-llama/Llama-3.1-70B-Instruct",
         "chat_template": "llama3",
     },
     "Llama-3.2-11B-Vision-Instruct": {
         'model_size': 11000000000,
-        "huggingface_repo_name": "meta-llama/Meta-Llama-3.2-11B-Vision-Instruct",
+        "huggingface_repo_name": "meta-llama/Llama-3.2-11B-Vision-Instruct",
         "chat_template": "mllama",
     },
     "Llama-3.2-90B-Vision-Instruct": {
         'model_size': 90000000000,
-        "huggingface_repo_name": "meta-llama/Meta-Llama-3.2-90B-Vision-Instruct",
+        "huggingface_repo_name": "meta-llama/Llama-3.2-90B-Vision-Instruct",
         "chat_template": "mllama",
     },
     "Qwen2-VL-2B-Instruct": {
@@ -190,7 +190,7 @@ support_llm_properties = {
         "huggingface_repo_name": "mistralai/Mistral-Small-Instruct-2409",
         "chat_template": "mistral",
     },
-    'Pixtral-12B-Chat': {
+    'pixtral-12b': {
         'model_size': 12000000000,
         "huggingface_repo_name": "mistral-community/pixtral-12b",
         "chat_template": "pixtral",

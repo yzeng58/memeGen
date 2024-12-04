@@ -12,36 +12,42 @@ from configs import system_prompts
 import pdb
 
 def load_llama(
-    model: str = "Llama-3.2-11B-Vision",
+    model_path: str = "Llama-3.2-11B-Vision",
     api_key: str = 'yz',
 ):
     login(token = HUGGINGFACE_API_KEY[api_key])
-    model = f'meta-llama/{model}'
+    model_name = model_path.split("/")[0]
+    if model_path.endswith('/pretrained'):
+        model_path = f'meta-llama/{model_name}'
+    else:
+        model_path = f"{root_dir}/models/{model_path}"
+    model_id = f'meta-llama/{model_name}'
 
-    if 'Llama-3.2' in model:
+    if 'Llama-3.2' in model_name:
         llama_model = MllamaForConditionalGeneration.from_pretrained(
-            model,
-        torch_dtype=torch.bfloat16,
+            model_path,
+            torch_dtype=torch.bfloat16,
             device_map="auto",
         )
-        llama_processor = AutoProcessor.from_pretrained(model)
+        llama_processor = AutoProcessor.from_pretrained(model_id)
         llama = {
-            'model_id': model,
+            'model_id': model_id,
             'model': llama_model,
             'processor': llama_processor,
         }
-    elif 'Llama-3.1' in model:
+    elif 'Llama-3.1' in model_name:
         llama_pipeline = pipeline(
             "text-generation", 
-            model=model, 
+            model=model_path, 
             model_kwargs={"torch_dtype": torch.bfloat16}, 
             device_map="auto"
         )
         llama = {
-            'model_id': model,
+            'model_id': model_id,
             'model': llama_pipeline,
         }
 
+    llama['model_name'] = model_name
     return llama
 
 def process_sample_feature(
@@ -54,7 +60,7 @@ def process_sample_feature(
         if context:
             for i, image_path in enumerate(image_paths):
                 idx_str = f" {i+1}" if len(image_paths) > 1 else ""
-                content.append({"type": "text", "text": f"Meme{idx_str}: {read_json(image_path['description_path'])['description']}\n"})
+                content.append({"type": "text", "text": f"Meme{idx_str}: {read_json(image_path['description_path'])['description']['output']}\n"})
                 content.append({"type": "image"})
                 images.append(get_image(image_path['image_path']))
         else:
@@ -66,7 +72,7 @@ def process_sample_feature(
         text_prompt = ''
         for i, image_path in enumerate(image_paths):
             idx_str = f" {i+1}" if len(image_paths) > 1 else ""
-            text_prompt += f"Meme{idx_str}: {read_json(image_path)['description']}\n"
+            text_prompt += f"Meme{idx_str}: {read_json(image_path)['description']['output']}\n"
         return text_prompt
 
 def call_llama(
@@ -139,7 +145,7 @@ def call_llama(
         if history:
             messages = history['messages']
         else:
-            messages = [{"role": "system", "content": system_prompts['llama'][system_prompt]}]
+            messages = [{"role": "system", "content": system_prompts[llama['model_name']][system_prompt]}]
 
         if demonstrations:
             messages.append({"role": "user", "content": prompt})

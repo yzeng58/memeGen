@@ -667,7 +667,7 @@ if __name__ == '__main__':
     parser.add_argument('--difficulty', type=str, default='easy', choices=['easy', 'medium'])
     parser.add_argument('--system_prompt_name', type=str, default='evaluator', choices=list(system_prompts_default.keys()))
     parser.add_argument('--data_mode', type=str, default='both', choices=['train', 'test', 'both'])
-    parser.add_argument('--peft_variant', type=str, default='pretrained', help='peft variant (e.g., qlora_relca_pairwise_standard_0_shot) to use for evaluation')
+    parser.add_argument('--peft_variant', type=str, default='pretrained', help='peft variant (e.g., qlora_relca_pairwise_multimodal_standard_0_shot) to use for evaluation')
     args = parser.parse_args()
 
     print(__file__)

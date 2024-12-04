@@ -12,7 +12,97 @@ from itertools import product
 import random, warnings, yaml, subprocess
 from utils.eval_utils import get_folder_name, get_file_path
 
-#TODO: merge evaluation and preprocess
+def get_data_sample_single(
+    file_path,
+    label,
+    prompt,
+    model_name,
+    metric,
+    eval_mode,
+    system_prompt_name,
+    prompt_name,
+):
+    if description:
+        data_sample = {
+            "conversations": [
+                {"from": "human", "value": f"Meme: {read_json(file_path)['description']['output']}\n{prompt}"},
+                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)},
+            ],
+            "system": system_prompts[model_name][system_prompt_name],
+        }
+
+    elif context:
+        information = read_json(file_path)
+        data_sample = {
+            "conversations": [
+                {"from": "human", "value": f"Meme: {information['description']['output']}\n<image>{prompt}"},
+                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)},
+            ],
+            "images": [
+                information['image_path'],
+            ],
+            "system": system_prompts[model_name][system_prompt_name],
+        }
+    else:
+        data_sample = {
+            "conversations": [
+                {"from": "human", "value": f"<image>{prompt}"},
+                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)},
+            ],
+            "images": [
+                file_path,
+            ],
+            "system": system_prompts[model_name][system_prompt_name],
+        }
+    return data_sample
+def get_data_sample_pairwise(
+    path1,
+    path2,
+    description,
+    context,
+    prompt,
+    model_name,
+    metric,
+    eval_mode,
+    system_prompt_name,
+    prompt_name,
+):
+    if description:
+        data_sample = {
+            "conversations": [
+                {"from": "human", "value": f"Meme 1: {read_json(path1)['description']['output']}\nMeme 2: {read_json(path2)['description']['output']}\n{prompt}"},
+                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](0)},
+            ],
+            "system": system_prompts[model_name][system_prompt_name],
+        }
+    elif context:
+        information_1 = read_json(path1)
+        information_2 = read_json(path2)
+        data_sample = {
+            "conversations": [
+                {"from": "human", "value": f"Meme 1: {information_1['description']['output']}\n<image>Meme 2: {information_2['description']['output']}\n<image>{prompt}"},
+                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](0)},
+            ],
+            "images": [
+                information_1['image_path'],
+                information_2['image_path'],
+            ],
+            "system": system_prompts[model_name][system_prompt_name],
+        }
+    else:
+        data_sample = {
+            "conversations": [
+                {"from": "human", "value": f"<image><image>{prompt}"},
+                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](0)},
+            ],
+            "images": [
+                path1,
+                path2,
+            ],
+            "system": system_prompts[model_name][system_prompt_name],
+        }
+    return data_sample
+
 def preprocess(
     model_name, 
     dataset_name, 
@@ -160,18 +250,16 @@ def preprocess(
             )
             label = dataset.loc[i, 'label']
 
-            data_sample = {
-                "conversations": [
-                    {"from": "human", "value": f"<image>{prompt}"},
-                    {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)},
-                ],
-                "images": [
-                    file_path,
-                ],
-                "system": system_prompts[model_name][system_prompt_name],
-            }
-
-            llm_dataset.append(data_sample)
+            llm_dataset.append(get_data_sample_single(
+                file_path=file_path,
+                label=label,
+                prompt=prompt,
+                model_name=model_name,
+                metric=metric,
+                eval_mode=eval_mode,
+                system_prompt_name=system_prompt_name,
+                prompt_name=prompt_name,
+            ))
 
     elif eval_mode == 'pairwise':
         funny_data = dataset[dataset['label'] == 1].reset_index(drop=True)
@@ -237,43 +325,44 @@ def preprocess(
 
 
             if not prompt_name in ["theory", "single"]:
-                llm_dataset.append({
-                    "conversations": [
-                        {"from": "human", "value": f"<image><image>{prompt}"},
-                        {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](0)},
-                    ],
-                    "images": [
-                        funny_path,
-                        not_funny_path,
-                    ],
-                    "system": system_prompts[model_name][system_prompt_name],
-                })
-
-                llm_dataset.append({
-                    "conversations": [
-                        {"from": "human", "value": f"<image><image>{prompt}"},
-                        {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](1)},
-                    ],
-                    "images": [
-                        not_funny_path,
-                        funny_path,
-                    ],
-                    "system": system_prompts[model_name][system_prompt_name],
-                })
+                llm_dataset.append(get_data_sample_pairwise(
+                    path1=funny_path,
+                    path2=not_funny_path,
+                    description=description,
+                    context=context,
+                    prompt=prompt,
+                    model_name=model_name,
+                    metric=metric,
+                    eval_mode=eval_mode,
+                    system_prompt_name=system_prompt_name,
+                    prompt_name=prompt_name,
+                ))
+                llm_dataset.append(get_data_sample_pairwise(
+                    path1=not_funny_path,
+                    path2=funny_path,
+                    description=description,
+                    context=context,
+                    prompt=prompt,
+                    model_name=model_name,
+                    metric=metric,
+                    eval_mode=eval_mode,
+                    system_prompt_name=system_prompt_name,
+                    prompt_name=prompt_name,
+                ))
 
     file_name = f"{dataset_save_name}.json"
     save_json(llm_dataset, f'{result_dir}/{file_name}')
     print(f"Saved {len(llm_dataset)} samples to {result_dir}/{file_name}")
     dataset_info = read_json(f'{root_dir}/llama_factory/data/dataset_info.json')
     if dataset_save_name not in dataset_info:
+        columns = {"messages": "conversations","chosen": "chosen"}
+        if not description:
+            columns["images"] = "images"
+
         dataset_info[dataset_save_name] = {
             "file_name": file_name,
             "formatting": "sharegpt",
-            "columns": {
-                "messages": "conversations",
-                "images": "images",
-                "chosen": "chosen",
-            }
+            "columns": columns
         }
         save_json(dataset_info, f'{root_dir}/llama_factory/data/dataset_info.json')
 
@@ -334,7 +423,7 @@ def finetune(
         "overwrite_cache": True,
         "preprocessing_num_workers": 16,
         
-        "output_dir": f"saves/{model_name}/qlora_{dataset_name}_{eval_mode}_{prompt_name}_{n_demos}_shot",
+        "output_dir": f"saves/{model_name}/qlora_{dataset_name}_{eval_mode}_{modality_mode}_{prompt_name}_{n_demos}_shot",
         "logging_steps": 10,
         "save_steps": 500,
         "plot_loss": True,
@@ -375,11 +464,11 @@ def finetune(
 
     merge_config = {
         "model_name_or_path": support_llm_properties[model_name]["huggingface_repo_name"],
-        "adapter_name_or_path": f"saves/{model_name}/qlora_{dataset_name}_{eval_mode}_{prompt_name}_{n_demos}_shot",
+        "adapter_name_or_path": f"saves/{model_name}/qlora_{dataset_save_name}",
         "template": support_llm_properties[model_name]["chat_template"],
-        "finetuning_type": "qlora",
+        "finetuning_type": "lora",
         
-        "export_dir": f"../models/{model_name}/qlora_{dataset_name}_{eval_mode}_{prompt_name}_{n_demos}_shot",
+        "export_dir": f"../models/{model_name}/qlora_{dataset_save_name}",
         "export_size": 2,
         "export_device": "cpu",
         "export_legacy_format": False
