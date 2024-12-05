@@ -421,7 +421,6 @@ python evaluation.py --data_mode test --eval_mode pairwise --prompt_name theory 
 
 ##### Gemini-1.5-Pro
 ```bash
-# TODO
 python evaluation.py --data_mode test --eval_mode pairwise --prompt_name theory --theory_version v4 --data_mode both --n_pairs 2000 --train_ml_model xgboost --wandb --dataset_name relca --model_name gemini-1.5-pro
 
 # TODO
@@ -453,14 +452,94 @@ python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct 
 
 # produce cot 
 python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb
-
 ```
+
+<details>
+<summary>Click to expand full experiments</summary>
+
+##### Qwen2-VL-72B-Instruct
+
+```bash
+python evaluation.py --n_pairs 2000 --context Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --wandb --dataset_name relca --model_name Qwen2-VL-72B-Instruct
+
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name relca --model_name Qwen2-VL-72B-Instruct
+
+# TODO
+python evaluation.py --n_pairs 2000 --context Llama-3.2-90B-Vision-Instruct--data_mode test --eval_mode pairwise --wandb --dataset_name ours_v3 --model_name Qwen2-VL-72B-Instruct
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name ours_v3 --model_name Qwen2-VL-72B-Instruct
+```
+
+
+##### Gemini-1.5-Pro
+```bash
+python evaluation.py --n_pairs 2000 --context Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --wandb --dataset_name relca --model_name gemini-1.5-pro
+
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name relca --model_name gemini-1.5-pro
+
+# TODO
+python evaluation.py --n_pairs 2000 --context Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --wandb --dataset_name ours_v3 --model_name gemini-1.5-pro
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name ours_v3 --model_name gemini-1.5-pro
+```
+
+##### GPT-4o
+```bash
+# TODO
+python evaluation.py --n_pairs 2000 --context Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --wandb --dataset_name relca --model_name gpt-4o
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name relca --model_name gpt-4o
+
+# TODO
+python evaluation.py --n_pairs 2000 --context Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --wandb --dataset_name ours_v3 --model_name gpt-4o
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name ours_v3 --model_name gpt-4o
+```
+
+##### Mixtral-8x22B-Instruct-v0.1
+```bash
+# TODO
+python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --wandb --dataset_name relca --model_name Mixtral-8x22B-Instruct-v0.1
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name relca --model_name Mixtral-8x22B-Instruct-v0.1
+
+# TODO
+python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name ours_v3 --model_name Mixtral-8x22B-Instruct-v0.1 
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name ours_v3 --model_name Mixtral-8x22B-Instruct-v0.1
+```
+
+##### Llama-3.1-70B-Instruct
+```bash
+python evaluation.py --n_pairs 2000 --context Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --wandb --dataset_name relca --model_name Llama-3.1-70B-Instruct
+
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name relca --model_name Llama-3.1-70B-Instruct
+
+# TODO
+python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name ours_v3 --model_name Llama-3.1-70B-Instruct
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name ours_v3 --model_name Llama-3.1-70B-Instruct
+```
+</details>
 
 #### In-Context Learning
 
 ```bash
 python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 4 --wandb
 ```
+
+<details>
+<summary>Click to expand full experiments</summary>
+
+
+</details>
 
 #### Ensemble
 
