@@ -82,7 +82,6 @@ python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prom
 python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-7B-Instruct
 python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-7B-Instruct
 
-# TODO
 python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-72B-Instruct
 python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-72B-Instruct
 
@@ -102,11 +101,9 @@ python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --pr
 
 #### GPT
 ```bash
-# TODO
 python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name gpt-4o-mini
 python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gpt-4o-mini
 
-# TODO
 python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name gpt-4o
 python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gpt-4o
 
@@ -119,7 +116,32 @@ python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single 
 python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gpt-4o
 ```
 
-#### 
+#### Pixtral
+```bash
+# TODO
+python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single --n_demos 2 --model_name pixtral-12b
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name pixtral-12b
+
+python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name pixtral-12b
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name pixtral-12b
+```
+
+#### Gemini
+```bash
+# TODO
+python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single --n_demos 2 --model_name gemini-1.5-flash
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gemini-1.5-flash
+
+python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name gemini-1.5-flash
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gemini-1.5-flash
+
+# TODO
+python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single --n_demos 2 --model_name gemini-1.5-pro
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gemini-1.5-pro
+
+python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name gemini-1.5-pro
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gemini-1.5-pro 
+```
 
 </details>
 
