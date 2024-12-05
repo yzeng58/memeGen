@@ -85,5 +85,4 @@ def call_gemini(
         output_dict['output'] = ''
     
     if save_history: output_dict['history'] = contents + [output_dict['output']]
-    
     return output_dict

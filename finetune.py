@@ -443,7 +443,7 @@ def finetune(
         "overwrite_cache": True,
         "preprocessing_num_workers": 16,
         
-        "output_dir": f"saves/{model_name}/{dataset_save_name}",
+        "output_dir": f"saves/{model_name}/qlora_{dataset_save_name}",
         "logging_steps": 10,
         "save_steps": 500,
         "plot_loss": True,

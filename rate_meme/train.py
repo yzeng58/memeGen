@@ -1,3 +1,4 @@
+import pandas as pd
 import os, pdb, wandb
 root_dir = os.path.dirname(os.path.dirname(__file__))
 from helper import save_json, set_seed, get_image_size
@@ -7,6 +8,7 @@ from itertools import product
 import random
 from utils.eval_utils import get_output, get_folder_name, get_file_path
 from configs import support_ml_models
+import pandas as pd
 
 def get_ml_model(
     model_name = 'decision_tree',
@@ -33,6 +35,8 @@ def train(
     n_demos = 0,
     train_ml_model = "xgboost",
     system_prompt_name = "default",
+    n_per_class = -1,
+    n_pairs = -1,
 ):    
     print("----------------------------------")
     print(f'Training ML model for {dataset_name} with {model_name}...')
@@ -55,6 +59,22 @@ def train(
     result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_name}/{folder_name}/{eval_mode}_{prompt_name}/{n_demos}_shot'
     os.makedirs(result_dir, exist_ok=True)
 
+    sampled_datasets = []
+    if n_per_class >= 0:
+        if eval_mode == 'threeway':
+            raise ValueError('Threeway evaluation mode is not compatible with n_per_class!')
+        
+        for label in dataset['label'].unique():
+            label_dataset = dataset[dataset['label'] == label]
+
+            if len(label_dataset) < n_per_class:
+                raise ValueError(f"Dataset {dataset_name} does not have enough samples for label {label}")
+            sampled_label_dataset = label_dataset.sample(n=n_per_class, random_state=seed, replace=False)
+            sampled_datasets.append(sampled_label_dataset)
+
+        dataset = pd.concat(sampled_datasets, ignore_index=True).reset_index(drop=True)
+        dataset = dataset.sample(frac=1, random_state=seed).reset_index(drop=True)
+
     funny_data = dataset[dataset['label'] == 1].reset_index(drop=True)
     not_funny_data = dataset[dataset['label'] == 0].reset_index(drop=True)
 
@@ -66,6 +86,7 @@ def train(
     tqdm_bar, idx = tqdm(all_pairs_idx), 0
     X, y = [], []
     for i, j in tqdm_bar:
+        if n_pairs >= 0 and idx >= n_pairs: break
 
         funny_image_path = funny_data.loc[i, 'image_path']
         not_funny_image_path = not_funny_data.loc[j, 'image_path']

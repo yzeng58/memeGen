@@ -32,7 +32,10 @@ def get_single_output(
     demonstrations = [],
     system_prompt_name = 'default',
 ):
-    file_name = file_path.split('/')[-1].split('.')[0]
+    if isinstance(file_path, dict):
+        file_name = file_path['image_path'].split('/')[-1].split('.')[0]
+    else:
+        file_name = file_path.split('/')[-1].split('.')[0]
     
     new_result_dir = f"{os.path.dirname(os.path.dirname(result_dir))}/single_standard/{len(demonstrations)}_shot"
     os.makedirs(new_result_dir, exist_ok=True)
@@ -114,6 +117,10 @@ def evaluate(
         if difficulty not in support_eval_datasets[dataset_name]["difficulty"]:
             raise ValueError(f'Difficulty {difficulty} not supported for {dataset_name}, please choose from {support_eval_datasets[dataset_name]["difficulty"]}')
         
+    if prompt_name == 'theory':
+        if theory_version in ['v4', 'v5'] and not train_ml_model:
+            raise ValueError('Theory version 4 and 5 requires train ML model!')
+        
     if ensemble:
         if len(model_name) <= 1:
             raise ValueError('Ensemble evaluation mode requires multiple model names!')
@@ -135,8 +142,9 @@ def evaluate(
     if n_demos > 0:
         if eval_mode == 'threeway':
             raise ValueError('Demonstrations are not supported in threeway evaluation mode!')
-        if prompt_name != 'standard':
-            raise ValueError('Demonstrations are only supported in standard prompt!')
+        if not prompt_name in ['standard']:
+            if not not_load_model:
+                raise ValueError(f'{prompt_name} prompt does not support loading models, and it has to be run with eval_mode=single first and obtain the results, and then continue with this by directly loading the results without loading models!')
         
     if train_ml_model and data_mode in ['train', 'test']:
         raise ValueError('Train ML model does not support train or test data mode!')
@@ -168,8 +176,6 @@ def evaluate(
             raise ValueError('Train ML model is not supported for this dataset!')
         if prompt_name != "theory" or eval_mode != "pairwise":
             raise ValueError('Train ML model only supports theory prompt and pairwise evaluation mode!')
-        if n_per_class >= 0 or n_pairs >= 0:
-            raise ValueError('Train ML model does not support n_per_class or n_pairs!')
         
         ml_model = train(
             model_name = model_name,
@@ -188,6 +194,8 @@ def evaluate(
             n_demos = n_demos,
             train_ml_model = train_ml_model,
             system_prompt_name = system_prompt_name,
+            n_per_class = n_per_class,
+            n_pairs = n_pairs,
         )
 
         dataset = dataset["test"]
