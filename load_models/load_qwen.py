@@ -28,6 +28,7 @@ def load_qwen(
             'model': model,
             'tokenizer': tokenizer,
             'type': 'qwen2.5',
+            "model_name": model_name,
         }
     elif 'qwen2-vl' in model_name.lower():
         model = Qwen2VLForConditionalGeneration.from_pretrained(
@@ -175,7 +176,7 @@ def call_qwen(
         if history:
             messages = history
         else:
-            messages = [{"role": "system", "content": system_prompts['qwen'][system_prompt]}]
+            messages = [{"role": "system", "content": system_prompts[qwen['model_name']][system_prompt]}]
 
         if demonstrations:
             messages.append({"role": "user", "content": prompt})
@@ -183,7 +184,7 @@ def call_qwen(
                 image_paths = sample['image_paths']
                 user_prompt = process_sample_feature(
                     image_paths=image_paths, 
-                    qwen=qwen,
+                    model_dict=qwen,
                     description=description,
                     context=context,
                 )
@@ -196,7 +197,7 @@ def call_qwen(
         
         user_prompt = process_sample_feature(
             image_paths=image_paths, 
-            qwen=qwen,
+            model_dict=qwen,
             description=description,
             context=context,
         )

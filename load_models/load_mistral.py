@@ -27,6 +27,7 @@ def load_mistral(
     mistral = {
         'model': model,
         'tokenizer': tokenizer,
+        'model_name': model_name,
     }
 
     return mistral
@@ -62,7 +63,7 @@ def call_mistral(
     if history:
         conversation = history
     else:
-        conversation = [{"role": "system", "content": system_prompts['mistral'][system_prompt]}]
+        conversation = [{"role": "system", "content": system_prompts[mistral['model_name']][system_prompt]}]
 
     if demonstrations:
         for sample_idx, sample in enumerate(demonstrations):

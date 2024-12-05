@@ -326,8 +326,12 @@ def evaluate(
                 i, j = pair_idx
                 funny_image_size = get_image_size(funny_data.loc[i, 'image_path'])
                 not_funny_image_size = get_image_size(not_funny_data.loc[j, 'image_path'])
-                if (funny_image_size <= (image_size_threshold / n_demos)) and (not_funny_image_size <= (image_size_threshold / n_demos)):
-                    demonstration_idxs.append(pair_idx)
+                if prompt_name != "single":
+                    if (funny_image_size <= (image_size_threshold / n_demos)) and (not_funny_image_size <= (image_size_threshold / n_demos)):
+                        demonstration_idxs.append(pair_idx)
+                else:
+                    if (funny_image_size <= (image_size_threshold / n_demos * 2)) and (not_funny_image_size <= (image_size_threshold / n_demos * 2)):
+                        demonstration_idxs.append(pair_idx)
             if len(demonstration_idxs) < n_demos:
                 raise ValueError(f'Could only find {len(demonstration_idxs)} valid demonstration pairs out of requested {n_demos}')
 
