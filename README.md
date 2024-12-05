@@ -27,96 +27,99 @@ python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval
 
 <details>
 <summary>Click to expand full experiments</summary>
-    * Pairwise Meme Comparison
 
-        *  Qwen-VL
-            ```bash
-            # TODO
-            python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name Qwen2-VL-2B-Instruct
-            # TODO
-            python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name Qwen2-VL-7B-Instruct
-            # TODO
-            python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name Qwen2-VL-72B-Instruct
+### Pairwise Meme Comparison
 
-            python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name Qwen2-VL-2B-Instruct
-            python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name Qwen2-VL-7B-Instruct
-            python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name Qwen2-VL-72B-Instruct
-            ```
+#### Qwen-VL
+```bash
+# TODO
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name Qwen2-VL-2B-Instruct
+# TODO
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name Qwen2-VL-7B-Instruct
+# TODO
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name Qwen2-VL-72B-Instruct
 
-        * GPT
-            ```bash
-            # TODO
-            python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name gpt-4o-mini
-            # TODO
-            python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name gpt-4o
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name Qwen2-VL-2B-Instruct
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name Qwen2-VL-7B-Instruct
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name Qwen2-VL-72B-Instruct
+```
 
-            python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name gpt-4o-mini
-            python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name gpt-4o
-            ```
+#### GPT
+```bash
+# TODO
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name gpt-4o-mini
+# TODO
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name gpt-4o
 
-        * Pixtral
-            ```bash
-            python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name pixtral-12b 
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name gpt-4o-mini
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name gpt-4o
+```
 
-            python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name pixtral-12b 
-            ```
+#### Pixtral
+```bash
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name pixtral-12b 
 
-        * Gemini
-            ```bash
-            # TODO
-            python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name gemini-1.5-flash
-            # TODO
-            python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name gemini-1.5-pro
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name pixtral-12b 
+```
 
-            python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name gemini-1.5-flash
-            python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name gemini-1.5-pro
-            ```
+#### Gemini
+```bash
+# TODO
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name gemini-1.5-flash
+# TODO
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --eval_mode pairwise --wandb --model_name gemini-1.5-pro
 
-    * Single Meme Evaluation 
-        * Qwen-VL
-            ```bash
-            python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-2B-Instruct
-            python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-2B-Instruct
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name gemini-1.5-flash
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --eval_mode pairwise --wandb --model_name gemini-1.5-pro
+```
 
-            python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-7B-Instruct
-            python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-7B-Instruct
+### Single Meme Evaluation 
+#### Qwen-VL
+```bash
+python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-2B-Instruct
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-2B-Instruct
 
-            # TODO
-            python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-72B-Instruct
-            python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-72B-Instruct
+python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-7B-Instruct
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-7B-Instruct
+
+# TODO
+python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-72B-Instruct
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-72B-Instruct
 
 
-            # TODO
-            python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-2B-Instruct
-            python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-2B-Instruct
+# TODO
+python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-2B-Instruct
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-2B-Instruct
 
-            # TODO
-            python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-7B-Instruct
-            python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-7B-Instruct
+# TODO
+python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-7B-Instruct
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-7B-Instruct
 
-            # TODO
-            python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-72B-Instruct
-            python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-72B-Instruct
-            ```
+# TODO
+python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single --n_demos 2 --model_name Qwen2-VL-72B-Instruct
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name Qwen2-VL-72B-Instruct
+```
 
-        * GPT
-            ```bash
-            # TODO
-            python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name gpt-4o-mini
-            python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gpt-4o-mini
+#### GPT
+```bash
+# TODO
+python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name gpt-4o-mini
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gpt-4o-mini
 
-            # TODO
-            python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name gpt-4o
-            python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gpt-4o
+# TODO
+python evaluation.py --dataset_name relca --data_mode test --eval_mode single --n_demos 2 --model_name gpt-4o
+python evaluation.py --n_pairs 2000 --dataset_name relca --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gpt-4o
 
-            # TODO
-            python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single --n_demos 2 --model_name gpt-4o-mini
-            python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gpt-4o-mini
+# TODO
+python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single --n_demos 2 --model_name gpt-4o-mini
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gpt-4o-mini
 
-            # TODO
-            python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single --n_demos 2 --model_name gpt-4o
-            python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gpt-4o
-            ```
+# TODO
+python evaluation.py --dataset_name ours_v3 --data_mode test --eval_mode single --n_demos 2 --model_name gpt-4o
+python evaluation.py --n_pairs 2000 --dataset_name ours_v3 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb --model_name gpt-4o
+```
+
+#### 
 
 </details>
 
