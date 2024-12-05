@@ -76,20 +76,23 @@ def call_pixtral(
             {"role": "system", "content": system_prompts[model_name][system_prompt]}
         ]
 
+    images = []
     if demonstrations:
-        messages.append({"role": "user", "content": [process_text_pixtral(prompt)]})
-        for sample in demonstrations:
+        for idx, sample in enumerate(demonstrations):
             contents = []
+            if idx == 0:
+                contents.append(process_text_pixtral(prompt))
             contents.extend(process_sample_feature(
                 description=description,
                 context=context,
                 image_paths=sample['image_paths'],
             ))
+            images.extend([Image.open(image_path) for image_path in sample['image_paths']])
             messages.append({"role": "user", "content": contents})
 
             if not 'label' in sample:
                 raise ValueError("Label is required for non-test samples!")
-            messages.append({"role": "assistant", "content": [process_text_pixtral(sample['label'])]})
+            messages.append({"role": "assistant", "content": sample['label']})
 
     contents = process_sample_feature(
         description=description,
@@ -99,9 +102,9 @@ def call_pixtral(
     if not demonstrations: contents.append(process_text_pixtral(prompt))
     messages.append({"role": "user", "content": contents})
 
-    text = processor.apply_chat_template(messages, tokenize=False, add_generation_timestamp=True) + 'assistant\n'
+    text = processor.apply_chat_template(messages, tokenize=False, add_generation_timestamp=True)
     if image_paths:
-        images = [Image.open(image_path) for image_path in image_paths]
+        images.extend([Image.open(image_path) for image_path in image_paths])
     else:
         images = None
     inputs = processor(
