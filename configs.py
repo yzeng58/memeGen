@@ -577,7 +577,13 @@ support_eval_datasets = {
     'ours_v3': {
         "metric": "funniness",
         "eval_mode": ["single", "pairwise"],
-        "train_test_split": False,
+        "train_test_split": True,
+        "difficulty": ["easy"],
+    },
+    'ours_v4': {
+        "metric": "funniness",
+        "eval_mode": ["single", "pairwise"],
+        "train_test_split": True,
         "difficulty": ["easy"],
     },
     '130k': None,

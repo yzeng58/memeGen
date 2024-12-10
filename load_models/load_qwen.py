@@ -78,8 +78,8 @@ def process_sample_feature(
             if description:
                 contents.append(process_text_qwen2(f"Meme{idx_str}: {read_json(image_path)['description']['output']}\n"))
             elif context:
-                contents.append(process_text_qwen2(f"Meme{idx_str}: {read_json(image_path)['description']['output']}\n"))
-                contents.append(process_image_qwen2(read_json(image_path)['image_path']))
+                contents.append(process_text_qwen2(f"Meme{idx_str}: {read_json(image_path['description_path'])['description']['output']}\n"))
+                contents.append(process_image_qwen2(read_json(image_path['description_path'])['image_path']))
             else:
                 contents.append(process_image_qwen2(image_path))
         return contents

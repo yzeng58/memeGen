@@ -391,16 +391,23 @@ def finetune(
     data_mode,
     n_per_class,
     n_pairs,
+    overwrite,
 ):
     modality_mode = get_folder_name(description, context)
 
     datasets = dataset_name
     if len(dataset_name) > 1: 
         dataset_name = '_mix_'.join(datasets)
+        print(dataset_name)
     else:
         dataset_name = dataset_name[0]
         
     dataset_save_name = f"{dataset_name}_{model_name}_{modality_mode}_{eval_mode}_{prompt_name}_{n_demos}_shot_{data_mode}"
+
+    model_dir = f"{root_dir}/models/{model_name}/qlora_{dataset_save_name}"
+
+    if os.path.exists(model_dir) and not overwrite:
+        raise ValueError(f"Model directory {model_dir} already exists, set overwrite to True to overwrite. Exiting.")
 
     print(f"| Preprocessing -- Dataset: {dataset_save_name}")
     for idx, dataset in enumerate(datasets):
@@ -532,6 +539,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_mode', type=str, default='train', choices=['train', 'test', 'both'])
     parser.add_argument('--n_per_class', type=int, default=-1, help='-1 for all, otherwise random sample n_per_class for each class')
     parser.add_argument('--n_pairs', type=int, default=5000, help='-1 for all, otherwise random sample n_pairs pairs')
+    parser.add_argument('--overwrite', action='store_true')
     args = parser.parse_args()
 
     print(__file__)
@@ -562,6 +570,7 @@ if __name__ == '__main__':
         data_mode=args.data_mode,
         n_per_class=args.n_per_class,
         n_pairs=args.n_pairs,
+        overwrite=args.overwrite,
     )
 
 

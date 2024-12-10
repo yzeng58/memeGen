@@ -502,7 +502,6 @@ python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prom
 
 ##### Mixtral-8x22B-Instruct-v0.1
 ```bash
-# TODO
 python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --wandb --dataset_name relca --model_name Mixtral-8x22B-Instruct-v0.1
 
 # TODO
@@ -517,15 +516,15 @@ python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prom
 
 ##### Llama-3.1-70B-Instruct
 ```bash
-python evaluation.py --n_pairs 2000 --context Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --wandb --dataset_name relca --model_name Llama-3.1-70B-Instruct
+python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --wandb --dataset_name relca --model_name Llama-3.1-70B-Instruct
 
-python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name relca --model_name Llama-3.1-70B-Instruct
+python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct  --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name relca --model_name Llama-3.1-70B-Instruct
 
 # TODO
 python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name ours_v3 --model_name Llama-3.1-70B-Instruct
 
 # TODO
-python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name ours_v3 --model_name Llama-3.1-70B-Instruct
+python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct  --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name ours_v3 --model_name Llama-3.1-70B-Instruct
 ```
 </details>
 
@@ -538,7 +537,65 @@ python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_de
 <details>
 <summary>Click to expand full experiments</summary>
 
+##### Qwen2-VL-72B-Instruct
+```bash
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 2 --wandb --dataset_name relca --model_name Qwen2-VL-72B-Instruct
 
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 2 --wandb --dataset_name ours_v3 --model_name Qwen2-VL-72B-Instruct
+
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 4 --wandb --dataset_name relca --model_name Qwen2-VL-72B-Instruct
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 4 --wandb --dataset_name ours_v3 --model_name Qwen2-VL-72B-Instruct
+```
+
+##### Llama-3.1-70B-Instruct
+```bash
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 2 --wandb --dataset_name relca --model_name Llama-3.1-70B-Instruct --description Llama-3.2-90B-Vision-Instruct
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 2 --wandb --dataset_name ours_v3 --model_name Llama-3.1-70B-Instruct --description Llama-3.2-90B-Vision-Instruct
+
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 4 --wandb --dataset_name relca --model_name Llama-3.1-70B-Instruct --description Llama-3.2-90B-Vision-Instruct
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 4 --wandb --dataset_name ours_v3 --model_name Llama-3.1-70B-Instruct --description Llama-3.2-90B-Vision-Instruct
+```
+
+##### Mixtral-8x22B-Instruct-v0.1
+```bash
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 2 --wandb --dataset_name relca --model_name Mixtral-8x22B-Instruct-v0.1 --description Llama-3.2-90B-Vision-Instruct
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 2 --wandb --dataset_name ours_v3 --model_name Mixtral-8x22B-Instruct-v0.1 --description Llama-3.2-90B-Vision-Instruct
+
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 4 --wandb --dataset_name relca --model_name Mixtral-8x22B-Instruct-v0.1 --description Llama-3.2-90B-Vision-Instruct
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 4 --wandb --dataset_name ours_v3 --model_name Mixtral-8x22B-Instruct-v0.1 --description Llama-3.2-90B-Vision-Instruct
+```
+
+##### GPT-4o
+```bash
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 2 --wandb --dataset_name relca --model_name gpt-4o 
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 2 --wandb --dataset_name ours_v3 --model_name gpt-4o 
+
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 4 --wandb --dataset_name relca --model_name gpt-4o 
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 4 --wandb --dataset_name ours_v3 --model_name gpt-4o 
+```
+
+##### Gemini-1.5-Pro
+```bash
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 4 --wandb --dataset_name relca --model_name gemini-1.5-pro 
+
+# TODO
+python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_demos 4 --wandb --dataset_name ours_v3 --model_name gemini-1.5-pro 
+```
 </details>
 
 #### Ensemble
@@ -548,6 +605,10 @@ python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --n_de
 
 python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --model_name Llama-3.1-70B-Instruct Qwen2-VL-72B-Instruct Mixtral-8x22B-Instruct-v0.1 --description Llama-3.2-90B-Vision-Instruct '' Llama-3.2-90B-Vision-Instruct --context '' '' '' --wandb --not_load_model
 ```
+
+<details>
+<summary>Click to expand full experiments (TO BE ADDED)</summary>
+</details>
 
 ## Enhancing Meme Humor Benchmarking Through Model Fine-Tuning
 
@@ -572,6 +633,48 @@ python evaluation.py --prompt_name single --model_name Qwen2-VL-2B-Instruct --pe
 
 ```
 
+<details>
+<summary>Click to expand full experiments</summary>
+
+###### Qwen2-VL-72B-Instruct
+```bash
+python finetune.py --eval_mode single --model_name Qwen2-VL-72B-Instruct --dataset_name relca 
+python evaluation.py --eval_mode single --model_name Qwen2-VL-72B-Instruct --peft_variant qlora_relca_Qwen2-VL-72B-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name relca
+python evaluation.py --model_name Qwen2-VL-72B-Instruct --eval_mode pairwise --prompt_name single --peft_variant qlora_relca_Qwen2-VL-72B-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name relca --not_load_model --wandb
+# TODO
+python evaluation.py --eval_mode single --model_name Qwen2-VL-72B-Instruct --peft_variant qlora_relca_Qwen2-VL-72B-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3
+python evaluation.py --model_name Qwen2-VL-72B-Instruct --eval_mode pairwise --prompt_name single --peft_variant qlora_relca_Qwen2-VL-72B-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3 --not_load_model --wandb
+
+
+python finetune.py --eval_mode single --dataset_name relca ours_v3  --model_name Qwen2-VL-72B-Instruct
+python evaluation.py --eval_mode single --model_name Qwen2-VL-72B-Instruct --peft_variant qlora_relca_mix_ours_v3_Qwen2-VL-72B-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name relca 
+python evaluation.py --eval_mode single --model_name Qwen2-VL-72B-Instruct --peft_variant qlora_relca_mix_ours_v3_Qwen2-VL-72B-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3 
+python evaluation.py --prompt_name single --model_name Qwen2-VL-72B-Instruct --peft_variant qlora_relca_mix_ours_v3_Qwen2-VL-72B-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name relca --not_load_model --wandb
+python evaluation.py --prompt_name single --model_name Qwen2-VL-72B-Instruct --peft_variant qlora_relca_mix_ours_v3_Qwen2-VL-72B-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3 --not_load_model --wandb
+```
+
+##### Llama-3.2-90B-Vision-Instruct
+```bash
+python finetune.py --eval_mode single --model_name Llama-3.2-90B-Vision-Instruct --dataset_name relca
+python evaluation.py --eval_mode single --model_name Llama-3.2-90B-Vision-Instruct --peft_variant qlora_relca_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name relca
+python evaluation.py --model_name Llama-3.2-90B-Vision-Instruct --eval_mode pairwise --prompt_name single --peft_variant qlora_relca_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name relca --not_load_model --wandb
+# TODO
+python evaluation.py --eval_mode single --model_name Llama-3.2-90B-Vision-Instruct --peft_variant qlora_relca_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3
+python evaluation.py --model_name Llama-3.2-90B-Vision-Instruct --eval_mode pairwise --prompt_name single --peft_variant qlora_relca_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3 --not_load_model --wandb
+
+python finetune.py --eval_mode single --dataset_name relca ours_v3 --model_name Llama-3.2-90B-Vision-Instruct
+python evaluation.py --eval_mode single --model_name Llama-3.2-90B-Vision-Instruct --peft_variant qlora_relca_mix_ours_v3_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3 
+python evaluation.py --eval_mode single --model_name Llama-3.2-90B-Vision-Instruct --peft_variant qlora_relca_mix_ours_v3_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name relca
+python evaluation.py --prompt_name single --model_name Llama-3.2-90B-Vision-Instruct --peft_variant qlora_relca_mix_ours_v3_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name relca --not_load_model --wandb
+python evaluation.py --prompt_name single --model_name Llama-3.2-90B-Vision-Instruct --peft_variant qlora_relca_mix_ours_v3_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3 --not_load_model --wandb
+```
+</details>
+
+##### Llama-3.1-70B-Instruct
+```bash
+# TODO
+```
+
 ### Pairwise Meme Comparison 
 
 #### Standard 
@@ -589,6 +692,40 @@ python evaluation.py --eval_mode pairwise --model_name Qwen2-VL-2B-Instruct --pe
 
 python evaluation.py --prompt_name single --model_name Qwen2-VL-2B-Instruct --peft_variant qlora_relca_mix_ours_v3_Qwen2-VL-2B-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name relca --not_load_model --wandb
 python evaluation.py --prompt_name single --model_name Qwen2-VL-2B-Instruct --peft_variant qlora_relca_mix_ours_v3_Qwen2-VL-2B-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3 --not_load_model --wandb
-
-
 ```
+
+<details>
+<summary>Click to expand full experiments</summary>
+
+###### Qwen2-VL-72B-Instruct
+```bash
+python finetune.py --eval_mode pairwise --model_name Qwen2-VL-72B-Instruct --dataset_name relca
+python evaluation.py --model_name Qwen2-VL-72B-Instruct --eval_mode pairwise --peft_variant qlora_relca_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train --n_pairs 2000 --data_mode test --wandb --dataset_name relca
+# TODO
+python evaluation.py --eval_mode pairwise --model_name Qwen2-VL-72B-Instruct --peft_variant qlora_relca_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3 --wandb
+
+python finetune.py --eval_mode pairwise --dataset_name ours_v3 relca --model_name Qwen2-VL-72B-Instruct
+python evaluation.py --eval_mode pairwise --model_name Qwen2-VL-72B-Instruct --peft_variant qlora_ours_v3_mix_relca_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3 --wandb
+python evaluation.py --eval_mode pairwise --model_name Qwen2-VL-72B-Instruct --peft_variant qlora_ours_v3_mix_relca_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name relca --wandb
+```
+
+# NEED TO BE DEBUGGED
+###### Llama-3.2-90B-Vision-Instruct
+```bash
+python finetune.py --eval_mode pairwise --model_name Llama-3.2-90B-Vision-Instruct --dataset_name relca
+python evaluation.py --model_name Llama-3.2-90B-Vision-Instruct --eval_mode pairwise --peft_variant qlora_relca_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --wandb --dataset_name relca
+# TODO
+python evaluation.py --eval_mode pairwise --model_name Llama-3.2-90B-Vision-Instruct --peft_variant qlora_relca_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3 --wandb
+
+python finetune.py --eval_mode pairwise --dataset_name relca ours_v3 
+python evaluation.py --eval_mode pairwise --model_name Llama-3.2-90B-Vision-Instruct --peft_variant qlora_relca_mix_ours_v3_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3 --wandb
+python evaluation.py --eval_mode pairwise --model_name Llama-3.2-90B-Vision-Instruct --peft_variant qlora_relca_mix_ours_v3_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name relca --wandb
+python evaluation.py --prompt_name single --model_name Llama-3.2-90B-Vision-Instruct --peft_variant qlora_relca_mix_ours_v3_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name relca --not_load_model --wandb
+python evaluation.py --prompt_name single --model_name Llama-3.2-90B-Vision-Instruct --peft_variant qlora_relca_mix_ours_v3_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train --n_pairs 2000 --data_mode test --dataset_name ours_v3 --not_load_model --wandb
+```
+
+##### Llama-3.1-70B-Instruct
+```bash
+# TODO
+```
+</details>

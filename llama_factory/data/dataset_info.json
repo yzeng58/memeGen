@@ -78,5 +78,41 @@
             "chosen": "chosen",
             "images": "images"
         }
+    },
+    "relca_Qwen2-VL-72B-Instruct_multimodal_single_standard_0_shot_train": {
+        "file_name": "relca_Qwen2-VL-72B-Instruct_multimodal_single_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train": {
+        "file_name": "relca_Llama-3.2-90B-Vision-Instruct_multimodal_single_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_mix_ours_v3_Qwen2-VL-2B-Instruct_multimodal_pairwise_standard_0_shot_train": {
+        "file_name": "relca_mix_ours_v3_Qwen2-VL-2B-Instruct_multimodal_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_mix_ours_v3_Qwen2-VL-72B-Instruct_multimodal_single_standard_0_shot_train": {
+        "file_name": "relca_mix_ours_v3_Qwen2-VL-72B-Instruct_multimodal_single_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
     }
 }
