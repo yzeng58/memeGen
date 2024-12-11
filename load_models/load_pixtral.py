@@ -45,8 +45,8 @@ def process_sample_feature(
         if description:
             content.append(process_text_pixtral(f"Meme{idx_str}: {read_json(image_path)['description']['output']}"))
         elif context:
-            content.append(process_text_pixtral(f"Meme{idx_str}: {read_json(image_path)['description']['output']}"))
-            content.append(process_image_pixtral(read_json(image_path)['image_path']))
+            content.append(process_text_pixtral(f"Meme{idx_str}: {read_json(image_path["description_path"])['description']['output']}"))
+            content.append(process_image_pixtral(read_json(image_path["image_path"])['image_path']))
         else:
             content.append(process_image_pixtral(image_path))
     return content
