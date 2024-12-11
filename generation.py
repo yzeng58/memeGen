@@ -6,7 +6,6 @@ from helper import combine_text_and_image, set_seed, save_json, print_configs, r
 from rate_meme.rate_meme import score_meme_based_on_theory
 from typing import List, Literal
 from load_dataset import load_dataset
-from load_model import load_model
 import argparse, wandb
 from environment import WANDB_INFO_GEN
 from utils.eval_utils import get_output
@@ -182,8 +181,8 @@ def generate_meme_topic(
     dm_name: str = "stable-diffusion-3-medium-diffusers",
     topic: str = "Working hours are too long",
     prompt_name: str = "standard",
-    height: int = 300,
-    width: int = 300,
+    height: int = 280,
+    width: int = 280,
     num_inference_steps: int = 28,
     guidance_scale: float = 7.0,
     negative_prompt: str = "",
@@ -485,10 +484,10 @@ def generate(
         raise ValueError(f"Dataset {dataset_name} not supported!")
     dataset = load_dataset(dataset_name)
 
-    call_gen_llm = load_model(gen_llm_name, api_key)
-    call_dm = load_model(dm_name, api_key)
+    call_gen_llm = load_model(f"{gen_llm_name}/pretrained", api_key)
+    call_dm = load_model(f"{dm_name}/pretrained", api_key)
     if gen_mode == "selective":
-        call_eval_llm = load_model(eval_llm_name, api_key)
+        call_eval_llm = load_model(f"{eval_llm_name}/pretrained", api_key)
     else:
         call_eval_llm = None
     result_dir = f"{root_dir}/results/generation/{dataset_name}/{gen_llm_name}/{dm_name}/{prompt_name}/{gen_mode}"
