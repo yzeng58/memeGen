@@ -51,6 +51,14 @@ def process_sample_feature(
             content.append(process_image_pixtral(image_path))
     return content
 
+def process_image_path(image_path, context, description):
+    if context:
+        return Image.open(image_path['image_path'])
+    elif description:
+        return None
+    else:
+        return Image.open(image_path)
+
 def call_pixtral(
     pixtral,
     prompt,
@@ -87,7 +95,7 @@ def call_pixtral(
                 context=context,
                 image_paths=sample['image_paths'],
             ))
-            images.extend([Image.open(image_path) for image_path in sample['image_paths']])
+            images.extend([process_image_path(image_path, context, description) for image_path in sample['image_paths']])
             messages.append({"role": "user", "content": contents})
 
             if not 'label' in sample:
@@ -104,12 +112,12 @@ def call_pixtral(
 
     text = processor.apply_chat_template(messages, tokenize=False, add_generation_timestamp=True)
     if image_paths:
-        images.extend([Image.open(image_path) for image_path in image_paths])
+        images.extend([process_image_path(image_path, context, description) for image_path in image_paths])
     else:
         images = None
     inputs = processor(
         text = text,
-        images = images,
+        images = None if description else images,
         return_tensors = 'pt',
     ).to(model.device)
     generated_ids = model.generate(
