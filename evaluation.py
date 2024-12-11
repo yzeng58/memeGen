@@ -254,7 +254,8 @@ def evaluate(
                     
                     # Check its size
                     file_path = get_file_path(dataset, context, description, idx)
-                    if os.path.getsize(file_path) < image_size_threshold * 2 / (n_demos + 1):
+                    image_size = get_image_size(dataset.loc[idx, 'image_path'])
+                    if image_size < image_size_threshold * 2 / (n_demos + 1):
                         selected_idxs.append(idx)
                 
                 if len(selected_idxs) < n_samples:
