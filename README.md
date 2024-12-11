@@ -576,10 +576,12 @@ python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct 
 ```bash
 python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --wandb --dataset_name relca --model_name Mistral-Large-Instruct-2407
 
+# TODO
 python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name relca --model_name Mistral-Large-Instruct-2407
 
 python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --wandb --dataset_name ours_v4 --model_name Mistral-Large-Instruct-2407
 
+# TODO
 python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name ours_v4 --model_name Mistral-Large-Instruct-2407
 ```
 
