@@ -123,5 +123,111 @@
             "chosen": "chosen",
             "images": "images"
         }
+    },
+    "relca_Qwen2.5-72B-Instruct_description_Llama-3.2-90B-Vision-Instruct_single_standard_0_shot_train": {
+        "file_name": "relca_Qwen2.5-72B-Instruct_description_Llama-3.2-90B-Vision-Instruct_single_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_mix_ours_v4_Qwen2.5-72B-Instruct_description_Llama-3.2-90B-Vision-Instruct_single_standard_0_shot_train": {
+        "file_name": "relca_mix_ours_v4_Qwen2.5-72B-Instruct_description_Llama-3.2-90B-Vision-Instruct_single_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_Llama-3.1-70B-Instruct_description_Llama-3.2-90B-Vision-Instruct_single_standard_0_shot_train": {
+        "file_name": "relca_Llama-3.1-70B-Instruct_description_Llama-3.2-90B-Vision-Instruct_single_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_Mixtral-8x22B-Instruct-v0.1_description_Llama-3.2-90B-Vision-Instruct_single_standard_0_shot_train": {
+        "file_name": "relca_Mixtral-8x22B-Instruct-v0.1_description_Llama-3.2-90B-Vision-Instruct_single_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_pixtral-12b_multimodal_pairwise_standard_0_shot_train": {
+        "file_name": "relca_pixtral-12b_multimodal_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_Qwen2.5-72B-Instruct_description_Llama-3.2-90B-Vision-Instruct_pairwise_standard_0_shot_train": {
+        "file_name": "relca_Qwen2.5-72B-Instruct_description_Llama-3.2-90B-Vision-Instruct_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_Mixtral-8x22B-Instruct-v0.1_description_Llama-3.2-90B-Vision-Instruct_pairwise_standard_0_shot_train": {
+        "file_name": "relca_Mixtral-8x22B-Instruct-v0.1_description_Llama-3.2-90B-Vision-Instruct_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_mix_ours_v4_Llama-3.1-70B-Instruct_description_Llama-3.2-90B-Vision-Instruct_single_standard_0_shot_train": {
+        "file_name": "relca_mix_ours_v4_Llama-3.1-70B-Instruct_description_Llama-3.2-90B-Vision-Instruct_single_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_mix_ours_v4_Mixtral-8x22B-Instruct-v0.1_description_Llama-3.2-90B-Vision-Instruct_single_standard_0_shot_train": {
+        "file_name": "relca_mix_ours_v4_Mixtral-8x22B-Instruct-v0.1_description_Llama-3.2-90B-Vision-Instruct_single_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "ours_v4_mix_relca_Llama-3.1-70B-Instruct_description_Llama-3.2-90B-Vision-Instruct_pairwise_standard_0_shot_train": {
+        "file_name": "ours_v4_mix_relca_Llama-3.1-70B-Instruct_description_Llama-3.2-90B-Vision-Instruct_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "ours_v4_mix_relca_Mixtral-8x22B-Instruct-v0.1_description_Llama-3.2-90B-Vision-Instruct_pairwise_standard_0_shot_train": {
+        "file_name": "ours_v4_mix_relca_Mixtral-8x22B-Instruct-v0.1_description_Llama-3.2-90B-Vision-Instruct_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "ours_v4_mix_relca_Qwen2.5-72B-Instruct_description_Llama-3.2-90B-Vision-Instruct_pairwise_standard_0_shot_train": {
+        "file_name": "ours_v4_mix_relca_Qwen2.5-72B-Instruct_description_Llama-3.2-90B-Vision-Instruct_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "ours_v4_mix_relca_pixtral-12b_multimodal_pairwise_standard_0_shot_train": {
+        "file_name": "ours_v4_mix_relca_pixtral-12b_multimodal_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
     }
 }

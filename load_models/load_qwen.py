@@ -181,9 +181,8 @@ def call_qwen(
         if demonstrations:
             messages.append({"role": "user", "content": prompt})
             for sample in demonstrations:
-                image_paths = sample['image_paths']
                 user_prompt = process_sample_feature(
-                    image_paths=image_paths, 
+                    image_paths=sample['image_paths'], 
                     model_dict=qwen,
                     description=description,
                     context=context,

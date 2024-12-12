@@ -46,7 +46,6 @@ def load_llama(
             'model_id': model_id,
             'model': llama_pipeline,
         }
-
     llama['model_name'] = model_name
     return llama
 

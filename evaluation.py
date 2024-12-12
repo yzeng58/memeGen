@@ -135,6 +135,7 @@ def evaluate(
     if eval_mode not in support_eval_datasets[dataset_name]["eval_mode"]:
         raise ValueError(f'Eval mode {eval_mode} not supported by {dataset_name}, please choose from {support_eval_datasets[dataset_name]["eval_mode"]}')
     if prompt_name not in eval_modes[eval_mode]:
+        pdb.set_trace()
         raise ValueError(f'Prompt name {prompt_name} not supported, please choose from {eval_modes[eval_mode]}')
     if support_eval_datasets[dataset_name] is None:
         raise ValueError(f'Dataset {dataset_name} is not supported for evaluation!')
