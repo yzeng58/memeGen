@@ -62,7 +62,7 @@ def generate_meme_dm(
     meme_path: str,
     image_style: str = "cartoon",
     seed: int = 1234,
-):
+):  
     success_flag = call_dm(
         f"{image_style} style\n{gen_llm_output_dict['image_description']}", 
         height=height,

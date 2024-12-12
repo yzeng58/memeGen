@@ -37,6 +37,9 @@ def retry_if_fail(max_retries=3, sleep_time=10):
             retry = 0
             while retry < max_retries:
                 try:
+                    if "seed" in kwargs:
+                        if retry > 0: 
+                            kwargs["seed"] = 10*retry+kwargs["seed"]
                     out = func(*args, **kwargs)
                     break
                 except KeyboardInterrupt:

@@ -628,7 +628,7 @@ support_gen_datasets = {
         "mode": "content",
         "category": True,
     },
-    "iSarcasm": {
+    "isarcasm": {
         "train_test_split": True,
         "mode": "content",
         "category": False,
