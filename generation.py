@@ -6,7 +6,6 @@ from helper import combine_text_and_image, set_seed, save_json, print_configs, r
 from rate_meme.rate_meme import score_meme_based_on_theory
 from typing import List, Literal
 from load_dataset import load_dataset
-from load_model import load_model
 import argparse, wandb
 from environment import WANDB_INFO_GEN
 from utils.eval_utils import get_output
@@ -182,8 +181,8 @@ def generate_meme_topic(
     gen_llm_name: str = "gpt-4o-mini",
     dm_name: str = "stable-diffusion-3-medium-diffusers",
     prompt_name: str = "standard",
-    height: int = 300,
-    width: int = 300,
+    height: int = 280,
+    width: int = 280,
     num_inference_steps: int = 28,
     guidance_scale: float = 7.0,
     negative_prompt: str = "",

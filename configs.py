@@ -443,9 +443,27 @@ prompt_processor_default["generation"] = {
             'bottom_text': re.search(r'BOTTOM TEXT:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
         },
     },
-    "benign_violation": {
+    "benign1": {
         "prompt": lambda context: f"""
             In terms of {context}, come up with a norm-breaking bad behavior/phenomenon that can be described in less than 10 words. Then describe it in a funny way and turn it into a meme. Please strictly format your response including the quotation marks as follows:
+
+            NORM-BREAKING BEHAVIOR/PHENOMENON: [generated text]
+
+            MEME FORMAT:
+
+            IMAGE DESCRIPTION: "[generated text]"
+            TOP TEXT: "[generated text]" 
+            BOTTOM TEXT: "[generated text]"
+        """,
+        "output_processor": lambda x: {
+            'image_description': re.search(r'IMAGE DESCRIPTION:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
+            'top_text': re.search(r'TOP TEXT:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
+            'bottom_text': re.search(r'BOTTOM TEXT:\s*"([^"]*)"', x).group(1).replace("[", "").replace("]", ""),
+        },
+    },
+    "benign2": {
+        "prompt": lambda context: f"""
+            In terms of {context}, come up with a Please come up with something sarcastic about this matter that can be described in less than 10 words. Then describe it in a funny way and turn it into a meme. Please strictly format your response including the quotation marks as follows:
 
             NORM-BREAKING BEHAVIOR/PHENOMENON: [generated text]
 
