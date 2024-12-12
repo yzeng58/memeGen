@@ -84,6 +84,7 @@ def process_sample_feature(
 
     return contents
 
+@retry_if_fail()
 def call_gpt(
     gpt,
     prompt,

@@ -3,6 +3,7 @@ root_dir = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(root_dir)
 
 from rate_meme.rate_meme import score_meme_based_on_theory
+import pdb
 
 def get_folder_name(
     description,
@@ -47,7 +48,7 @@ def get_output(
     demonstrations = [],
     system_prompt_name = "default",
 ):
-    if prompt_name == "cot":
+    if prompt_name == "cot_old":
         output_1 = call_model(
             prompt[0], 
             image_paths, 
@@ -73,11 +74,12 @@ def get_output(
             'output': output_2['output'],
             'analysis': output_1['output'] + output_2['output'],
         }
-    elif prompt_name == "standard":
+    elif prompt_name in ["standard", "cot"]:
+        new_tokens = max_new_tokens if prompt_name == "standard" else max_intermediate_tokens
         output_dict_all = call_model(
             prompt, 
             image_paths, 
-            max_new_tokens=max_new_tokens,
+            max_new_tokens=new_tokens,
             description=description,
             context=context,
             demonstrations = demonstrations,

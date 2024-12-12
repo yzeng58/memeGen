@@ -6,7 +6,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
 from configs import system_prompts
-from helper import read_json, set_seed
+from helper import read_json, set_seed, retry_if_fail
 import pdb
 
 def load_mistral(
@@ -41,6 +41,7 @@ def process_sample_feature(
         user_prompt += f"Meme{idx_str}: {read_json(image_path)['description']['output']}\n"
     return user_prompt
 
+@retry_if_fail()
 def call_mistral(
     mistral,
     prompt,

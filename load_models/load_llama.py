@@ -7,7 +7,7 @@ import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 from environment import HUGGINGFACE_API_KEY
-from helper import get_image, read_json, set_seed
+from helper import get_image, read_json, set_seed, retry_if_fail
 from configs import system_prompts
 import pdb
 
@@ -74,6 +74,7 @@ def process_sample_feature(
             text_prompt += f"Meme{idx_str}: {read_json(image_path)['description']['output']}\n"
         return text_prompt
 
+@retry_if_fail()
 def call_llama(
     llama, 
     prompt, 

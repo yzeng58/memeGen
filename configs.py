@@ -9,6 +9,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 from sklearn.neural_network import MLPClassifier
+import re, json
 
 ########################
 # Model Configurations # 
@@ -237,13 +238,42 @@ prompt_processor_default["funniness"] = {
             'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1) if x else -1,
             'label_processor': lambda x: {0: '1', 1: '2'}[x],
         },
-        'cot': {
+        'cot_old': {
             'prompt': [
                 "You are a random person who knows a lot about memes. Now you are participating in a survey of selecting funny memes based on your own preference. Do not concentrate on any identities of the human face, just consider the funniness of memes by the context. Now two memes are provided. Which one is more funny? Let's think step by step.",
                 "Based on your reasoning, please select one meme as the funnier one, 1 for the first meme, 2 for the second meme. Pleae do not generate any other thing and just answer with 1 or 2 so I can handle your response easily.",
             ],
             'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1) if x else -1,
         },
+        'cot': {
+            "prompt": """
+                You are a random person who knows a lot about memes. Now you are participating in a survey of selecting funny memes based on your own preference. Given two memes, analyze their humor and provide an evaluation in JSON format. For each meme, describe its content, humor style, and any cultural or contextual references. Then decide which meme is funnier and justify your decision. Ensure the output strictly follows this JSON format:
+                Expected JSON Output Format:
+                ```json
+                {
+                    "meme_1": {
+                        "analysis": {
+                            "content": "<detailed analysis of the first meme's content>",
+                            "humor_style": "<type of humor (e.g., sarcasm, irony, absurdity)>",
+                            "cultural_context": "<any cultural or contextual references>"
+                        }
+                    },
+                    "meme_2": {
+                        "analysis": {
+                            "content": "<detailed analysis of the second meme's content>",
+                            "humor_style": "<type of humor (e.g., sarcasm, irony, absurdity)>",
+                            "cultural_context": "<any cultural or contextual references>"
+                        }
+                    },
+                    "comparison": {
+                        "comment": "<your comment here>",
+                        "funnier_meme": "<1 or 2>"
+                    }
+                }
+                ```
+            """,
+            "output_processor": lambda x: {'1': 0, '2': 1}.get(json.loads(re.search(r'```json\s*(.*?)\s*```', x, re.DOTALL).group(1) if re.search(r'```json\s*(.*?)\s*```', x, re.DOTALL) else x)["comparison"]["funnier_meme"], -1),
+        }
     },
 }
 

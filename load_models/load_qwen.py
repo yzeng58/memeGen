@@ -4,7 +4,7 @@ sys.path.append(root_dir)
 
 from transformers import AutoModelForCausalLM, AutoTokenizer, Qwen2VLForConditionalGeneration, AutoProcessor
 from configs import system_prompts
-from helper import read_json, set_seed
+from helper import read_json, set_seed, retry_if_fail
 from qwen_vl_utils import process_vision_info
 import pdb
 
@@ -90,6 +90,7 @@ def process_sample_feature(
             user_prompt += f"Meme{idx_str}: {read_json(image_path)['description']['output']}\n"
         return user_prompt
     
+@retry_if_fail()
 def call_qwen(
     qwen, 
     prompt,

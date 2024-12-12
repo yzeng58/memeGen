@@ -30,7 +30,7 @@ def read_jsonl(file_path):
     return pd.DataFrame(data)
 
 
-def retry_if_fail(max_retries=3, sleep_time=10):
+def retry_if_fail(max_retries=3, sleep_time=3):
     def decorator(func):
         @functools.wraps(func)
         def wrapper_retry(*args, **kwargs):

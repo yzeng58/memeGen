@@ -6,7 +6,7 @@ from environment import GEMINI_API_KEY
 import google.generativeai as genai
 import PIL.Image, pdb
 from helper import read_json
-
+from helper import retry_if_fail
 def load_gemini(model_path, api_key):
     model_name = model_path.split('/')[0]
     if not model_path.endswith('/pretrained'):

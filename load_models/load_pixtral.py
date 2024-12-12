@@ -4,7 +4,7 @@ sys.path.append(root_dir)
 
 from PIL import Image
 from transformers import AutoProcessor, LlavaForConditionalGeneration
-from helper import read_json, set_seed
+from helper import read_json, set_seed, retry_if_fail
 from configs import system_prompts
 import pdb
 
@@ -59,6 +59,7 @@ def process_image_path(image_path, context, description):
     else:
         return Image.open(image_path)
 
+@retry_if_fail()
 def call_pixtral(
     pixtral,
     prompt,
