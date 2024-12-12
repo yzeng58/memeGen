@@ -623,12 +623,27 @@ support_eval_datasets = {
 }
 
 support_gen_datasets = {
-    'ours_gen_v1': None,
+    'ours_gen_v1': {
+        "train_test_split": False,
+        "mode": "content",
+        "category": True,
+    },
+    "iSarcasm": {
+        "train_test_split": True,
+        "mode": "content",
+        "category": False,
+    },
+    "british_complaints": {
+        "train_test_split": True,
+        "mode": "topic",
+        "category": False,
+    },
 }
 
 dataset_dir_dict = {
     "memotion": f"{dataset_dir}/memotion_dataset_7k",
     "relca": f"{dataset_dir}/RelCa",
+    "isarcasm": f"{dataset_dir}/iSarcasm",
 }
 
 get_dataset_dir = lambda dataset_name: dataset_dir_dict.get(dataset_name, f"{dataset_dir}/{dataset_name}")

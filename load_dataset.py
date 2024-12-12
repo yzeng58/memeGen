@@ -69,6 +69,12 @@ def load_dataset(
     elif dataset_name == "ours_gen_v1":
         from load_datasets.load_ours_gen_v1 import load_ours_gen_v1
         return load_ours_gen_v1()
+    elif dataset_name == "isarcasm":
+        from load_datasets.load_isarcasm import load_isarcasm
+        return load_isarcasm(train_test_split=train_test_split)
+    elif dataset_name == "british_complaints":
+        from load_datasets.load_british_complaints import load_british_complaints
+        return load_british_complaints(train_test_split=train_test_split)
     else:
         raise ValueError(f"Dataset {dataset_name} not found")
     

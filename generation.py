@@ -175,11 +175,11 @@ def summarize_topic(
 
 def generate_meme_topic(
     call_gen_llm,
+    topic: str = "Working hours are too long",
     description_only: bool = False,
     call_dm = None,
     gen_llm_name: str = "gpt-4o-mini",
     dm_name: str = "stable-diffusion-3-medium-diffusers",
-    topic: str = "Working hours are too long",
     prompt_name: str = "standard",
     height: int = 288,
     width: int = 288,
@@ -189,7 +189,7 @@ def generate_meme_topic(
     seed: int = 1234,
     n_words_in_filename: int = 5,
     max_new_tokens: int = 200,
-    n_memes_per_topic: int = 1,
+    n_memes_per_content: int = 1,
     gen_mode: str = "standard",
     n_selected_from: int = 2,
     eval_prompt_name: str = "theory",
@@ -227,6 +227,12 @@ def generate_meme_topic(
         """
     )
 
+    if wandb.run is not None:
+        wandb_step_log.update({
+            "topic": topic,
+            "file_name": file_name,
+        })
+
     set_seed(seed)
     topic_no_punct = ''.join(c for c in topic if c.isalnum() or c.isspace())
     topic_words = topic_no_punct.split()
@@ -240,7 +246,7 @@ def generate_meme_topic(
 
     results = []
 
-    for i in range(n_memes_per_topic):
+    for i in range(n_memes_per_content):
         seed_iter = random.randint(1, 10000)
         print(f"| Generating meme {i+1}")
 
@@ -379,11 +385,11 @@ def generate_meme_topic(
 
 def generate_meme_content(
     call_gen_llm,
+    content: str = "Working hours are too long",
     description_only: bool = False,
     call_dm = None,
     gen_llm_name: str = "gpt-4o-mini",
     dm_name: str = "stable-diffusion-3-medium-diffusers",
-    content: str = "Working hours are too long",
     prompt_name: str = "standard",
     height: int = 288,
     width: int = 288,
@@ -416,8 +422,6 @@ def generate_meme_content(
     if wandb.run is not None:
         wandb_step_log.update({
             "content": content,
-            "summarized_topic": topic,
-            "file_name": file_name,
         })
 
     print(f"Summarized topic: {topic}")
@@ -438,7 +442,7 @@ def generate_meme_content(
         seed = seed,
         n_words_in_filename = n_words_in_filename,
         max_new_tokens = max_new_tokens,
-        n_memes_per_topic = n_memes_per_content,
+        n_memes_per_content = n_memes_per_content,
         gen_mode = gen_mode,
         n_selected_from = n_selected_from,
         eval_prompt_name = eval_prompt_name,
@@ -459,7 +463,7 @@ def generate(
     dataset_name: str = "ours_gen_v1",
     prompt_name: str = "standard",
     api_key: str = "yz",
-    n_per_topic: int = 1,
+    n_per_topic: int = -1,
     gen_mode: str = "standard",
     n_selected_from: int = 2,
     eval_prompt_name: str = "theory",
@@ -479,35 +483,62 @@ def generate(
     n_memes_per_content: int = 1,
     overwrite: bool = False,
     system_prompt_name: str = 'strict_scorer',
+    data_mode: Literal["both", "train", "test"] = "both",
 ):
     if dataset_name not in support_gen_datasets:
         raise ValueError(f"Dataset {dataset_name} not supported!")
+    if data_mode in ["train", "test"]:
+        if not support_gen_datasets[dataset_name]["train_test_split"]:
+            raise ValueError(f"Dataset {dataset_name} does not support train/test split!")
+    if n_per_topic > 0 and not support_gen_datasets[dataset_name]["category"]:
+        raise ValueError(f"Dataset {dataset_name} is not a category dataset, so n_per_topic must be -1!")
+    
+
     dataset = load_dataset(dataset_name)
+    if data_mode in ["train", "test"]: dataset = dataset[data_mode]
 
     call_gen_llm = load_model(f"{gen_llm_name}/pretrained", api_key)
-    call_dm = load_model(f"{dm_name}/pretrained", api_key)
+    call_dm = load_model(f"{dm_name}", api_key)
     if gen_mode == "selective":
         call_eval_llm = load_model(f"{eval_llm_name}/pretrained", api_key)
     else:
         call_eval_llm = None
     result_dir = f"{root_dir}/results/generation/{dataset_name}/{gen_llm_name}/{dm_name}/{prompt_name}/{gen_mode}"
 
-    for topic in dataset:
-        for i in range(min(n_per_topic, len(dataset[topic]))):
-            content = dataset[topic][i]
-            file_name = f"{topic}_{i+1}"
+
+    contents, file_names = [], []
+    if support_gen_datasets[dataset_name]["category"]:
+        for topic in dataset:
+            if n_per_topic == -1:
+                iterations = range(len(dataset[topic]))
+            else:
+                iterations = range(min(n_per_topic, len(dataset[topic])))
+
+            for i in iterations:
+                content = dataset[topic][i]
+                contents.append(content)
+                file_names.append(f"{topic}_{i+1}")
+    else:
+        for i in dataset.index:
+            content = dataset.loc[i]
+            contents.append(content)
+            file_names.append(f"{i+1}")
+
+    generate_func = generate_meme_content if support_gen_datasets[dataset_name]["mode"] == "content" else generate_meme_topic
+
+    for content, file_name in zip(contents, file_names):
 
             if os.path.exists(f"{result_dir}/output/{file_name}.json") and os.path.exists(f"{result_dir}/meme/{file_name}.png") and not overwrite:
                 print(f"Meme {file_name} already exists, skipping...")
                 continue
 
-            generate_meme_content(
-                call_gen_llm = call_gen_llm,
+            generate_func(
+                call_gen_llm,
+                content,
                 description_only = False,
                 call_dm = call_dm,
                 gen_llm_name = gen_llm_name,
                 dm_name = dm_name,
-                content = content,
                 prompt_name = prompt_name,
                 height = height,
                 width = width,
@@ -548,7 +579,7 @@ if __name__ == "__main__":
     parser.add_argument('--dataset_name', type=str, default='ours_gen_v1', choices=support_gen_datasets.keys())
     parser.add_argument('--prompt_name', type=str, default='standard', choices=prompt_processor_default['generation'].keys())
     parser.add_argument('--api_key', type=str, default='yz')
-    parser.add_argument('--n_per_topic', type=int, default=1, help = "Number of social contents to consider per topic")
+    parser.add_argument('--n_per_topic', type=int, default=-1, help = "Number of social contents to consider per topic")
     parser.add_argument('--gen_mode', type=str, default='standard', choices=['standard', 'selective'])
     parser.add_argument('--n_selected_from', type=int, default=2, help = "For each content, generate n_selected_from meme generations and select the best one")
     parser.add_argument('--eval_prompt_name', type=str, default='theory', choices=['theory', 'standard'])
@@ -569,6 +600,7 @@ if __name__ == "__main__":
     parser.add_argument('--wandb', action='store_true')
     parser.add_argument('--overwrite', action='store_true')
     parser.add_argument('--system_prompt_name', type=str, default='strict_scorer', choices=list(system_prompts_default.keys()))
+    parser.add_argument('--data_mode', type=str, default='both', choices=['both', 'train', 'test'])
     args = parser.parse_args()
 
     print(__file__)
@@ -608,4 +640,5 @@ if __name__ == "__main__":
         n_memes_per_content = args.n_memes_per_content,
         overwrite = args.overwrite,
         system_prompt_name = args.system_prompt_name,
+        data_mode = args.data_mode,
     )
