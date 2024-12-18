@@ -615,15 +615,6 @@ python evaluation.py --n_pairs 2000 --description Llama-3.2-90B-Vision-Instruct 
 python evaluation.py --n_pairs 2000 --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name ours_v4 --model_name gpt-4o
 ```
 
-##### Llama-3.2-90B-Instruct
-```bash
-# TODO
-python evaluation.py --n_pairs 2000 --context Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --wandb --dataset_name relca --model_name Llama-3.2-90B-Instruct
-
-# TODO
-python evaluation.py --n_pairs 2000 --context Llama-3.2-90B-Vision-Instruct --data_mode test --eval_mode pairwise --prompt_name cot --wandb --dataset_name relca --model_name Llama-3.2-90B-Instruct
-```
-
 ##### Pixtral-12B
 ```bash
 # TODO
