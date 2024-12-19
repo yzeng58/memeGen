@@ -224,6 +224,7 @@ def call_qwen(
         output_dict = {}
         output_dict['output'] = response
 
+
         if save_history:
             messages.append({"role": "assistant", "content": output_dict['output']})
             output_dict['history'] = messages

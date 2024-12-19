@@ -48,7 +48,7 @@ def get_output(
     demonstrations = [],
     system_prompt_name = "default",
 ):
-    if prompt_name == "cot_old":
+    if prompt_name == "cot" and isinstance(prompt, list):
         output_1 = call_model(
             prompt[0], 
             image_paths, 

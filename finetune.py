@@ -68,6 +68,7 @@ def get_data_sample_pairwise(
     system_prompt_name,
     prompt_name,
     label,
+    theory_version = "v4",
 ):
     if description:
         data_sample = {
@@ -154,7 +155,6 @@ def preprocess(
             raise ValueError('Demonstrations are only supported in standard prompt!')
         
     if eval_mode == "threeway": raise ValueError('Threeway evaluation mode is not supported yet for data preprocessing!')
-    if prompt_name == "theory": raise ValueError('Theory prompt is not supported yet for data preprocessing!')
     
     set_seed(seed)
     dataset = load_dataset(
@@ -354,6 +354,9 @@ def preprocess(
                     prompt_name=prompt_name,
                     label=1,
                 ))
+
+            elif prompt_name == "theory":
+                pass
 
     file_name = f"{dataset_save_name}.json"
     file_path = f'{result_dir}/{file_name}'

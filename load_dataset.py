@@ -5,6 +5,7 @@ def load_dataset(
     eval_mode: str = 'pairwise',
     train_test_split: bool = False,
     difficulty: str = 'easy',
+    data_version: str = 'v1',
 ):
     if dataset_name == 'memotion':
         from load_datasets.load_memotion import load_memotion
@@ -59,6 +60,7 @@ def load_dataset(
             description=description, 
             train_test_split=train_test_split, 
             difficulty=difficulty,
+            version=data_version,
         )
     elif dataset_name == "meta_hateful":
         from load_datasets.load_meta_hateful import load_meta_hateful

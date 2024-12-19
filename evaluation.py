@@ -105,6 +105,7 @@ def evaluate(
     system_prompt_name = "",
     data_mode = 'both',
     peft_variant = "",
+    data_version = 'v1',
 ):    
     if isinstance(model_name, str):
         model_path = f"{model_name}/{peft_variant}" if peft_variant else model_name
@@ -157,6 +158,7 @@ def evaluate(
         eval_mode=eval_mode, 
         train_test_split=True if train_ml_model or data_mode in ['train', 'test'] else False,
         difficulty=difficulty,
+        data_version=data_version,
     )
     if data_mode != 'both':
         dataset = dataset[data_mode]
@@ -681,6 +683,7 @@ if __name__ == '__main__':
     parser.add_argument('--system_prompt_name', type=str, default='evaluator', choices=list(system_prompts_default.keys()))
     parser.add_argument('--data_mode', type=str, default='both', choices=['train', 'test', 'both'])
     parser.add_argument('--peft_variant', type=str, default='pretrained', help='peft variant (e.g., qlora_relca_pairwise_multimodal_standard_0_shot) to use for evaluation')
+    parser.add_argument('--data_version', type=str, default='v1', choices=['v1', 'v2'])
     args = parser.parse_args()
 
     print(__file__)
@@ -733,6 +736,7 @@ if __name__ == '__main__':
         system_prompt_name = args.system_prompt_name,
         data_mode = args.data_mode,
         peft_variant = args.peft_variant,
+        data_version = args.data_version,
     )
 
     if args.wandb:

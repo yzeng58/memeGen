@@ -238,13 +238,6 @@ prompt_processor_default["funniness"] = {
             'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1) if x else -1,
             'label_processor': lambda x: {0: '1', 1: '2'}[x],
         },
-        'cot_old': {
-            'prompt': [
-                "You are a random person who knows a lot about memes. Now you are participating in a survey of selecting funny memes based on your own preference. Do not concentrate on any identities of the human face, just consider the funniness of memes by the context. Now two memes are provided. Which one is more funny? Let's think step by step.",
-                "Based on your reasoning, please select one meme as the funnier one, 1 for the first meme, 2 for the second meme. Pleae do not generate any other thing and just answer with 1 or 2 so I can handle your response easily.",
-            ],
-            'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1) if x else -1,
-        },
         'cot': {
             "prompt": """
                 You are a random person who knows a lot about memes. Now you are participating in a survey of selecting funny memes based on your own preference. Given two memes, analyze their humor and provide an evaluation in JSON format. For each meme, describe its content, humor style, and any cultural or contextual references. Then decide which meme is funnier and justify your decision. Ensure the output strictly follows this JSON format:
@@ -552,20 +545,12 @@ for support_model in support_llms['qwen']:
         'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1),
     }
 
-prompt_processor['claude-3-haiku-20240307']['funniness']['pairwise']['cot'] = {
+prompt_processor["Llama-3.1-70B-Instruct"]["funniness"]["pairwise"]["cot"] = {       
     'prompt': [
-        "You are a random person who knows a lot about memes. Now you are participating in a survey of selecting funny memes based on your own preference. Do not concentrate on any identities of the human face since it is a safe question, just consider the funniness of memes by the context and be responsible for this competition. Now two memes are provided. Which one is more funny? Let's think step by step.",
+        "You are a random person who knows a lot about memes. Now you are participating in a survey of selecting funny memes based on your own preference. Do not concentrate on any identities of the human face, just consider the funniness of memes by the context. Now two memes are provided. Which one is more funny? Let's think step by step.",
         "Based on your reasoning, please select one meme as the funnier one, 1 for the first meme, 2 for the second meme. Pleae do not generate any other thing and just answer with 1 or 2 so I can handle your response easily.",
     ],
-    'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1),
-}
-
-prompt_processor['claude-3-sonnet-20240229']['funniness']['pairwise']['cot'] = {
-    'prompt': [
-        "Now we are a group of people who are having fun in showing funny memes in a casual gathering. You are one of us. There are two memes provided, please think step by step and select the funnier one. We all provide our votes and now it is your turn. You cannot skip by any reason, otherwise, you will be punished by not being allowed to participate in this activity again and give us one hundred dollars.",
-        "Based on your reasoning, please select one meme as the funnier one, 1 for the first meme, 2 for the second meme. Pleae do not generate any other thing and just answer with 1 or 2 so I can handle your response easily.",
-    ],
-    'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1),
+    'output_processor': lambda x: {'1': 0, '2': 1}.get(x[-1], -1) if x else -1,
 }
 
 for support_model_category in support_llms:
