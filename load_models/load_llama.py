@@ -74,7 +74,7 @@ def process_sample_feature(
             text_prompt += f"Meme{idx_str}: {read_json(image_path)['description']['output']}\n"
         return text_prompt
 
-@retry_if_fail()
+
 def call_llama(
     llama, 
     prompt, 

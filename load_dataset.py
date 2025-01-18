@@ -5,7 +5,7 @@ def load_dataset(
     eval_mode: str = 'pairwise',
     train_test_split: bool = False,
     difficulty: str = 'easy',
-    data_version: str = 'v1',
+    score_analysis: bool = False,
 ):
     if dataset_name == 'memotion':
         from load_datasets.load_memotion import load_memotion
@@ -60,7 +60,15 @@ def load_dataset(
             description=description, 
             train_test_split=train_test_split, 
             difficulty=difficulty,
-            version=data_version,
+            score_analysis=score_analysis,
+        )
+    elif dataset_name == "relca_v2":
+        from load_datasets.load_relca_v2 import load_relca_v2
+        return load_relca_v2(
+            description=description, 
+            train_test_split=train_test_split, 
+            difficulty=difficulty,
+            score_analysis=score_analysis,
         )
     elif dataset_name == "meta_hateful":
         from load_datasets.load_meta_hateful import load_meta_hateful

@@ -14,41 +14,36 @@ def load_relca(
     description: str = '', 
     train_test_split: bool = False,
     difficulty: str = 'easy',
-    version: str = 'v1',
+    score_analysis: bool = False,
 ):
-    if version == 'v2':
-        if not difficulty in ["easy"]: 
-            raise ValueError(f'Difficulty {difficulty} not supported for version {version}, please choose from [easy]')
-        data_df = pd.read_csv(f"{get_dataset_dir('relca')}/new_labels.csv")
-        data_df["image_path"] = data_df["original_image"].apply(lambda x: f"{get_dataset_dir('relca')}/images/{x}")
-        df = data_df[['image_path', 'label']]
+    
+    if score_analysis: raise ValueError('Score analysis is not supported for version v1')
+    data_df = pd.read_csv(f"{get_dataset_dir('relca')}/seen_dataset_postprocessed.csv")
+
+    if difficulty == 'easy':
+        score_threshold = .5
+        upvote_threshold = (100, 10)
+    elif difficulty == 'medium':
+        score_threshold = .3
+        upvote_threshold = (70, 30)
+    elif difficulty == 'hard':
+        score_threshold = .1
+        upvote_threshold = (70, 30)
     else:
-        data_df = pd.read_csv(f"{get_dataset_dir('relca')}/seen_dataset_postprocessed.csv")
+        raise ValueError(f'Difficulty {difficulty} not supported, please choose from [easy, medium, hard]')
+        
+    df = []
+    for i, row in data_df.iterrows():
+        if row["bws_score"] > score_threshold and int(row['upvote'].replace(',', '')) > upvote_threshold[0]:
+            image_path = f'{get_dataset_dir("relca")}/images/{i}_{row["filename"]}'
+            file_dict = {'image_path': image_path, 'label': 1}
+            df.append(file_dict)
+        elif row["bws_score"] < -score_threshold and int(row['upvote'].replace(',', '')) < upvote_threshold[1]:
+            image_path = f'{get_dataset_dir("relca")}/images/{i}_{row["filename"]}'
+            file_dict = {'image_path': image_path, 'label': 0}
+            df.append(file_dict)
 
-        if difficulty == 'easy':
-            score_threshold = .5
-            upvote_threshold = (100, 10)
-        elif difficulty == 'medium':
-            score_threshold = .3
-            upvote_threshold = (70, 30)
-        elif difficulty == 'hard':
-            score_threshold = .1
-            upvote_threshold = (70, 30)
-        else:
-            raise ValueError(f'Difficulty {difficulty} not supported, please choose from [easy, medium, hard]')
-            
-        df = []
-        for i, row in data_df.iterrows():
-            if row["bws_score"] > score_threshold and int(row['upvote'].replace(',', '')) > upvote_threshold[0]:
-                image_path = f'{get_dataset_dir("relca")}/images/{i}_{row["filename"]}'
-                file_dict = {'image_path': image_path, 'label': 1}
-                df.append(file_dict)
-            elif row["bws_score"] < -score_threshold and int(row['upvote'].replace(',', '')) < upvote_threshold[1]:
-                image_path = f'{get_dataset_dir("relca")}/images/{i}_{row["filename"]}'
-                file_dict = {'image_path': image_path, 'label': 0}
-                df.append(file_dict)
-
-        df = pd.DataFrame(df)
+    df = pd.DataFrame(df)
 
     if description:
         df['description_path'] = df['image_path'].apply(lambda x: get_description_path(x, description))

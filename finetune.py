@@ -11,6 +11,7 @@ from tqdm import tqdm
 from itertools import product
 import random, warnings, yaml, subprocess
 from utils.eval_utils import get_folder_name, get_file_path
+from rate_meme.score_meme_v6 import prompt_score_v6, score_v6_json_format
 
 def get_data_sample_single(
     file_path,
@@ -21,12 +22,32 @@ def get_data_sample_single(
     eval_mode,
     system_prompt_name,
     prompt_name,
+    row, 
+    theory_version = "v6",
 ):
+    if prompt_name == "theory" and theory_version != "v6":
+        raise ValueError("Theory version v6 is required for theory prompt!")
+    
+    if prompt_name == "theory":
+        prompt = prompt_score_v6()
+        response = score_v6_json_format({
+            "Q1_reasoning": row["Q1_reasoning"],
+            "Q1_option": row["Q1_option"],
+            "Q2_reasoning": row["Q2_reasoning"],
+            "Q2_option": row["Q2_option"],
+            "Q3_reasoning": row["Q3_reasoning"],
+            "Q3_option": row["Q3_option"],
+            "Q4_reasoning": row["Q4_reasoning"],
+            "Q4_option": row["Q4_option"],
+        })
+    else:
+        response = prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)
+        
     if description:
         data_sample = {
             "conversations": [
                 {"from": "human", "value": f"Meme: {read_json(file_path)['description']['output']}\n{prompt}"},
-                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)},
+                {"from": "gpt", "value": response},
             ],
             "system": system_prompts[model_name][system_prompt_name],
         }
@@ -36,7 +57,7 @@ def get_data_sample_single(
         data_sample = {
             "conversations": [
                 {"from": "human", "value": f"Meme: {information['description']['output']}\n<image>{prompt}"},
-                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)},
+                {"from": "gpt", "value": response},
             ],
             "images": [
                 information['image_path'],
@@ -47,7 +68,7 @@ def get_data_sample_single(
         data_sample = {
             "conversations": [
                 {"from": "human", "value": f"<image>{prompt}"},
-                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)},
+                {"from": "gpt", "value": response},
             ],
             "images": [
                 file_path,
@@ -68,7 +89,6 @@ def get_data_sample_pairwise(
     system_prompt_name,
     prompt_name,
     label,
-    theory_version = "v4",
 ):
     if description:
         data_sample = {
@@ -124,6 +144,7 @@ def preprocess(
     data_mode = "train", # "train" or "test" or "both"
     dataset_save_name = "",
     mix = False,
+    theory_version = "v6",
 ):            
     if "difficulty" in support_eval_datasets[dataset_name]:
         if difficulty not in support_eval_datasets[dataset_name]["difficulty"]:
@@ -164,6 +185,7 @@ def preprocess(
         eval_mode=eval_mode, 
         train_test_split=True,
         difficulty=difficulty,
+        score_analysis=prompt_name == "theory",
     )
     if data_mode == "train":
         dataset = dataset['train']
@@ -262,6 +284,8 @@ def preprocess(
                 eval_mode=eval_mode,
                 system_prompt_name=system_prompt_name,
                 prompt_name=prompt_name,
+                row = dataset.loc[i],
+                theory_version = theory_version,
             ))
 
     elif eval_mode == 'pairwise':
@@ -355,8 +379,6 @@ def preprocess(
                     label=1,
                 ))
 
-            elif prompt_name == "theory":
-                pass
 
     file_name = f"{dataset_save_name}.json"
     file_path = f'{result_dir}/{file_name}'
@@ -395,6 +417,7 @@ def finetune(
     n_per_class,
     n_pairs,
     overwrite,
+    theory_version,
 ):
     modality_mode = get_folder_name(description, context)
 
@@ -433,7 +456,8 @@ def finetune(
             system_prompt_name=system_prompt_name,
             data_mode=data_mode,
             dataset_save_name=dataset_save_name,
-            mix = mix
+            mix = mix,
+            theory_version=theory_version,
         )
 
     finetune_config = {

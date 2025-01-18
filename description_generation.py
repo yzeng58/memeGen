@@ -22,7 +22,7 @@ def generate_dataset_details(
     )
     
     # Load the model
-    call_model = load_model(model_name, api_key=api_key)
+    call_model = load_model(f"{model_name}/pretrained", api_key=api_key)
     
     # Create result directory
     result_dir = f'{get_dataset_dir(dataset_name)}/description/{model_name}'

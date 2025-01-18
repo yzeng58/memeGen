@@ -44,6 +44,8 @@ def retry_if_fail(max_retries=3, sleep_time=3):
                     break
                 except KeyboardInterrupt:
                     raise KeyboardInterrupt
+                except FileNotFoundError:
+                    raise FileNotFoundError
                 except pdb.bdb.BdbQuit:
                     raise pdb.bdb.BdbQuit
                 except Exception as e:
