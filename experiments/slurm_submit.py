@@ -1,40 +1,85 @@
 import pdb
 import pandas as pd
 import os
+from copy import deepcopy
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 configs = pd.read_csv(f"{root_dir}/experiments/configs.csv")
 
-def create_python_command(row):
+def create_python_eval_command(row):
     python_command = "python evaluation.py"
     for col in row.keys():
-        if pd.isna(row[col]):
+        if col in ["gpu_request", "experiment"]:
+            continue
+        elif pd.isna(row[col]):
             python_command += f" --{col} ''"
         elif col in ["wandb", "overwrite", "not_load_model"]:
             if row[col]: python_command += f" --{col}"
-        elif col == "gpu_request":
-            continue
         else:
             python_command += f" --{col} {row[col]}"
     return python_command
 
+def create_python_finetune_command(row):
+    python_command = "python finetune.py"
+    for col in row.keys():
+        if col in ["gpu_request", "experiment", "wandb", "n_pairs", "theory_version", "train_ml_model"]:
+            continue
+        elif pd.isna(row[col]):
+            python_command += f" --{col} ''"
+        elif col in ["overwrite", "not_load_model"]:
+            if row[col]: python_command += f" --{col}"
+        elif col in ["data_mode"]:
+            python_command += f" --{col} train"
+        elif isinstance(row[col], str) and "&" in row[col]:
+            python_command += f" --{col} {' '.join(row[col].split('&'))}"
+        else:
+            python_command += f" --{col} {row[col]}"
+    return python_command
+
+def process_single_eval(row):
+    new_row = deepcopy(row)
+    new_row["prompt_name"] = "single"
+    new_row["eval_mode"] = "pairwise"
+    new_row["not_load_model"] = True
+    new_row["wandb"] = True
+    new_row["n_pairs"] = 2000
+    new_row["overwrite"] = False
+    return new_row
+
+run_script = ""
 for index, row in configs.iterrows():
     n_gpus = row["gpu_request"]
-    job_name = f"job_{index}"
+    job_name = f"{row['experiment']}_job_{index}"
     output_file = f"{root_dir}/submit/log_slurm/{job_name}.out"
     error_file = f"{root_dir}/submit/log_slurm/{job_name}.err"
 
-    python_command = create_python_command(row)
+    python_command = create_python_eval_command(row)
+    new_row = row.to_dict()
 
-    if row["eval_mode"] == "single":
-        new_row = row.to_dict()
-        new_row["prompt_name"] = "single"
-        new_row["eval_mode"] = "pairwise"
-        new_row["not_load_model"] = True
-        new_row["wandb"] = True
-        new_row["n_pairs"] = 2000
-        new_row["overwrite"] = False
-        python_command += f"\n{create_python_command(new_row)}"
+    if row["experiment"] == "ft":
+        python_command = create_python_finetune_command(row)
+
+        modality_mode = f"description_{row['description']}" if row["description"] else "multimodal"
+        data_name = row["dataset_name"] if isinstance(row["dataset_name"], str) else "_mix_".join(row["dataset_name"])
+        ft_model = f"qlora_{data_name}_{row['model_name']}_{modality_mode}_{row['eval_mode']}_{row['prompt_name']}_{row['n_demos']}_shot_train"
+        new_row["peft_variant"] = ft_model
+        
+        for dataset in ["ours_v4", "relca_v2"]:
+            new_row["dataset_name"] = dataset
+            new_row["n_pairs"] = 2000
+            eval_command = create_python_eval_command(new_row)
+            python_command += f"\n{eval_command}"
+
+            if row["eval_mode"] == "single":
+                wandb_row = process_single_eval(new_row)
+                eval_command = create_python_eval_command(wandb_row)
+                python_command += f"\n{eval_command}"
+
+    elif row["eval_mode"] == "single":
+        wandb_row = process_single_eval(row)
+        python_command += f"\n{create_python_eval_command(wandb_row)}"
+
+    
 
     # create a slurm script
     slurm_script = f"""#!/bin/bash
@@ -62,9 +107,7 @@ cd ../..
     with open(f"{root_dir}/submit/auto/{job_name}.sh", "w") as f:
         f.write(slurm_script)
 
-run_script = ""
-for index in range(len(configs)):
-    run_script += f"sbatch job_{index}.sh\n"
+    run_script += f"sbatch {job_name}.sh\n"
 
 with open(f"{root_dir}/submit/auto/run_all.sh", "w") as f:
     f.write(run_script)

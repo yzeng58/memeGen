@@ -1,4 +1,9 @@
-model_name,dataset_name,data_mode,eval_mode,n_pairs,n_demos,wandb,overwrite,gpu_request,description,prompt_name,theory_version,train_ml_model
-Qwen2.5-72B-Instruct,relca_v2,both,pairwise,2000,0,True,True,4,gemini-1.5-pro,theory,v4,xgboost
-Llama-3.1-70B-Instruct,relca_v2,both,pairwise,2000,0,True,True,4,gemini-1.5-pro,theory,v4,xgboost
-Mixtral-8x22B-Instruct-v0.1,relca_v2,both,pairwise,2000,0,True,True,8,gemini-1.5-pro,theory,v4,xgboost
+model_name,dataset_name,data_mode,eval_mode,n_pairs,n_demos,wandb,overwrite,gpu_request,description,prompt_name,theory_version,train_ml_model,experiment
+Qwen2-VL-72B-Instruct,relca_v2,test,single,-1,2,False,True,4,,standard,v4,,ft
+Qwen2-VL-72B-Instruct,relca_v2,test,pairwise,2000,0,True,True,4,,standard,v4,,ft
+Qwen2-VL-72B-Instruct,ours_v4&relca_v2,test,single,-1,2,False,True,4,,standard,v4,,ft
+Qwen2-VL-72B-Instruct,ours_v4&relca_v2,test,pairwise,2000,0,True,True,4,,standard,v4,,ft
+pixtral-12b,relca_v2,test,single,-1,2,False,True,2,,standard,v4,,ft
+pixtral-12b,relca_v2,test,pairwise,2000,0,True,True,2,,standard,v4,,ft
+pixtral-12b,ours_v4&relca_v2,test,single,-1,2,False,True,2,,standard,v4,,ft
+pixtral-12b,ours_v4&relca_v2,test,pairwise,2000,0,True,True,2,,standard,v4,,ft

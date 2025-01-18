@@ -13,6 +13,82 @@ import random, warnings, yaml, subprocess
 from utils.eval_utils import get_folder_name, get_file_path
 from rate_meme.score_meme_v6 import prompt_score_v6, score_v6_json_format
 
+def convert_data_sample_single(
+    file_path,
+    label,
+    description,
+    context,
+    prompt,
+    label_processor,
+):
+    if description:
+        return {
+            "conversations": [
+                {"from": "human", "value": f"Meme: {read_json(file_path)['description']['output']}\n{prompt}"},
+                {"from": "gpt", "value": label_processor(label)},
+            ],
+        }
+    elif context:
+        return {
+            "conversations": [
+                {"from": "human", "value": f"Meme: {read_json(file_path)['description']['output']}\n<image>{prompt}"},
+                {"from": "gpt", "value": label_processor(label)},
+            ],
+            "images": [
+                read_json(file_path)['image_path'],
+            ],
+        }
+    else: 
+        return {
+            "conversations": [
+                {"from": "human", "value": f"<image>{prompt}"},
+                {"from": "gpt", "value": label_processor(label)},
+            ],
+            "images": [
+                file_path,
+            ],
+        }
+    
+def convert_data_sample_pairwise(
+    file_paths,
+    label,
+    description,
+    context,
+    prompt,
+    label_processor,
+):
+    if description:
+        return {
+            "conversations": [
+                {"from": "human", "value": f"Meme 1: {read_json(file_paths[0])['description']['output']}\nMeme 2: {read_json(file_paths[1])['description']['output']}\n{prompt}"},
+                {"from": "gpt", "value": label_processor(label)},
+            ],
+        }
+    elif context:
+        return {
+            "conversations": [
+                {"from": "human", "value": f"Meme 1: {read_json(file_paths[0])['description']['output']}\n<image>Meme 2: {read_json(file_paths[1])['description']['output']}\n<image>{prompt}"},
+                {"from": "gpt", "value": label_processor(label)},
+            ],
+            "images": [
+                read_json(file_paths[0])['image_path'],
+                read_json(file_paths[1])['image_path'],
+            ],
+        }
+    else:
+        return {
+            "conversations": [
+                {"from": "human", "value": f"<image><image>{prompt}"},
+                {"from": "gpt", "value": label_processor(label)},
+            ],
+            "images": [
+                file_paths[0],
+                file_paths[1],
+            ],
+        }
+    
+    
+
 def get_data_sample_single(
     file_path,
     label,
@@ -23,6 +99,7 @@ def get_data_sample_single(
     system_prompt_name,
     prompt_name,
     row, 
+    demonstrations,
     theory_version = "v6",
 ):
     if prompt_name == "theory" and theory_version != "v6":
@@ -30,7 +107,7 @@ def get_data_sample_single(
     
     if prompt_name == "theory":
         prompt = prompt_score_v6()
-        response = score_v6_json_format({
+        label_processor = lambda label: score_v6_json_format({
             "Q1_reasoning": row["Q1_reasoning"],
             "Q1_option": row["Q1_option"],
             "Q2_reasoning": row["Q2_reasoning"],
@@ -41,40 +118,25 @@ def get_data_sample_single(
             "Q4_option": row["Q4_option"],
         })
     else:
-        response = prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)
-        
-    if description:
-        data_sample = {
-            "conversations": [
-                {"from": "human", "value": f"Meme: {read_json(file_path)['description']['output']}\n{prompt}"},
-                {"from": "gpt", "value": response},
-            ],
-            "system": system_prompts[model_name][system_prompt_name],
-        }
+        label_processor = prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor']
 
-    elif context:
-        information = read_json(file_path)
-        data_sample = {
-            "conversations": [
-                {"from": "human", "value": f"Meme: {information['description']['output']}\n<image>{prompt}"},
-                {"from": "gpt", "value": response},
-            ],
-            "images": [
-                information['image_path'],
-            ],
-            "system": system_prompts[model_name][system_prompt_name],
-        }
-    else:
-        data_sample = {
-            "conversations": [
-                {"from": "human", "value": f"<image>{prompt}"},
-                {"from": "gpt", "value": response},
-            ],
-            "images": [
-                file_path,
-            ],
-            "system": system_prompts[model_name][system_prompt_name],
-        }
+        
+    data_sample = {"system": system_prompts[model_name][system_prompt_name]}
+    for data in demonstrations + [{"image_paths": [file_path], "label": label}]:
+        sample = convert_data_sample_single(
+            file_path=data["image_paths"][0],
+            label=data["label"],
+            description=description,
+            context=context,
+            prompt=prompt,
+            label_processor=label_processor,
+        )
+        for key in sample:
+            if key not in data_sample:
+                data_sample[key] = sample[key]
+            else:
+                data_sample[key].extend(sample[key])
+
     return data_sample
 
 def get_data_sample_pairwise(
@@ -89,41 +151,25 @@ def get_data_sample_pairwise(
     system_prompt_name,
     prompt_name,
     label,
+    demonstrations,
 ):
-    if description:
-        data_sample = {
-            "conversations": [
-                {"from": "human", "value": f"Meme 1: {read_json(path1)['description']['output']}\nMeme 2: {read_json(path2)['description']['output']}\n{prompt}"},
-                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)},
-            ],
-            "system": system_prompts[model_name][system_prompt_name],
-        }
-    elif context:
-        information_1 = read_json(path1)
-        information_2 = read_json(path2)
-        data_sample = {
-            "conversations": [
-                {"from": "human", "value": f"Meme 1: {information_1['description']['output']}\n<image>Meme 2: {information_2['description']['output']}\n<image>{prompt}"},
-                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)},
-            ],
-            "images": [
-                information_1['image_path'],
-                information_2['image_path'],
-            ],
-            "system": system_prompts[model_name][system_prompt_name],
-        }
-    else:
-        data_sample = {
-            "conversations": [
-                {"from": "human", "value": f"<image><image>{prompt}"},
-                {"from": "gpt", "value": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](label)},
-            ],
-            "images": [
-                path1,
-                path2,
-            ],
-            "system": system_prompts[model_name][system_prompt_name],
-        }
+    label_processor = prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor']
+    data_sample = {"system": system_prompts[model_name][system_prompt_name]}
+    for data in demonstrations + [{"image_paths": [path1, path2], "label": label}]:
+        sample = convert_data_sample_pairwise(
+            file_paths=data["image_paths"],
+            label=data["label"],
+            description=description,
+            context=context,
+            prompt=prompt,
+            label_processor=label_processor,
+        )
+        for key in sample:
+            if key not in data_sample:
+                data_sample[key] = sample[key]
+            else:
+                data_sample[key].extend(sample[key])
+
     return data_sample
 
 def preprocess(
@@ -169,7 +215,6 @@ def preprocess(
         raise ValueError(f'Dataset {dataset_name} is not supported for evaluation!')
     
     if n_demos > 0:
-        raise ValueError('Demonstrations are not supported yet for data preprocessing!')
         if eval_mode == 'threeway':
             raise ValueError('Demonstrations are not supported in threeway evaluation mode!')
         if prompt_name != 'standard':
@@ -258,7 +303,7 @@ def preprocess(
             for idx in demonstration_idxs:
                 demonstrations.append({
                     "image_paths": [get_file_path(dataset, context, description, idx)],
-                    "label": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](dataset.loc[idx, 'label']),
+                    "label": dataset.loc[idx, 'label'],
                 })
         else:
             demonstrations = []
@@ -275,7 +320,7 @@ def preprocess(
             )
             label = dataset.loc[i, 'label']
 
-            llm_dataset.append(get_data_sample_single(
+            data_sample = get_data_sample_single(
                 file_path=file_path,
                 label=label,
                 prompt=prompt,
@@ -285,8 +330,12 @@ def preprocess(
                 system_prompt_name=system_prompt_name,
                 prompt_name=prompt_name,
                 row = dataset.loc[i],
+                demonstrations=demonstrations,
                 theory_version = theory_version,
-            ))
+            )
+
+
+            llm_dataset.append(data_sample)
 
     elif eval_mode == 'pairwise':
         funny_data = dataset[dataset['label'] == 1].reset_index(drop=True)
@@ -326,7 +375,7 @@ def preprocess(
 
                 demonstrations.append({
                     "image_paths": images_paths,
-                    "label": prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor'](demonstration_label),
+                    "label": demonstration_label,
                 })
 
         else:
@@ -364,6 +413,7 @@ def preprocess(
                     system_prompt_name=system_prompt_name,
                     prompt_name=prompt_name,
                     label=0,
+                    demonstrations=demonstrations,
                 ))
                 llm_dataset.append(get_data_sample_pairwise(
                     path1=not_funny_path,
@@ -377,6 +427,7 @@ def preprocess(
                     system_prompt_name=system_prompt_name,
                     prompt_name=prompt_name,
                     label=1,
+                    demonstrations=demonstrations,
                 ))
 
 
@@ -567,6 +618,7 @@ if __name__ == '__main__':
     parser.add_argument('--n_per_class', type=int, default=-1, help='-1 for all, otherwise random sample n_per_class for each class')
     parser.add_argument('--n_pairs', type=int, default=5000, help='-1 for all, otherwise random sample n_pairs pairs')
     parser.add_argument('--overwrite', action='store_true')
+    parser.add_argument('--theory_version', type=str, default='v4')
     args = parser.parse_args()
 
     print(__file__)
@@ -598,6 +650,7 @@ if __name__ == '__main__':
         n_per_class=args.n_per_class,
         n_pairs=args.n_pairs,
         overwrite=args.overwrite,
+        theory_version=args.theory_version,
     )
 
 

@@ -4,7 +4,7 @@ root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 configs = []
 experiments = ["baseline", "text-only", "cot", "icl", "score", "ft"]
-datasets = ["relca_v2"]
+datasets = ["relca_v2", "ours_v4"]
 n_demos = {
     "single": [2, 4, 6, 8],
     "pairwise": [0, 2, 4]
@@ -98,114 +98,152 @@ default_config = {
 }
 
 
-# Baseline
-for model in mllms:
-    for dataset in datasets:
-        for eval_mode in ["single", "pairwise"]:
-            config = default_config.copy()
-            config.update({
-                "model_name": model,
-                "dataset_name": dataset,
-                "data_mode": "test",
-                "eval_mode": eval_mode,
-                "n_pairs": n_pairs[eval_mode],
-                "n_demos": n_demos[eval_mode][0],
-                "wandb": wandb[eval_mode],
-                "gpu_request": gpu_requests[model],
-            })
-            configs.append(config)
+for experiment in experiments:
+    if experiment == "baseline":
+        # Baseline
+        for model in mllms:
+            for dataset in datasets:
+                for eval_mode in ["single", "pairwise"]:
+                    config = default_config.copy()
+                    config.update({
+                        "model_name": model,
+                        "dataset_name": dataset,
+                        "data_mode": "test",
+                        "eval_mode": eval_mode,
+                        "n_pairs": n_pairs[eval_mode],
+                        "n_demos": n_demos[eval_mode][0],
+                        "wandb": wandb[eval_mode],
+                        "gpu_request": gpu_requests[model],
+                        "experiment": experiment,
+                    })
+                    configs.append(config)
+    elif experiment == "text-only":
+        model_list = good_mllms + llms
+        # Text-only
+        model_list = good_mllms + llms
+        for model in model_list:
+            for dataset in datasets:
+                for eval_mode in ["single", "pairwise"]:
+                    config = default_config.copy()
+                    config.update({
+                        "model_name": model,
+                        "dataset_name": dataset,
+                        "data_mode": "test",
+                        "eval_mode": eval_mode,
+                        "n_pairs": n_pairs[eval_mode],
+                        "n_demos": n_demos[eval_mode][0],
+                        "wandb": wandb[eval_mode],
+                        "description": description[dataset],
+                        "gpu_request": gpu_requests[model],
+                        "experiment": experiment,
+                    })
+                    configs.append(config)
 
-# Text-only
-model_list = good_mllms + llms
-for model in model_list:
-    for dataset in datasets:
-        for eval_mode in ["single", "pairwise"]:
-            config = default_config.copy()
-            config.update({
-                "model_name": model,
-                "dataset_name": dataset,
-                "data_mode": "test",
-                "eval_mode": eval_mode,
-                "n_pairs": n_pairs[eval_mode],
-                "n_demos": n_demos[eval_mode][0],
-                "wandb": wandb[eval_mode],
-                "description": description[dataset],
-                "gpu_request": gpu_requests[model],
-            })
-            configs.append(config)
+    elif experiment == "cot":
+        # CoT
+        model_list = good_mllms + good_llms
+        for model in model_list:
+            for dataset in datasets:
+                if model in good_llms:
+                    additional_config = {"description": description[dataset]}
+                else:
+                    additional_config = {}
+                for eval_mode in ["pairwise"]:
+                    config = default_config.copy()
+                    config.update({
+                        "model_name": model,
+                        "dataset_name": dataset,
+                        "data_mode": "test",
+                        "eval_mode": eval_mode,
+                        "n_pairs": n_pairs[eval_mode],
+                        "n_demos": n_demos[eval_mode][0],
+                        "wandb": wandb[eval_mode],
+                        "prompt_name": "cot",
+                        "gpu_request": gpu_requests[model],
+                        "experiment": experiment,
+                    })
+                    config.update(additional_config)
+                    configs.append(config)
 
-# CoT
-model_list = good_mllms + good_llms
-for model in model_list:
-    for dataset in datasets:
-        if model in good_llms:
-            additional_config = {"description": description[dataset]}
-        else:
-            additional_config = {}
-        for eval_mode in ["pairwise"]:
-            config = default_config.copy()
-            config.update({
-                "model_name": model,
-                "dataset_name": dataset,
-                "data_mode": "test",
-                "eval_mode": eval_mode,
-                "n_pairs": n_pairs[eval_mode],
-                "n_demos": n_demos[eval_mode][0],
-                "wandb": wandb[eval_mode],
-                "prompt_name": "cot",
-                "gpu_request": gpu_requests[model],
-            })
-            config.update(additional_config)
-            configs.append(config)
+    elif experiment == "icl":
+        # ICL
+        model_list = good_llms + good_mllms
+        for model in model_list:
+            for dataset in datasets:
+                if model in good_llms:
+                    additional_config = {"description": description[dataset]}
+                else:
+                    additional_config = {}
+                for eval_mode in ["single", "pairwise"]:
+                    for n_demo in n_demos[eval_mode][1:]:
+                        config = default_config.copy()
+                        config.update({
+                            "model_name": model,
+                            "dataset_name": dataset,
+                            "data_mode": "test",
+                            "eval_mode": eval_mode,
+                            "n_pairs": n_pairs[eval_mode],
+                            "n_demos": n_demo,
+                            "wandb": wandb[eval_mode],
+                            "gpu_request": gpu_requests[model],
+                            "experiment": experiment,
+                        })
+                        config.update(additional_config)
+                        configs.append(config)
 
-# ICL
-model_list = good_llms + good_mllms
-for model in model_list:
-    for dataset in datasets:
-        if model in good_llms:
-            additional_config = {"description": description[dataset]}
-        else:
-            additional_config = {}
-        for eval_mode in ["single", "pairwise"]:
-            for n_demo in n_demos[eval_mode][1:]:
-                config = default_config.copy()
-                config.update({
-                    "model_name": model,
-                    "dataset_name": dataset,
-                    "data_mode": "test",
-                    "eval_mode": eval_mode,
-                    "n_pairs": n_pairs[eval_mode],
-                    "n_demos": n_demo,
-                    "wandb": wandb[eval_mode],
-                    "gpu_request": gpu_requests[model],
-                })
-                config.update(additional_config)
-                configs.append(config)
+    elif experiment == "theory":
+        # Theory
+        model_list = good_llms + good_mllms
+        for model in model_list:
+            for dataset in datasets:
+                if model in good_llms:
+                    additional_config = {"description": description[dataset]}
+                else:
+                    additional_config = {}
+                for eval_mode in ["pairwise"]:
+                    config = default_config.copy()
+                    config.update({
+                        "model_name": model,
+                        "dataset_name": dataset,
+                        "data_mode": "both",
+                        "eval_mode": eval_mode,
+                        "n_pairs": n_pairs[eval_mode],
+                        "wandb": wandb[eval_mode],
+                        "prompt_name": "theory",
+                        "theory_version": "v4",
+                        "train_ml_model": "xgboost",
+                        "gpu_request": gpu_requests[model],
+                        "description": description[dataset],
+                        "experiment": experiment,
+                    })
+                    configs.append(config)
 
-# Theory
-model_list = good_llms + good_mllms
-for model in model_list:
-    for dataset in datasets:
-        if model in good_llms:
-            additional_config = {"description": description[dataset]}
-        else:
-            additional_config = {}
-        for eval_mode in ["pairwise"]:
-            config = default_config.copy()
-            config.update({
-                "model_name": model,
-                "dataset_name": dataset,
-                "data_mode": "both",
-                "eval_mode": eval_mode,
-                "n_pairs": n_pairs[eval_mode],
-                "wandb": wandb[eval_mode],
-                "prompt_name": "theory",
-                "theory_version": "v4",
-                "train_ml_model": "xgboost",
-                "gpu_request": gpu_requests[model],
-                "description": description[dataset],
-            })
-            configs.append(config)
+    elif experiment == "ft":
+        # Fine-tuning
+        model_list = good_mllms # + good_llms
+        for model in model_list:
+            dataset_list = ["relca_v2", "ours_v4&relca_v2"]
+            for dataset in dataset_list:
+                if model in good_llms:
+                    additional_config = {"description": description[dataset]}
+                else:
+                    additional_config = {}
+                for eval_mode in ["single", "pairwise"]:
+                    config = default_config.copy()
+                    config.update({
+                        "model_name": model,
+                        "dataset_name": dataset,
+                        "data_mode": "test",
+                        "eval_mode": eval_mode,
+                        "n_pairs": n_pairs[eval_mode],
+                        "n_demos": n_demos[eval_mode][0],
+                        "wandb": wandb[eval_mode],
+                        "gpu_request": gpu_requests[model],
+                        "experiment": experiment,
+                    })
+                    configs.append(config)
+
+
 
 configs_df = pd.DataFrame(configs)
 configs_df['n_demos'] = configs_df['n_demos'].astype(float).astype(int)
