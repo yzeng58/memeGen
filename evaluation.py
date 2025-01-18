@@ -3,14 +3,14 @@ from load_model import load_model
 import os, wandb, argparse, pdb
 root_dir = os.path.dirname(__file__)
 from helper import save_json, read_json, print_configs, set_seed, get_image_size
-from configs import support_llms, support_eval_datasets, prompt_processor, image_size_threshold, eval_modes, support_ml_models, system_prompts_default
+from configs import support_llms, support_eval_datasets, prompt_processor, image_size_threshold, eval_modes, support_ml_models, system_prompts_default, get_modality_mode
 
 from environment import WANDB_INFO_EVAL
 import pandas as pd
 from tqdm import tqdm
 from itertools import product
 import random, warnings    
-from utils.eval_utils import get_output, get_folder_name, get_file_path
+from utils.eval_utils import get_output, get_file_path
 from rate_meme.train import train
 
 def get_single_output(
@@ -225,11 +225,11 @@ def evaluate(
     if ensemble:
         result_dirs = []
         for i, model in enumerate(model_path):
-            folder_name = get_folder_name(description[i], context[i])
+            folder_name = get_modality_mode(description[i], context[i])
             result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model}/{folder_name}/{eval_mode}_{prompt_name}/{n_demos}_shot' 
             result_dirs.append(result_dir)
     else:
-        folder_name = get_folder_name(description, context)
+        folder_name = get_modality_mode(description, context)
 
         result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_path}/{folder_name}/{eval_mode}_{prompt_name}/{n_demos}_shot'
         os.makedirs(result_dir, exist_ok=True)

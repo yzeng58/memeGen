@@ -1,8 +1,10 @@
 import pdb
 import pandas as pd
-import os
+import os, sys
 from copy import deepcopy
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(root_dir)
+from configs import get_peft_variant_name
 
 configs = pd.read_csv(f"{root_dir}/experiments/configs.csv")
 
@@ -59,10 +61,16 @@ for index, row in configs.iterrows():
     if row["experiment"] == "ft":
         python_command = create_python_finetune_command(row)
 
-        modality_mode = f"description_{row['description']}" if row["description"] else "multimodal"
-        data_name = row["dataset_name"] if isinstance(row["dataset_name"], str) else "_mix_".join(row["dataset_name"])
-        ft_model = f"qlora_{data_name}_{row['model_name']}_{modality_mode}_{row['eval_mode']}_{row['prompt_name']}_{row['n_demos']}_shot_train"
-        new_row["peft_variant"] = ft_model
+        new_row["peft_variant"] = get_peft_variant_name(
+            description="" if pd.isna(row["description"]) else row["description"],
+            context="",
+            dataset_name=row["dataset_name"].split("&"),
+            model_name=row["model_name"],
+            eval_mode=row["eval_mode"],
+            prompt_name=row["prompt_name"],
+            n_demos=row["n_demos"],
+            data_mode="train",
+        )
         
         for dataset in ["ours_v4", "relca_v2"]:
             new_row["dataset_name"] = dataset
@@ -74,6 +82,7 @@ for index, row in configs.iterrows():
                 wandb_row = process_single_eval(new_row)
                 eval_command = create_python_eval_command(wandb_row)
                 python_command += f"\n{eval_command}"
+
 
     elif row["eval_mode"] == "single":
         wandb_row = process_single_eval(row)

@@ -685,3 +685,33 @@ meme_anchors = {
 image_size_threshold = 500000
 
 gen_modes = ["standard", "selective"]
+
+def get_modality_mode(
+    description,
+    context,
+):
+    if description:
+        return f'description_{description}'
+    elif context:
+        return f'context_{context}'
+    else:
+        return 'multimodal'
+
+def get_peft_variant_name(
+    description,
+    context,
+    dataset_name,
+    model_name,
+    eval_mode,
+    prompt_name,
+    n_demos,
+    data_mode,
+):
+    modality_mode = get_modality_mode(description, context)
+    if isinstance(dataset_name, list):
+        dataset_name = "_mix_".join(dataset_name)
+    else:
+        dataset_name = dataset_name
+    
+    ft_model = f"qlora_{dataset_name}_{model_name}_{modality_mode}_{eval_mode}_{prompt_name}_{n_demos}_shot_{data_mode}"
+    return ft_model

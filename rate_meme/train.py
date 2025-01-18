@@ -2,11 +2,11 @@ import pandas as pd
 import os, pdb, wandb
 root_dir = os.path.dirname(os.path.dirname(__file__))
 from helper import save_json, set_seed, get_image_size
-from configs import support_eval_datasets, image_size_threshold
+from configs import support_eval_datasets, image_size_threshold, get_modality_mode
 from tqdm import tqdm
 from itertools import product
 import random
-from utils.eval_utils import get_output, get_folder_name, get_file_path
+from utils.eval_utils import get_output, get_file_path
 from configs import support_ml_models
 import pandas as pd
 
@@ -54,7 +54,7 @@ def train(
 
     prompt = None
 
-    folder_name = get_folder_name(description, context)
+    folder_name = get_modality_mode(description, context)
 
     result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_name}/{folder_name}/{eval_mode}_{prompt_name}/{n_demos}_shot'
     os.makedirs(result_dir, exist_ok=True)

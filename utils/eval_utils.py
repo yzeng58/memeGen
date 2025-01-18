@@ -4,17 +4,6 @@ sys.path.append(root_dir)
 
 from rate_meme.rate_meme import score_meme_based_on_theory
 import pdb
-
-def get_folder_name(
-    description,
-    context,
-):
-    if description:
-        return f'description_{description}'
-    elif context:
-        return f'context_{context}'
-    else:
-        return 'multimodal'
     
 def get_file_path(
     dataset,

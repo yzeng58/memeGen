@@ -3,14 +3,14 @@ import os, argparse, pdb
 root_dir = os.path.dirname(__file__)
 
 from helper import save_json, read_json, print_configs, set_seed, get_image_size
-from configs import support_llms, support_eval_datasets, prompt_processor, image_size_threshold, eval_modes, system_prompts, support_llm_properties, system_prompts_default
+from configs import support_llms, support_eval_datasets, prompt_processor, image_size_threshold, eval_modes, system_prompts, support_llm_properties, system_prompts_default, get_peft_variant_name
 
 from environment import CONDA_PATH
 import pandas as pd
 from tqdm import tqdm
 from itertools import product
 import random, warnings, yaml, subprocess
-from utils.eval_utils import get_folder_name, get_file_path
+from utils.eval_utils import get_file_path
 from rate_meme.score_meme_v6 import prompt_score_v6, score_v6_json_format
 
 def convert_data_sample_single(
@@ -470,18 +470,20 @@ def finetune(
     overwrite,
     theory_version,
 ):
-    modality_mode = get_folder_name(description, context)
 
     datasets = dataset_name
-    if len(dataset_name) > 1: 
-        dataset_name = '_mix_'.join(datasets)
-        print(dataset_name)
-    else:
-        dataset_name = dataset_name[0]
-        
-    dataset_save_name = f"{dataset_name}_{model_name}_{modality_mode}_{eval_mode}_{prompt_name}_{n_demos}_shot_{data_mode}"
-
-    model_dir = f"{root_dir}/models/{model_name}/qlora_{dataset_save_name}"
+    peft_variant_name = get_peft_variant_name(
+        description=description,
+        context=context,
+        dataset_name=dataset_name,
+        model_name=model_name,
+        eval_mode=eval_mode,
+        prompt_name=prompt_name,
+        n_demos=n_demos,
+        data_mode=data_mode,
+    )
+    dataset_save_name = peft_variant_name[6:]
+    model_dir = f"{root_dir}/models/{model_name}/{peft_variant_name}"
 
     if os.path.exists(model_dir) and not overwrite:
         raise ValueError(f"Model directory {model_dir} already exists, set overwrite to True to overwrite. Exiting.")
@@ -528,7 +530,7 @@ def finetune(
         "overwrite_cache": True,
         "preprocessing_num_workers": 16,
         
-        "output_dir": f"saves/{model_name}/qlora_{dataset_save_name}",
+        "output_dir": f"saves/{model_name}/{peft_variant_name}",
         "logging_steps": 10,
         "save_steps": 500,
         "plot_loss": True,
@@ -548,7 +550,6 @@ def finetune(
         "eval_strategy": "steps",
         "eval_steps": 500
     }
-    
     finetune_config_path = f"{root_dir}/llama_factory/configs/{dataset_save_name}_finetune.yaml"
     print(f"| Getting Fine-Tuning Configs -- Saving yaml config to {finetune_config_path}")
     with open(finetune_config_path, 'w') as f:

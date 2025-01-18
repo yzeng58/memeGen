@@ -3,7 +3,7 @@ import os
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 configs = []
-experiments = ["baseline", "text-only", "cot", "icl", "score", "ft"]
+experiments = ["theory", "ft"]
 datasets = ["relca_v2", "ours_v4"]
 n_demos = {
     "single": [2, 4, 6, 8],
@@ -15,10 +15,7 @@ n_pairs = {
     "pairwise": 2000,
 }
 
-description = {
-    "ours_v4": "Llama-3.2-90B-Vision-Instruct",
-    "relca_v2": "gemini-1.5-pro",
-}
+description = "gemini-1.5-pro"
 
 wandb = {
     "single": False,
@@ -89,7 +86,7 @@ default_config = {
     "n_pairs": -1,
     "n_demos": 0,
     "wandb": False,
-    "overwrite": True,
+    "overwrite": False,
     "gpu_request": gpu_requests["gemini-1.5-pro"],
     "description": "",
     "prompt_name": "standard",
@@ -133,7 +130,7 @@ for experiment in experiments:
                         "n_pairs": n_pairs[eval_mode],
                         "n_demos": n_demos[eval_mode][0],
                         "wandb": wandb[eval_mode],
-                        "description": description[dataset],
+                        "description": description,
                         "gpu_request": gpu_requests[model],
                         "experiment": experiment,
                     })
@@ -145,7 +142,7 @@ for experiment in experiments:
         for model in model_list:
             for dataset in datasets:
                 if model in good_llms:
-                    additional_config = {"description": description[dataset]}
+                    additional_config = {"description": description}
                 else:
                     additional_config = {}
                 for eval_mode in ["pairwise"]:
@@ -171,7 +168,7 @@ for experiment in experiments:
         for model in model_list:
             for dataset in datasets:
                 if model in good_llms:
-                    additional_config = {"description": description[dataset]}
+                    additional_config = {"description": description}
                 else:
                     additional_config = {}
                 for eval_mode in ["single", "pairwise"]:
@@ -197,7 +194,7 @@ for experiment in experiments:
         for model in model_list:
             for dataset in datasets:
                 if model in good_llms:
-                    additional_config = {"description": description[dataset]}
+                    additional_config = {"description": description}
                 else:
                     additional_config = {}
                 for eval_mode in ["pairwise"]:
@@ -213,19 +210,20 @@ for experiment in experiments:
                         "theory_version": "v4",
                         "train_ml_model": "xgboost",
                         "gpu_request": gpu_requests[model],
-                        "description": description[dataset],
+                        "description": description,
                         "experiment": experiment,
                     })
+                    config.update(additional_config)
                     configs.append(config)
 
     elif experiment == "ft":
         # Fine-tuning
-        model_list = good_mllms # + good_llms
+        model_list = good_mllms + good_llms
         for model in model_list:
             dataset_list = ["relca_v2", "ours_v4&relca_v2"]
             for dataset in dataset_list:
                 if model in good_llms:
-                    additional_config = {"description": description[dataset]}
+                    additional_config = {"description": description}
                 else:
                     additional_config = {}
                 for eval_mode in ["single", "pairwise"]:
@@ -241,6 +239,7 @@ for experiment in experiments:
                         "gpu_request": gpu_requests[model],
                         "experiment": experiment,
                     })
+                    config.update(additional_config)
                     configs.append(config)
 
 

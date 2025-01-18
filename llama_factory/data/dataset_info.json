@@ -247,5 +247,48 @@
             "chosen": "chosen",
             "images": "images"
         }
+    },
+    "__description_['relca_v2']_pairwise_standard_0_shot_train": {
+        "file_name": "__description_['relca_v2']_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "ours_v4_mix_relca_v2_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train": {
+        "file_name": "ours_v4_mix_relca_v2_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Mixtral-8x22B-Instruct-v0.1_description_gemini-1.5-pro_single_standard_2_shot_train": {
+        "file_name": "relca_v2_Mixtral-8x22B-Instruct-v0.1_description_gemini-1.5-pro_single_standard_2_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_standard_2_shot_train": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_standard_2_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
     }
 }
