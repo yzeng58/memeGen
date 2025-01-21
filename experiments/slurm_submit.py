@@ -23,8 +23,12 @@ def create_python_eval_command(row):
 
 def create_python_finetune_command(row):
     python_command = "python finetune.py"
+    if row["experiment"] == "ft":
+        skip_cols = ["gpu_request", "experiment", "wandb", "n_pairs", "theory_version", "train_ml_model"]
+    else:
+        skip_cols = ["gpu_request", "experiment", "wandb", "n_pairs", "train_ml_model"]
     for col in row.keys():
-        if col in ["gpu_request", "experiment", "wandb", "n_pairs", "theory_version", "train_ml_model"]:
+        if col in skip_cols:
             continue
         elif pd.isna(row[col]):
             python_command += f" --{col} ''"
@@ -71,7 +75,7 @@ for index, row in configs.iterrows():
             n_demos=row["n_demos"],
             data_mode="train",
         )
-        
+
         for dataset in ["ours_v4", "relca_v2"]:
             new_row["dataset_name"] = dataset
             new_row["n_pairs"] = 2000
@@ -83,6 +87,26 @@ for index, row in configs.iterrows():
                 eval_command = create_python_eval_command(wandb_row)
                 python_command += f"\n{eval_command}"
 
+    elif row["experiment"] == "ft_theory":
+        python_command = create_python_finetune_command(row)
+
+        new_row["peft_variant"] = get_peft_variant_name(
+            description="" if pd.isna(row["description"]) else row["description"],
+            context="",
+            dataset_name=row["dataset_name"].split("&"),
+            model_name=row["model_name"],
+            eval_mode=row["eval_mode"],
+            prompt_name=row["prompt_name"],
+            n_demos=row["n_demos"],
+            data_mode="train",
+        )
+
+        new_row["eval_mode"] = "pairwise"
+        for dataset in ["ours_v4", "relca_v2"]:
+            new_row["dataset_name"] = dataset
+            new_row["n_pairs"] = 2000
+            eval_command = create_python_eval_command(new_row)
+            python_command += f"\n{eval_command}"
 
     elif row["eval_mode"] == "single":
         wandb_row = process_single_eval(row)

@@ -583,7 +583,7 @@ for support_model_category in support_llms:
 # Dataset Configurations # 
 ##########################
 eval_modes = {
-    "single": ["standard", "cot"], 
+    "single": ["standard", "cot", "theory"], 
     "pairwise": ["standard", "cot", "theory", "single"],
     "threeway": ["standard", "cot"],
 }
@@ -620,6 +620,12 @@ support_eval_datasets = {
         "difficulty": ["easy"],
     },
     'ours_v4': {
+        "metric": "funniness",
+        "eval_mode": ["single", "pairwise"],
+        "train_test_split": True,
+        "difficulty": ["easy"],
+    },
+    "llm_meme": {
         "metric": "funniness",
         "eval_mode": ["single", "pairwise"],
         "train_test_split": True,

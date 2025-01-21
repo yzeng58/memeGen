@@ -490,6 +490,7 @@ def evaluate(
                         pred_label_2 = int(pred_proba_funny[1] > pred_proba_not_funny[1])
 
                     else:
+                        pdb.set_trace()
                         pred_label_1 = int(compare_output_dict_1['output'] <= compare_output_dict_2['output'])
                         pred_label_2 = int(compare_output_dict_1['output'] > compare_output_dict_2['output'])
 
@@ -673,7 +674,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
     parser.add_argument('--theory_example', action='store_true')
     parser.add_argument('--not_load_model', action='store_true', help="Do not load the model. Use this option only when results have already been stored and you want to read the existing results.")
-    parser.add_argument('--theory_version', type=str, default='v4', choices=['v1', 'v2', 'v3', 'v4', 'v5'])
+    parser.add_argument('--theory_version', type=str, default='v4', choices=['v1', 'v2', 'v3', 'v4', 'v5', 'v6'])
     parser.add_argument('--ensemble', action='store_true')
     parser.add_argument('--n_demos', type=int, default=0)
     parser.add_argument('--train_ml_model', type=str, default="", choices=list(support_ml_models.keys()) + [""])

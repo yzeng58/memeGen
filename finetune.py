@@ -619,7 +619,7 @@ if __name__ == '__main__':
     parser.add_argument('--n_per_class', type=int, default=-1, help='-1 for all, otherwise random sample n_per_class for each class')
     parser.add_argument('--n_pairs', type=int, default=5000, help='-1 for all, otherwise random sample n_pairs pairs')
     parser.add_argument('--overwrite', action='store_true')
-    parser.add_argument('--theory_version', type=str, default='v4')
+    parser.add_argument('--theory_version', type=str, default='v6')
     args = parser.parse_args()
 
     print(__file__)

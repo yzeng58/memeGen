@@ -89,7 +89,7 @@ def score_meme_based_on_theory(
             meme_path = meme_path,
             call_model = call_model,
             result_dir = result_dir,
-            max_new_tokens = max_new_tokens,
+            max_new_tokens = max_intermediate_tokens,
             example = example,
             description = description,
             context = context,

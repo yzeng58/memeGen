@@ -3,7 +3,11 @@ import os
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 configs = []
-experiments = ["theory", "ft"]
+
+# all options: 
+# ["baseline", "text-only", "cot", "icl", "theory", "ft", "ft_theory"]
+experiments = ["cot"]
+
 datasets = ["relca_v2", "ours_v4"]
 n_demos = {
     "single": [2, 4, 6, 8],
@@ -15,7 +19,11 @@ n_pairs = {
     "pairwise": 2000,
 }
 
-description = "gemini-1.5-pro"
+description = {
+    "relca_v2": "gemini-1.5-pro",
+    "ours_v4": "gemini-1.5-pro",
+    "llm_meme": "default",
+}
 
 wandb = {
     "single": False,
@@ -78,6 +86,8 @@ good_llms = [
     'Mixtral-8x22B-Instruct-v0.1',
 ]
 
+oom_models = ['Mixtral-8x22B-Instruct-v0.1'] # out of memory
+
 default_config = {
     "model_name": "gemini-1.5-pro",
     "dataset_name": "relca_v2",
@@ -90,7 +100,7 @@ default_config = {
     "gpu_request": gpu_requests["gemini-1.5-pro"],
     "description": "",
     "prompt_name": "standard",
-    "theory_version": "v4",
+    "theory_version": "v6",
     "train_ml_model": "",
 }
 
@@ -130,7 +140,7 @@ for experiment in experiments:
                         "n_pairs": n_pairs[eval_mode],
                         "n_demos": n_demos[eval_mode][0],
                         "wandb": wandb[eval_mode],
-                        "description": description,
+                        "description": description.get(dataset, "gemini-1.5-pro"),
                         "gpu_request": gpu_requests[model],
                         "experiment": experiment,
                     })
@@ -138,11 +148,11 @@ for experiment in experiments:
 
     elif experiment == "cot":
         # CoT
-        model_list = good_mllms + good_llms
+        model_list = ["Qwen2.5-72B-Instruct", "Qwen2-VL-72B-Instruct", "Llama-3.1-70B-Instruct"]
         for model in model_list:
             for dataset in datasets:
                 if model in good_llms:
-                    additional_config = {"description": description}
+                    additional_config = {"description": description.get(dataset, "gemini-1.5-pro")}
                 else:
                     additional_config = {}
                 for eval_mode in ["pairwise"]:
@@ -168,7 +178,7 @@ for experiment in experiments:
         for model in model_list:
             for dataset in datasets:
                 if model in good_llms:
-                    additional_config = {"description": description}
+                    additional_config = {"description": description.get(dataset, "gemini-1.5-pro")}
                 else:
                     additional_config = {}
                 for eval_mode in ["single", "pairwise"]:
@@ -194,7 +204,7 @@ for experiment in experiments:
         for model in model_list:
             for dataset in datasets:
                 if model in good_llms:
-                    additional_config = {"description": description}
+                    additional_config = {"description": description.get(dataset, "gemini-1.5-pro")}
                 else:
                     additional_config = {}
                 for eval_mode in ["pairwise"]:
@@ -207,10 +217,10 @@ for experiment in experiments:
                         "n_pairs": n_pairs[eval_mode],
                         "wandb": wandb[eval_mode],
                         "prompt_name": "theory",
-                        "theory_version": "v4",
+                        "theory_version": "v6",
                         "train_ml_model": "xgboost",
                         "gpu_request": gpu_requests[model],
-                        "description": description,
+                        "description": description.get(dataset, "gemini-1.5-pro"),
                         "experiment": experiment,
                     })
                     config.update(additional_config)
@@ -220,10 +230,11 @@ for experiment in experiments:
         # Fine-tuning
         model_list = good_mllms + good_llms
         for model in model_list:
+            if model in oom_models: continue
             dataset_list = ["relca_v2", "ours_v4&relca_v2"]
             for dataset in dataset_list:
                 if model in good_llms:
-                    additional_config = {"description": description}
+                    additional_config = {"description": description.get(dataset, "gemini-1.5-pro")}
                 else:
                     additional_config = {}
                 for eval_mode in ["single", "pairwise"]:
@@ -242,6 +253,34 @@ for experiment in experiments:
                     config.update(additional_config)
                     configs.append(config)
 
+    elif experiment == "ft_theory":
+        # Fine-tuning with theory
+        model_list = good_mllms + good_llms
+        for model in model_list:
+            if model in oom_models: continue
+            dataset_list = ["relca_v2", "ours_v4&relca_v2"]
+            for dataset in dataset_list:
+                if model in good_llms:
+                    additional_config = {"description": description.get(dataset, "gemini-1.5-pro")}
+                else:
+                    additional_config = {}
+                for eval_mode in ["single"]:
+                    config = default_config.copy()
+                    config.update({
+                        "model_name": model,
+                        "dataset_name": dataset,
+                        "data_mode": "both",
+                        "eval_mode": eval_mode,
+                        "n_pairs": n_pairs[eval_mode],
+                        "wandb": wandb[eval_mode],
+                        "prompt_name": "theory",
+                        "theory_version": "v6",
+                        "train_ml_model": "xgboost",
+                        "gpu_request": gpu_requests[model],
+                        "experiment": experiment,
+                    })
+                    config.update(additional_config)
+                    configs.append(config)
 
 
 configs_df = pd.DataFrame(configs)
