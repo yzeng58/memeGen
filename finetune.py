@@ -1,5 +1,5 @@
 from load_dataset import load_dataset
-import os, argparse, pdb
+import os, argparse, pdb, wandb
 root_dir = os.path.dirname(__file__)
 
 from helper import save_json, read_json, print_configs, set_seed, get_image_size
@@ -230,7 +230,7 @@ def preprocess(
         eval_mode=eval_mode, 
         train_test_split=True,
         difficulty=difficulty,
-        score_analysis=prompt_name == "theory",
+        score_analysis= prompt_name == "theory",
     )
     if data_mode == "train":
         dataset = dataset['train']
@@ -469,6 +469,9 @@ def finetune(
     n_pairs,
     overwrite,
     theory_version,
+    num_train_epochs,
+    learning_rate,
+    lora_rank,
 ):
 
     datasets = dataset_name
@@ -481,6 +484,9 @@ def finetune(
         prompt_name=prompt_name,
         n_demos=n_demos,
         data_mode=data_mode,
+        num_train_epochs=num_train_epochs,
+        lora_rank=lora_rank,
+        lr=learning_rate,
     )
     dataset_save_name = peft_variant_name[6:]
     model_dir = f"{root_dir}/models/{model_name}/{peft_variant_name}"
@@ -513,89 +519,104 @@ def finetune(
             theory_version=theory_version,
         )
 
-    finetune_config = {
-        "model_name_or_path": support_llm_properties[model_name]['huggingface_repo_name'],
-        "quantization_bit": 4,
-        "quantization_method": "bitsandbytes",
-        
-        "stage": "sft",
-        "do_train": True,
-        "finetuning_type": "lora", 
-        "lora_target": "all",
-        
-        "dataset": dataset_save_name,
-        "template": support_llm_properties[model_name]['chat_template'],
-        "cutoff_len": 2048,
-        "max_samples": 1000,
-        "overwrite_cache": True,
-        "preprocessing_num_workers": 16,
-        
-        "output_dir": f"saves/{model_name}/{peft_variant_name}",
-        "logging_steps": 10,
-        "save_steps": 500,
-        "plot_loss": True,
-        "overwrite_output_dir": True,
-        
-        "per_device_train_batch_size": 1,
-        "gradient_accumulation_steps": 8,
-        "learning_rate": 1.0e-4,
-        "num_train_epochs": 3.0,
-        "lr_scheduler_type": "cosine",
-        "warmup_ratio": 0.1,
-        "bf16": True,
-        "ddp_timeout": 180000000,
-        
-        "val_size": 0.1,
-        "per_device_eval_batch_size": 1,
-        "eval_strategy": "steps",
-        "eval_steps": 500
-    }
-    finetune_config_path = f"{root_dir}/llama_factory/configs/{dataset_save_name}_finetune.yaml"
-    print(f"| Getting Fine-Tuning Configs -- Saving yaml config to {finetune_config_path}")
-    with open(finetune_config_path, 'w') as f:
-        yaml.dump(finetune_config, f)
+    if "gpt" in model_name.lower():
+        from openai import OpenAI
+        from environment import OPENAI_API_KEY
+        client = OpenAI(api_key=OPENAI_API_KEY["yz"])
+        client.fine_tuning.jobs.create(
+            training_file=f"{root_dir}/llama_factory/data/{dataset_save_name}.jsonl",
+            model = model_name,
+        )
+    else:
 
-    finetune_cmd = f"{CONDA_PATH} run -n meme llamafactory-cli train {finetune_config_path}"
-    print(f"| Starting Fine-Tuning -- Running command: {finetune_cmd}")
-    subprocess.run(
-        finetune_cmd,
-        shell=True,
-        cwd=f"{root_dir}/llama_factory",
-        check=True,
-        stdout=None,
-        stderr=None,
-        bufsize=1,
-        universal_newlines=True
-    )
+        finetune_config = {
+            "model_name_or_path": support_llm_properties[model_name]['huggingface_repo_name'],
+            "quantization_bit": 4,
+            "quantization_method": "bitsandbytes",
+            
+            "stage": "sft",
+            "do_train": True,
+            "finetuning_type": "lora", 
+            "lora_target": "all",
+            "lora_rank": lora_rank,
+            
+            "dataset": dataset_save_name,
+            "template": support_llm_properties[model_name]['chat_template'],
+            "cutoff_len": 2048,
+            "max_samples": 1000,
+            "overwrite_cache": True,
+            "preprocessing_num_workers": 16,
+            
+            "output_dir": f"saves/{model_name}/{peft_variant_name}",
+            "logging_steps": 10,
+            "save_steps": 500,
+            "plot_loss": True,
+            "overwrite_output_dir": True,
+            
+            "per_device_train_batch_size": 3,
+            "gradient_accumulation_steps": 8,
+            "learning_rate": learning_rate,
+            "num_train_epochs": num_train_epochs,
+            "lr_scheduler_type": "cosine",
+            "warmup_ratio": 0.1,
+            "bf16": True,
+            "ddp_timeout": 180000000,
+            
+            "val_size": 0.1,
+            "per_device_eval_batch_size": 3,
+            "eval_strategy": "steps",
+            "eval_steps": 500,
 
-    merge_config = {
-        "model_name_or_path": support_llm_properties[model_name]["huggingface_repo_name"],
-        "adapter_name_or_path": f"saves/{model_name}/qlora_{dataset_save_name}",
-        "template": support_llm_properties[model_name]["chat_template"],
-        "finetuning_type": "lora",
-        
-        "export_dir": f"../models/{model_name}/qlora_{dataset_save_name}",
-        "export_size": 2,
-        "export_device": "cpu",
-        "export_legacy_format": False
-    }
-    merge_config_path = f"{root_dir}/llama_factory/configs/{dataset_save_name}_merge.yaml"
-    print(f"| Getting Merge Configs -- Saving yaml config to {merge_config_path}")
-    with open(merge_config_path, 'w') as f:
-        yaml.dump(merge_config, f)  
+            "report_to": "wandb",
 
-    merge_cmd = f"{CONDA_PATH} run -n meme llamafactory-cli export {merge_config_path}"
-    print(f"| Starting Merge -- Running command: {merge_cmd}")
-    subprocess.run(
-        merge_cmd,
-        shell=True,
-        cwd=f"{root_dir}/llama_factory",
-        check=True,
-        stdout=None,
-        stderr=None,
-        bufsize=1,
-        universal_newlines=True
-    )
+        }
+
+        finetune_config_path = f"{root_dir}/llama_factory/configs/{dataset_save_name}_finetune.yaml"
+        print(f"| Getting Fine-Tuning Configs -- Saving yaml config to {finetune_config_path}")
+        with open(finetune_config_path, 'w') as f:
+            yaml.dump(finetune_config, f)
+
+        finetune_cmd = f"{CONDA_PATH} run -n meme llamafactory-cli train {finetune_config_path}"
+        print(f"| Starting Fine-Tuning -- Running command: {finetune_cmd}")
+        subprocess.run(
+            finetune_cmd,
+            shell=True,
+            cwd=f"{root_dir}/llama_factory",
+            check=True,
+            stdout=None,
+            stderr=None,
+            bufsize=1,
+            universal_newlines=True
+        )
+
+        merge_config = {
+            "model_name_or_path": support_llm_properties[model_name]["huggingface_repo_name"],
+            "adapter_name_or_path": f"saves/{model_name}/qlora_{dataset_save_name}",
+            "template": support_llm_properties[model_name]["chat_template"],
+            "finetuning_type": "lora",
+            
+            "export_dir": f"../models/{model_name}/qlora_{dataset_save_name}",
+            "export_size": 2,
+            "export_device": "cpu",
+            "export_legacy_format": False
+        }
+        merge_config_path = f"{root_dir}/llama_factory/configs/{dataset_save_name}_merge.yaml"
+        print(f"| Getting Merge Configs -- Saving yaml config to {merge_config_path}")
+        with open(merge_config_path, 'w') as f:
+            yaml.dump(merge_config, f)  
+
+        merge_cmd = f"{CONDA_PATH} run -n meme llamafactory-cli export {merge_config_path}"
+        print(f"| Starting Merge -- Running command: {merge_cmd}")
+        subprocess.run(
+            merge_cmd,
+            shell=True,
+            cwd=f"{root_dir}/llama_factory",
+            check=True,
+            stdout=None,
+            stderr=None,
+            bufsize=1,
+            universal_newlines=True
+        )
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -620,6 +641,9 @@ if __name__ == '__main__':
     parser.add_argument('--n_pairs', type=int, default=5000, help='-1 for all, otherwise random sample n_pairs pairs')
     parser.add_argument('--overwrite', action='store_true')
     parser.add_argument('--theory_version', type=str, default='v6')
+    parser.add_argument('--epochs', type=int, default=3)
+    parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--lora_rank', type=int, default=8)
     args = parser.parse_args()
 
     print(__file__)
@@ -652,6 +676,9 @@ if __name__ == '__main__':
         n_pairs=args.n_pairs,
         overwrite=args.overwrite,
         theory_version=args.theory_version,
+        num_train_epochs=args.epochs,
+        learning_rate=args.lr,
+        lora_rank=args.lora_rank,
     )
 
 

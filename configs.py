@@ -20,6 +20,7 @@ support_llms = {
         'gpt-4o',
         'gpt-4o-mini',
         'gpt-4-turbo-2024-04-09',
+        'gpt-4o-2024-08-06',
     ],
     'claude': [
         'claude-3-haiku-20240307',
@@ -712,6 +713,9 @@ def get_peft_variant_name(
     prompt_name,
     n_demos,
     data_mode,
+    num_train_epochs,
+    lora_rank,
+    lr,
 ):
     modality_mode = get_modality_mode(description, context)
     if isinstance(dataset_name, list):
@@ -719,5 +723,5 @@ def get_peft_variant_name(
     else:
         dataset_name = dataset_name
     
-    ft_model = f"qlora_{dataset_name}_{model_name}_{modality_mode}_{eval_mode}_{prompt_name}_{n_demos}_shot_{data_mode}"
+    ft_model = f"qlora_{dataset_name}_{model_name}_{modality_mode}_{eval_mode}_{prompt_name}_{n_demos}_shot_{data_mode}_{num_train_epochs}_epochs_{lora_rank}_rank_{lr}_lr"
     return ft_model

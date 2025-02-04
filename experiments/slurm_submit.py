@@ -11,7 +11,7 @@ configs = pd.read_csv(f"{root_dir}/experiments/configs.csv")
 def create_python_eval_command(row):
     python_command = "python evaluation.py"
     for col in row.keys():
-        if col in ["gpu_request", "experiment"]:
+        if col in ["gpu_request", "experiment", "epochs", "lora_rank", "lr"]:
             continue
         elif pd.isna(row[col]):
             python_command += f" --{col} ''"
@@ -74,6 +74,9 @@ for index, row in configs.iterrows():
             prompt_name=row["prompt_name"],
             n_demos=row["n_demos"],
             data_mode="train",
+            num_train_epochs=row["epochs"],
+            lora_rank=row["lora_rank"],
+            lr=row["lr"],
         )
 
         for dataset in ["ours_v4", "relca_v2"]:
@@ -99,12 +102,16 @@ for index, row in configs.iterrows():
             prompt_name=row["prompt_name"],
             n_demos=row["n_demos"],
             data_mode="train",
+            num_train_epochs=row["epochs"],
+            lora_rank=row["lora_rank"],
+            lr=row["lr"],
         )
 
         new_row["eval_mode"] = "pairwise"
+        new_row["n_pairs"] = 2000
+        new_row["wandb"] = True
         for dataset in ["ours_v4", "relca_v2"]:
             new_row["dataset_name"] = dataset
-            new_row["n_pairs"] = 2000
             eval_command = create_python_eval_command(new_row)
             python_command += f"\n{eval_command}"
 
@@ -140,7 +147,7 @@ cd ../..
     with open(f"{root_dir}/submit/auto/{job_name}.sh", "w") as f:
         f.write(slurm_script)
 
-    run_script += f"sbatch {job_name}.sh\n"
+    run_script += f"sbatch {job_name}.sh\nsleep 120\n"
 
 with open(f"{root_dir}/submit/auto/run_all.sh", "w") as f:
     f.write(run_script)

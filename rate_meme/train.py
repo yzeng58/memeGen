@@ -19,7 +19,7 @@ def get_ml_model(
         raise ValueError(f'Model {model_name} is not supported!')
 
 def train(
-    model_name, 
+    model_path, 
     dataset_name, 
     call_model,
     dataset,
@@ -39,7 +39,7 @@ def train(
     n_pairs = -1,
 ):    
     print("----------------------------------")
-    print(f'Training ML model for {dataset_name} with {model_name}...')
+    print(f'Training ML model for {dataset_name} with {model_path}...')
     
     if prompt_name != "theory" or eval_mode != "pairwise":
         raise ValueError('Only theory prompt and pairwise evaluation mode are supported!')
@@ -56,7 +56,7 @@ def train(
 
     folder_name = get_modality_mode(description, context)
 
-    result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_name}/{folder_name}/{eval_mode}_{prompt_name}/{n_demos}_shot'
+    result_dir = f'{root_dir}/results/evaluation/{dataset_name}/{model_path}/{folder_name}/{eval_mode}_{prompt_name}/{n_demos}_shot'
     os.makedirs(result_dir, exist_ok=True)
 
     sampled_datasets = []

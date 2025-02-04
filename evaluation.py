@@ -178,7 +178,7 @@ def evaluate(
             raise ValueError('Train ML model only supports theory prompt and pairwise evaluation mode!')
         
         ml_model = train(
-            model_name = model_name,
+            model_path = model_path,
             dataset_name = dataset_name,
             call_model = call_model,
             dataset = dataset['train'],
@@ -490,7 +490,6 @@ def evaluate(
                         pred_label_2 = int(pred_proba_funny[1] > pred_proba_not_funny[1])
 
                     else:
-                        pdb.set_trace()
                         pred_label_1 = int(compare_output_dict_1['output'] <= compare_output_dict_2['output'])
                         pred_label_2 = int(compare_output_dict_1['output'] > compare_output_dict_2['output'])
 

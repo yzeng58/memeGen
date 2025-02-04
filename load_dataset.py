@@ -72,7 +72,12 @@ def load_dataset(
         )
     elif dataset_name == "llm_meme":
         from load_datasets.load_llm_meme import load_llm_meme
-        return load_llm_meme(description=description, train_test_split=train_test_split, difficulty=difficulty)
+        return load_llm_meme(
+            description=description, 
+            train_test_split=train_test_split, 
+            difficulty = difficulty,
+            score_analysis=score_analysis,
+        )
     elif dataset_name == "meta_hateful":
         from load_datasets.load_meta_hateful import load_meta_hateful
         return load_meta_hateful(description=description)

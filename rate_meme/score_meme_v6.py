@@ -75,7 +75,10 @@ def score_meme_based_on_theory_v6(
         example_flag = "example" if example else "plain"
         result_file = f'{result_dir}/scores/{example_flag}/{img_name}_v6.json'
         if os.path.exists(result_file) and not overwrite:
-            return read_json(result_file)
+            try:
+                return read_json(result_file)
+            except Exception as e:
+                print(f"Error reading result file {result_file}: {e}. Overwriting...")
 
     prompt = prompt_score_v6()
 

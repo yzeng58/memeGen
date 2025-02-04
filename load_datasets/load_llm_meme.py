@@ -16,21 +16,20 @@ def load_llm_meme(
     if not description in ["", "default"]:
         raise ValueError(f"For llm_meme dataset, please choose description from ['', 'default']")
     
-    data_df = pd.read_csv(f"{get_dataset_dir('llm_meme')}/dataset.csv")
+    if score_analysis:
+        data_df = pd.read_csv(f"{get_dataset_dir('llm_meme')}/dataset_final.csv")
+    else:
+        data_df = pd.read_csv(f"{get_dataset_dir('llm_meme')}/dataset.csv")
+
     data_df["image_path"] = data_df["image_path"].apply(lambda x: f"{get_dataset_dir('llm_meme')}/images/{x}")
     data_df["description_path"] = data_df["description_path"].apply(lambda x: f"{get_dataset_dir('llm_meme')}/images/{x}")
-    df = data_df[[
-        'image_path', 
-        'label', 
-        'description_path',
-    ]]
     
     if train_test_split:
-        train_df = df.sample(frac=0.5, random_state=42)
-        test_df = df.drop(train_df.index)
+        train_df = data_df.sample(frac=0.5, random_state=42)
+        test_df = data_df.drop(train_df.index)
         return {
             "train": train_df.reset_index(drop=True), 
             "test": test_df.reset_index(drop=True),
         }
     else:
-        return df
+        return data_df

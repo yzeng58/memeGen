@@ -43,7 +43,6 @@ def load_relca_v2(
 
     if description:
         df['description_path'] = df['image_path'].apply(lambda x: get_description_path(x, description))
-        df = df[['image_path', 'label', 'description_path']]
 
 
     if train_test_split:

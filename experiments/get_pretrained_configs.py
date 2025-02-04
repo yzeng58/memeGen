@@ -6,9 +6,9 @@ configs = []
 
 # all options: 
 # ["baseline", "text-only", "cot", "icl", "theory", "ft", "ft_theory"]
-experiments = ["cot"]
+experiments = ["ft_theory"]
 
-datasets = ["relca_v2", "ours_v4"]
+datasets = ["ours_v4", "relca_v2"]
 n_demos = {
     "single": [2, 4, 6, 8],
     "pairwise": [0, 2, 4]
@@ -102,6 +102,9 @@ default_config = {
     "prompt_name": "standard",
     "theory_version": "v6",
     "train_ml_model": "",
+    "epochs": 3,
+    "lora_rank": 8,
+    "lr": 0.0001,
 }
 
 
@@ -255,32 +258,38 @@ for experiment in experiments:
 
     elif experiment == "ft_theory":
         # Fine-tuning with theory
-        model_list = good_mllms + good_llms
+        # model_list = good_mllms + good_llms
+        model_list = ["Llama-3.1-70B-Instruct", "Qwen2-VL-72B-Instruct"]
         for model in model_list:
             if model in oom_models: continue
-            dataset_list = ["relca_v2", "ours_v4&relca_v2"]
+            dataset_list = ["relca_v2"]
             for dataset in dataset_list:
                 if model in good_llms:
                     additional_config = {"description": description.get(dataset, "gemini-1.5-pro")}
                 else:
                     additional_config = {}
                 for eval_mode in ["single"]:
-                    config = default_config.copy()
-                    config.update({
-                        "model_name": model,
-                        "dataset_name": dataset,
-                        "data_mode": "both",
-                        "eval_mode": eval_mode,
-                        "n_pairs": n_pairs[eval_mode],
-                        "wandb": wandb[eval_mode],
-                        "prompt_name": "theory",
-                        "theory_version": "v6",
-                        "train_ml_model": "xgboost",
-                        "gpu_request": gpu_requests[model],
-                        "experiment": experiment,
-                    })
-                    config.update(additional_config)
-                    configs.append(config)
+                    for lora_rank in [2, 4, 8]:
+                        for lr in [0.001, 0.0001, 0.0005]:
+                            config = default_config.copy()
+                            config.update({
+                                "model_name": model,
+                                "dataset_name": dataset,
+                                "data_mode": "both",
+                                "eval_mode": eval_mode,
+                                "n_pairs": n_pairs[eval_mode],
+                                "wandb": wandb[eval_mode],
+                                "prompt_name": "theory",
+                                "theory_version": "v6",
+                                "train_ml_model": "xgboost",
+                                "gpu_request": gpu_requests[model],
+                                "experiment": experiment,
+                                "lora_rank": lora_rank,
+                                "lr": lr,
+                                "epochs": 20,
+                            })
+                            config.update(additional_config)
+                            configs.append(config)
 
 
 configs_df = pd.DataFrame(configs)

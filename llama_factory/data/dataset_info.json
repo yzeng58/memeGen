@@ -442,5 +442,406 @@
             "chosen": "chosen",
             "images": "images"
         }
+    },
+    "relca_v2_pixtral-12b_multimodal_single_theory_0_shot_train": {
+        "file_name": "relca_v2_pixtral-12b_multimodal_single_theory_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2.5-72B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train": {
+        "file_name": "relca_v2_Qwen2.5-72B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_pixtral-12b_multimodal_single_theory_0_shot_train_10_epochs": {
+        "file_name": "relca_v2_pixtral-12b_multimodal_single_theory_0_shot_train_10_epochs.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Qwen2.5-72B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs": {
+        "file_name": "relca_v2_Qwen2.5-72B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_pairwise_theory_0_shot_train_3_epochs": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_pairwise_theory_0_shot_train_3_epochs.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_gpt-4o-2024-08-06_multimodal_single_theory_0_shot_train_10_epochs": {
+        "file_name": "relca_v2_gpt-4o-2024-08-06_multimodal_single_theory_0_shot_train_10_epochs.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_mix_llm_meme_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs": {
+        "file_name": "relca_v2_mix_llm_meme_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_2_rank_0.0005_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_2_rank_0.0005_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_2_rank_0.001_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_2_rank_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_8_rank_0.0001_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_8_rank_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_8_rank_0.0005_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_8_rank_0.0005_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_4_rank_0.0005_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_4_rank_0.0005_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_2_rank_0.0005_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_2_rank_0.0005_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_8_rank_0.0005_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_8_rank_0.0005_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_8_rank_0.001_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_8_rank_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_2_rank_0.0001_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_2_rank_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_4_rank_0.0005_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_4_rank_0.0005_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_4_rank_0.001_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_4_rank_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_4_rank_0.0001_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_4_rank_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_8_rank_0.0001_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_10_epochs_8_rank_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_2_rank_0.001_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_2_rank_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_2_rank_0.0001_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_2_rank_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_4_rank_0.001_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_4_rank_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_4_rank_0.0001_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_4_rank_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_8_rank_0.001_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_10_epochs_8_rank_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_2_rank_0.001_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_2_rank_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_2_rank_0.0001_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_2_rank_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_2_rank_0.0005_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_2_rank_0.0005_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_4_rank_0.001_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_4_rank_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_4_rank_0.0001_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_4_rank_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_4_rank_0.0005_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_4_rank_0.0005_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_8_rank_0.001_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_8_rank_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_8_rank_0.0001_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_8_rank_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_8_rank_0.0005_lr": {
+        "file_name": "relca_v2_Llama-3.1-70B-Instruct_description_gemini-1.5-pro_single_theory_0_shot_train_20_epochs_8_rank_0.0005_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_2_rank_0.001_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_2_rank_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_2_rank_0.0001_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_2_rank_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_2_rank_0.0005_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_2_rank_0.0005_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_4_rank_0.001_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_4_rank_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_4_rank_0.0001_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_4_rank_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_4_rank_0.0005_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_4_rank_0.0005_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_8_rank_0.001_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_8_rank_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_8_rank_0.0001_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_8_rank_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_8_rank_0.0005_lr": {
+        "file_name": "relca_v2_Qwen2-VL-72B-Instruct_multimodal_single_theory_0_shot_train_20_epochs_8_rank_0.0005_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
     }
 }
