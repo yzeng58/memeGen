@@ -60,6 +60,10 @@ support_llms = {
         'gemini-1.5-pro',
         'gemini-1.0-pro',
     ],
+    'deepseek': [
+        'DeepSeek-R1-Distill-Qwen-32B',
+        'DeepSeek-R1-Distill-Llama-70B',
+    ],
 }
 
 support_diffusers = {
@@ -714,7 +718,6 @@ def get_peft_variant_name(
     n_demos,
     data_mode,
     num_train_epochs,
-    lora_rank,
     lr,
 ):
     modality_mode = get_modality_mode(description, context)
@@ -723,5 +726,5 @@ def get_peft_variant_name(
     else:
         dataset_name = dataset_name
     
-    ft_model = f"qlora_{dataset_name}_{model_name}_{modality_mode}_{eval_mode}_{prompt_name}_{n_demos}_shot_{data_mode}_{num_train_epochs}_epochs_{lora_rank}_rank_{lr}_lr"
+    ft_model = f"qlora_{dataset_name}_{model_name}_{modality_mode}_{eval_mode}_{prompt_name}_{n_demos}_shot_{data_mode}_{num_train_epochs}_epochs_{lr}_lr"
     return ft_model

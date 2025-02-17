@@ -11,7 +11,7 @@ configs = pd.read_csv(f"{root_dir}/experiments/configs.csv")
 def create_python_eval_command(row):
     python_command = "python evaluation.py"
     for col in row.keys():
-        if col in ["gpu_request", "experiment", "epochs", "lora_rank", "lr"]:
+        if col in ["gpu_request", "experiment", "epochs", "lr"]:
             continue
         elif pd.isna(row[col]):
             python_command += f" --{col} ''"
@@ -75,7 +75,6 @@ for index, row in configs.iterrows():
             n_demos=row["n_demos"],
             data_mode="train",
             num_train_epochs=row["epochs"],
-            lora_rank=row["lora_rank"],
             lr=row["lr"],
         )
 
@@ -103,14 +102,13 @@ for index, row in configs.iterrows():
             n_demos=row["n_demos"],
             data_mode="train",
             num_train_epochs=row["epochs"],
-            lora_rank=row["lora_rank"],
             lr=row["lr"],
         )
 
         new_row["eval_mode"] = "pairwise"
         new_row["n_pairs"] = 2000
         new_row["wandb"] = True
-        for dataset in ["ours_v4", "relca_v2"]:
+        for dataset in ["llm_meme"]:
             new_row["dataset_name"] = dataset
             eval_command = create_python_eval_command(new_row)
             python_command += f"\n{eval_command}"

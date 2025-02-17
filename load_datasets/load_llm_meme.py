@@ -14,7 +14,8 @@ def load_llm_meme(
         raise ValueError(f'Difficulty {difficulty} not supported for llm_meme dataset, please choose from [easy]')
     
     if not description in ["", "default"]:
-        raise ValueError(f"For llm_meme dataset, please choose description from ['', 'default']")
+        print(f"For llm_meme dataset, please choose description from ['', 'default']. Setting description to default...")
+        description = "default"
     
     if score_analysis:
         data_df = pd.read_csv(f"{get_dataset_dir('llm_meme')}/dataset_final.csv")

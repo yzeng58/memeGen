@@ -6,9 +6,9 @@ configs = []
 
 # all options: 
 # ["baseline", "text-only", "cot", "icl", "theory", "ft", "ft_theory"]
-experiments = ["ft_theory"]
+experiments = ["text-only"]
 
-datasets = ["ours_v4", "relca_v2"]
+datasets = ["llm_meme"]
 n_demos = {
     "single": [2, 4, 6, 8],
     "pairwise": [0, 2, 4]
@@ -48,6 +48,8 @@ gpu_requests = {
     "Mistral-7B-Instruct-v0.3": 1,
     "Mixtral-8x22B-Instruct-v0.1": 8,
     "Mistral-Large-Instruct-2407": 4,
+    "DeepSeek-R1-Distill-Qwen-32B": 4,
+    "DeepSeek-R1-Distill-Llama-70B": 4,
 }
 
 mllms = [
@@ -64,20 +66,22 @@ mllms = [
 ]
 
 llms = [
-    'Qwen2.5-14B-Instruct',
-    'Qwen2.5-72B-Instruct',
-    "Llama-3.1-8B-Instruct",
-    "Llama-3.1-70B-Instruct",
-    "Mistral-7B-Instruct-v0.3",
-    "Mixtral-8x22B-Instruct-v0.1",
-    "Mistral-Large-Instruct-2407",
+    # 'Qwen2.5-14B-Instruct',
+    # 'Qwen2.5-72B-Instruct',
+    # "Llama-3.1-8B-Instruct",
+    # "Llama-3.1-70B-Instruct",
+    # "Mistral-7B-Instruct-v0.3",
+    # "Mixtral-8x22B-Instruct-v0.1",
+    # "Mistral-Large-Instruct-2407",
+    "DeepSeek-R1-Distill-Qwen-32B",
+    "DeepSeek-R1-Distill-Llama-70B",
 ]
 
 good_mllms = [
     # "gpt-4o",
     # "gemini-1.5-pro",
-    "Qwen2-VL-72B-Instruct",
-    "pixtral-12b",
+    # "Qwen2-VL-72B-Instruct",
+    # "pixtral-12b",
 ]
 
 good_llms = [
@@ -103,7 +107,6 @@ default_config = {
     "theory_version": "v6",
     "train_ml_model": "",
     "epochs": 3,
-    "lora_rank": 8,
     "lr": 0.0001,
 }
 
@@ -259,37 +262,33 @@ for experiment in experiments:
     elif experiment == "ft_theory":
         # Fine-tuning with theory
         # model_list = good_mllms + good_llms
-        model_list = ["Llama-3.1-70B-Instruct", "Qwen2-VL-72B-Instruct"]
+        model_list = ["Qwen2-VL-72B-Instruct", "Llama-3.1-70B-Instruct"]
         for model in model_list:
             if model in oom_models: continue
-            dataset_list = ["relca_v2"]
-            for dataset in dataset_list:
+            for dataset in datasets:
                 if model in good_llms:
                     additional_config = {"description": description.get(dataset, "gemini-1.5-pro")}
                 else:
                     additional_config = {}
                 for eval_mode in ["single"]:
-                    for lora_rank in [2, 4, 8]:
-                        for lr in [0.001, 0.0001, 0.0005]:
-                            config = default_config.copy()
-                            config.update({
-                                "model_name": model,
-                                "dataset_name": dataset,
-                                "data_mode": "both",
-                                "eval_mode": eval_mode,
-                                "n_pairs": n_pairs[eval_mode],
-                                "wandb": wandb[eval_mode],
-                                "prompt_name": "theory",
-                                "theory_version": "v6",
-                                "train_ml_model": "xgboost",
-                                "gpu_request": gpu_requests[model],
-                                "experiment": experiment,
-                                "lora_rank": lora_rank,
-                                "lr": lr,
-                                "epochs": 20,
-                            })
-                            config.update(additional_config)
-                            configs.append(config)
+                    config = default_config.copy()
+                    config.update({
+                        "model_name": model,
+                        "dataset_name": dataset,
+                        "data_mode": "both",
+                        "eval_mode": eval_mode,
+                        "n_pairs": n_pairs[eval_mode],
+                        "wandb": wandb[eval_mode],
+                        "prompt_name": "theory",
+                        "theory_version": "v6",
+                        "train_ml_model": "xgboost",
+                        "gpu_request": gpu_requests[model],
+                        "experiment": experiment,
+                        "lr": 0.001,
+                        "epochs": 20,
+                    })
+                    config.update(additional_config)
+                    configs.append(config)
 
 
 configs_df = pd.DataFrame(configs)

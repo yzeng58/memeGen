@@ -308,7 +308,9 @@ def preprocess(
         else:
             demonstrations = []
 
-        tqdm_bar = tqdm(range(len(dataset)))
+        indices = list(range(len(dataset)))
+        random.shuffle(indices)
+        tqdm_bar = tqdm(indices)
         
         llm_dataset = []
         for i in tqdm_bar:
@@ -471,7 +473,6 @@ def finetune(
     theory_version,
     num_train_epochs,
     learning_rate,
-    lora_rank,
 ):
 
     datasets = dataset_name
@@ -485,7 +486,6 @@ def finetune(
         n_demos=n_demos,
         data_mode=data_mode,
         num_train_epochs=num_train_epochs,
-        lora_rank=lora_rank,
         lr=learning_rate,
     )
     dataset_save_name = peft_variant_name[6:]
@@ -538,7 +538,6 @@ def finetune(
             "do_train": True,
             "finetuning_type": "lora", 
             "lora_target": "all",
-            "lora_rank": lora_rank,
             
             "dataset": dataset_save_name,
             "template": support_llm_properties[model_name]['chat_template'],
@@ -643,7 +642,6 @@ if __name__ == '__main__':
     parser.add_argument('--theory_version', type=str, default='v6')
     parser.add_argument('--epochs', type=int, default=3)
     parser.add_argument('--lr', type=float, default=0.001)
-    parser.add_argument('--lora_rank', type=int, default=8)
     args = parser.parse_args()
 
     print(__file__)
@@ -678,7 +676,6 @@ if __name__ == '__main__':
         theory_version=args.theory_version,
         num_train_epochs=args.epochs,
         learning_rate=args.lr,
-        lora_rank=args.lora_rank,
     )
 
 

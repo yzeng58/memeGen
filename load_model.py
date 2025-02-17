@@ -3,7 +3,11 @@ def load_model(
     api_key: str = 'yz',
 ):
     model_name = model_path.split('/')[0]
-    if 'llama' in model_name.lower():
+    if 'deepseek' in model_name.lower():
+        from load_models.load_deepseek import load_deepseek, call_deepseek
+        model = load_deepseek(model_path)
+        return lambda *args, **kwargs: call_deepseek(model, *args, **kwargs)
+    elif 'llama' in model_name.lower():
         from load_models.load_llama import load_llama, call_llama
         model = load_llama(model_path, api_key)
         return lambda *args, **kwargs: call_llama(model, *args, **kwargs)
