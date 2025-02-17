@@ -15,7 +15,7 @@ def load_model(
         from load_models.load_claude import load_claude, call_claude
         model = load_claude(model_path, api_key)
         return lambda *args, **kwargs: call_claude(model, *args, **kwargs)
-    elif 'gpt' in model_name.lower():
+    elif 'gpt' in model_name.lower() or 'o1' in model_name.lower() or 'o3' in model_name.lower():
         from load_models.load_gpt import load_gpt, call_gpt
         model = load_gpt(model_path, api_key)
         return lambda *args, **kwargs: call_gpt(model, *args, **kwargs)

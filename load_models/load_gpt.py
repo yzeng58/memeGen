@@ -102,6 +102,9 @@ def call_gpt(
     system_prompt = '',
     **kwargs,
 ):
+    if 'o3' in gpt['model'] and not description:
+        raise ValueError("O3 models require a description!")
+
     model, client, api_key = gpt['model'], gpt['client'], gpt['api_key']
 
     messages = []
@@ -143,13 +146,20 @@ def call_gpt(
     if history is not None: messages = history + messages
     if system_prompt: messages.insert(0, {"role": "system", "content": system_prompt})
 
-    payload = {
-        'model': model,
-        'messages':messages,
-        'max_tokens':max_new_tokens,
-        'seed': seed,
-        'temperature': temperature,
-    }
+    if 'o1' in model or 'o3' in model:
+        payload = {
+            'model': model,
+            'messages':messages,
+            'seed': seed,
+        }
+    else:
+        payload = {
+            'model': model,
+            'messages':messages,
+            'max_tokens':max_new_tokens,
+            'seed': seed,
+            'temperature': temperature,
+        }
 
     if image_mode == 'url':
         response = client.chat.completions.create(**payload)
@@ -166,6 +176,7 @@ def call_gpt(
             json=payload,
         )
         output = response.json()['choices'][0]['message']['content']
+        
     else:
         raise ValueError("The image_mode must be either 'url' or 'path', not {mode}.")  
 

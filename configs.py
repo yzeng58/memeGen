@@ -21,6 +21,9 @@ support_llms = {
         'gpt-4o-mini',
         'gpt-4-turbo-2024-04-09',
         'gpt-4o-2024-08-06',
+        'o1-2024-12-17',
+        'o3-mini-2025-01-31',
+        'o3-preview-2024-11-20',
     ],
     'claude': [
         'claude-3-haiku-20240307',
@@ -59,6 +62,7 @@ support_llms = {
         'gemini-1.5-flash-8b',
         'gemini-1.5-pro',
         'gemini-1.0-pro',
+        'gemini-2.0-flash',
     ],
     'deepseek': [
         'DeepSeek-R1-Distill-Qwen-32B',

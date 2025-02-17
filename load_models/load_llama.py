@@ -163,6 +163,7 @@ def call_llama(
 
         outputs = pipeline(messages, max_new_tokens=max_new_tokens)
         output = outputs[0]['generated_text']
+        pdb.set_trace()
 
         output_dict = {}
         if save_history: 
