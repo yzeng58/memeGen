@@ -89,6 +89,7 @@ def call_llama(
     demonstrations = [],
     **kwargs,
 ):
+    pdb.set_trace()
     set_seed(seed)
     if 'Llama-3.2' in llama['model_id']:
         if description: raise ValueError('Description is not supported for Llama-3.2 models.')
@@ -163,7 +164,6 @@ def call_llama(
 
         outputs = pipeline(messages, max_new_tokens=max_new_tokens)
         output = outputs[0]['generated_text']
-        pdb.set_trace()
 
         output_dict = {}
         if save_history: 

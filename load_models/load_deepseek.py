@@ -2,7 +2,7 @@ import os, sys
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from configs import system_prompts
 from helper import read_json, set_seed, retry_if_fail
 from load_models.load_llama import call_llama
@@ -18,12 +18,20 @@ def load_deepseek(
         model_path = f"{root_dir}/models/{model_path}"
         
         
-    model = AutoModelForCausalLM.from_pretrained(
-        model_path,
-        trust_remote_code=True,
-        device_map="auto",
-    )
-    tokenizer = AutoTokenizer.from_pretrained(f"deepseek-ai/{model_name}")
+    if "Qwen" in model_name:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_path,
+            trust_remote_code=True,
+            device_map="auto",
+        )
+        tokenizer = AutoTokenizer.from_pretrained(f"deepseek-ai/{model_name}")
+    elif "Llama" in model_name:
+        model = pipeline(
+            "text-generation", 
+            model=model_path,
+            device_map="auto",
+        )
+        tokenizer = None
     return {
         'model': model,
         'tokenizer': tokenizer,
