@@ -44,7 +44,10 @@ def create_python_finetune_command(row):
 
 def process_single_eval(row):
     new_row = deepcopy(row)
-    new_row["prompt_name"] = "single"
+    if row["prompt_name"] == "cot":
+        new_row["prompt_name"] = "single_cot"
+    else:
+        new_row["prompt_name"] = "single"
     new_row["eval_mode"] = "pairwise"
     new_row["not_load_model"] = True
     new_row["wandb"] = True

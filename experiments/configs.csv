@@ -1,3 +1,7 @@
 model_name,dataset_name,data_mode,eval_mode,n_pairs,n_demos,wandb,overwrite,gpu_request,description,prompt_name,theory_version,train_ml_model,epochs,lr,experiment
-gemini-1.5-pro,relca_v2,test,single,-1,2,False,False,0,,standard,v6,,3,0.0001,baseline
-gemini-1.5-pro,relca_v2,test,pairwise,2000,0,True,False,0,,standard,v6,,3,0.0001,baseline
+Qwen2-VL-72B-Instruct,relca_v2,test,single,-1,2,False,False,4,,cot,v6,,3,0.0001,cot
+Qwen2-VL-72B-Instruct,ours_v4,test,single,-1,2,False,False,4,,cot,v6,,3,0.0001,cot
+Llama-3.1-70B-Instruct,relca_v2,test,single,-1,2,False,False,4,gemini-1.5-pro,cot,v6,,3,0.0001,cot
+Llama-3.1-70B-Instruct,ours_v4,test,single,-1,2,False,False,4,gemini-1.5-pro,cot,v6,,3,0.0001,cot
+Qwen2.5-72B-Instruct,relca_v2,test,single,-1,2,False,False,4,gemini-1.5-pro,cot,v6,,3,0.0001,cot
+Qwen2.5-72B-Instruct,ours_v4,test,single,-1,2,False,False,4,gemini-1.5-pro,cot,v6,,3,0.0001,cot

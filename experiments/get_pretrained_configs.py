@@ -6,7 +6,7 @@ configs = []
 
 # all options: 
 # ["baseline", "text-only", "cot", "icl", "theory", "ft", "ft_theory"]
-experiments = ["icl"]
+experiments = ["cot"]
 
 datasets = ["relca_v2", "ours_v4"]
 n_demos = {
@@ -161,13 +161,13 @@ for experiment in experiments:
 
     elif experiment == "cot":
         # CoT
-        for model in good_llms + good_mllms:
+        for model in ["Qwen2-VL-72B-Instruct", "Llama-3.1-70B-Instruct", "Qwen2.5-72B-Instruct"]: # good_llms + good_mllms:
             for dataset in datasets:
                 if model in good_llms:
                     additional_config = {"description": description.get(dataset, "gemini-1.5-pro")}
                 else:
                     additional_config = {}
-                for eval_mode in ["single", "pairwise"]:
+                for eval_mode in ["single"]: # ["single", "pairwise"]:
                     config = default_config.copy()
                     config.update({
                         "model_name": model,

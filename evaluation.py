@@ -428,7 +428,7 @@ def evaluate(
                         pass
             
             if not read_result:
-                if not prompt_name in ["theory", "single"]:
+                if not prompt_name in ["theory", "single", "single_cot"]:
                     compare_output_dict_1 = get_output(
                         call_model, 
                         prompt_name,
