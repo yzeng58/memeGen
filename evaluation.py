@@ -37,7 +37,18 @@ def get_single_output(
     else:
         file_name = file_path.split('/')[-1].split('.')[0]
     
-    new_result_dir = f"{os.path.dirname(os.path.dirname(result_dir))}/single_standard/{len(demonstrations)}_shot"
+    mode_dirname = None
+    if eval_mode == "single":
+        mode_dirname = f"{eval_mode}_{prompt_name}"
+    elif eval_mode == "pairwise":
+        if prompt_name == "single":
+            mode_dirname = "single_standard"
+        elif prompt_name == "single_cot":
+            mode_dirname = "single_cot"
+    
+    if mode_dirname is None:
+        raise ValueError(f"Eval mode {eval_mode} and prompt name {prompt_name} is not supported!")
+    new_result_dir = f"{os.path.dirname(os.path.dirname(result_dir))}/{mode_dirname}/{len(demonstrations)}_shot"
     os.makedirs(new_result_dir, exist_ok=True)
     result_file = f'{new_result_dir}/{file_name}.json'
 
@@ -54,10 +65,11 @@ def get_single_output(
         except:
             pass
     
+    core_prompt_name = "single" if prompt_name == "single" else prompt_name.split("_")[0]
     if not read_result:
         output_dict = get_output(
             call_model, 
-            "standard",
+            core_prompt_name,
             prompt,
             [file_path], 
             max_new_tokens=1,
@@ -70,9 +82,10 @@ def get_single_output(
             theory_version = theory_version,
             demonstrations = demonstrations,
             system_prompt_name = system_prompt_name,
+            prompt_position = "last",
         )
 
-        pred_label = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](output_dict['output'])
+        pred_label = prompt_processor[model_name][metric][eval_mode][core_prompt_name]['output_processor'](output_dict['output'])
 
         result = {
             'file_path': file_path,
@@ -145,7 +158,7 @@ def evaluate(
     if n_demos > 0:
         if eval_mode == 'threeway':
             raise ValueError('Demonstrations are not supported in threeway evaluation mode!')
-        if not prompt_name in ['standard']:
+        if not prompt_name in ['standard', "cot"]:
             if not not_load_model:
                 raise ValueError(f'{prompt_name} prompt does not support loading models, and it has to be run with eval_mode=single first and obtain the results, and then continue with this by directly loading the results without loading models!')
         
@@ -499,7 +512,7 @@ def evaluate(
                         pred_label_1 = int(compare_output_dict_1['output'] <= compare_output_dict_2['output'])
                         pred_label_2 = int(compare_output_dict_1['output'] > compare_output_dict_2['output'])
 
-                elif prompt_name == "single":
+                elif "single" in prompt_name:
                     compare_output_dict_1 = get_single_output(
                         file_path = funny_path,
                         label = 1,

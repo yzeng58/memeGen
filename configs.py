@@ -239,6 +239,26 @@ prompt_processor_default["funniness"] = {
             'prompt': "Is this meme funny? Please respond with a single letter, 'Y' for yes, 'N' for no.",
             'output_processor': lambda x: {'y': 1, 'n': 0}.get(x[-1].lower(), -1) if x else -1,
             'label_processor': lambda x: {1: 'Y', 0: 'N'}[x],
+        },
+        'cot': {
+            "prompt": """
+                You will be shown another meme and must determine whether it is funny while ensuring your decision is consistent with previous examples. Additionally, provide a justification for your choice. Ensure the output strictly follows the given JSON format:
+                ```json
+                {
+                    "analysis": {
+                        "content": "<detailed analysis of the first meme's content>",
+                        "humor_style": "<type of humor (e.g., sarcasm, irony, absurdity)>",
+                        "cultural_context": "<any cultural or contextual references>"
+                    }
+                    "prediction": {
+                        "comment": "<your comment here>",
+                        "funny?": "<Y or N>"
+                    }
+                }
+                ```
+            """,
+            "output_processor": lambda x: {'N': 0, 'Y': 1}.get(json.loads(re.search(r'```json\s*(.*?)\s*```', x, re.DOTALL).group(1) if re.search(r'```json\s*(.*?)\s*```', x, re.DOTALL) else x)["prediction"]["funny?"], -1),
+            "label_processor": lambda x: {0: 'N', 1: 'Y'}[x],
         }
     },
     'pairwise': {
@@ -565,6 +585,7 @@ prompt_processor["Llama-3.1-70B-Instruct"]["funniness"]["pairwise"]["cot"] = {
 for support_model_category in support_llms:
     for support_model in support_llms[support_model_category]:
         prompt_processor[support_model]["funniness"]["pairwise"]["single"] = prompt_processor[support_model]["funniness"]["single"]["standard"]
+        prompt_processor[support_model]["funniness"]["pairwise"]["single_cot"] = prompt_processor[support_model]["funniness"]["single"]["cot"]
 
 
 description_prompt = {
@@ -593,7 +614,7 @@ for support_model_category in support_llms:
 ##########################
 eval_modes = {
     "single": ["standard", "cot", "theory"], 
-    "pairwise": ["standard", "cot", "theory", "single"],
+    "pairwise": ["standard", "cot", "theory", "single", "single_cot"],
     "threeway": ["standard", "cot"],
 }
 

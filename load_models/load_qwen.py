@@ -104,6 +104,7 @@ def call_qwen(
     temperature = 0.1,
     context = "",
     demonstrations = None,
+    prompt_position = 'default', # 'last'
     **kwargs,
 ):
     set_seed(seed)
@@ -117,7 +118,7 @@ def call_qwen(
             messages = [{"role": "system", "content": system_prompts[model_name][system_prompt]}]
 
         if demonstrations:
-            messages.append({"role": "user", "content": [process_text_qwen2(prompt)]})
+            if prompt_position == 'default': messages.append({"role": "user", "content": [process_text_qwen2(prompt)]})
             for sample in demonstrations:
                 contents = process_sample_feature(
                     image_paths=sample['image_paths'], 
@@ -131,6 +132,8 @@ def call_qwen(
                 if not 'label' in sample:
                     raise ValueError("Label is required for non-test samples!")
                 messages.append({"role": "assistant", "content": [process_text_qwen2(sample['label'])]})
+
+            if prompt_position == 'last': messages.append({"role": "user", "content": [process_text_qwen2(prompt)]})
 
         contents = process_sample_feature(
             image_paths=image_paths, 

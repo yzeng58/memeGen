@@ -86,19 +86,15 @@ llms = [
 ]
 
 good_mllms = [
-    # "gpt-4o",
-    # "gemini-1.5-pro",
+    "gpt-4o",
+    "gemini-1.5-pro",
     "Qwen2-VL-72B-Instruct",
     "pixtral-12b",
-    # "gemini-2.0-flash",
 ]
 
 good_llms = [
     'Qwen2.5-72B-Instruct',
     'Llama-3.1-70B-Instruct',
-    # 'Mixtral-8x22B-Instruct-v0.1',
-    # "DeepSeek-R1-Distill-Qwen-32B",
-    # "DeepSeek-R1-Distill-Llama-70B",
 ]
 
 oom_models = ['Mixtral-8x22B-Instruct-v0.1'] # out of memory
@@ -190,7 +186,7 @@ for experiment in experiments:
 
     elif experiment == "icl":
         # ICL
-        model_list = ["gpt-4o"]
+        model_list = good_mllms + good_llms
         for model in model_list:
             for dataset in datasets:
                 if model in good_llms:
@@ -216,7 +212,7 @@ for experiment in experiments:
 
     elif experiment == "theory":
         # Theory
-        model_list = good_llms + good_mllms
+        model_list = ["gpt-4o", "gemini-1.5-pro"] # good_llms + good_mllms
         for model in model_list:
             for dataset in datasets:
                 if model in good_llms:
@@ -236,7 +232,7 @@ for experiment in experiments:
                         "theory_version": "v6",
                         "train_ml_model": "xgboost",
                         "gpu_request": gpu_requests[model],
-                        "description": description.get(dataset, "gemini-1.5-pro"),
+                        "description": '',
                         "experiment": experiment,
                     })
                     config.update(additional_config)

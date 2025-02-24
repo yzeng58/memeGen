@@ -87,6 +87,7 @@ def call_llama(
     seed = 42,
     context = "",
     demonstrations = [],
+    prompt_position = 'default', # 'last'
     **kwargs,
 ):
     set_seed(seed)
@@ -101,7 +102,7 @@ def call_llama(
             messages, images = [], []
 
         if demonstrations:
-            messages.append({"role": "user", "content": {"type": "text", "text": prompt}})
+            if prompt_position == 'default': messages.append({"role": "user", "content": {"type": "text", "text": prompt}})
             for sample in demonstrations:
                 content_idx, images_idx = process_sample_feature(sample['image_paths'], context, llama)
                 images.extend(images_idx)
@@ -110,6 +111,8 @@ def call_llama(
                 if not 'label' in sample:
                     raise ValueError("Label is required for non-test samples!")
                 messages.append({"role": "assistant", "content": sample['label']})
+
+            if prompt_position == 'last': messages.append({"role": "user", "content": {"type": "text", "text": prompt}})
 
         content_idx, images_idx = process_sample_feature(image_paths, context, llama)
         messages.append({"role": "user", "content": content_idx})

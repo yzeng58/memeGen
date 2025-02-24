@@ -36,6 +36,7 @@ def get_output(
     theory_version = 'v1',
     demonstrations = [],
     system_prompt_name = "default",
+    prompt_position = "default"
 ):
     if prompt_name == "cot" and isinstance(prompt, list):
         output_1 = call_model(
@@ -73,6 +74,7 @@ def get_output(
             context=context,
             demonstrations = demonstrations,
             system_prompt = system_prompt_name,
+            prompt_position = prompt_position,
         )
         output_dict = {
             'output': output_dict_all['output'],
