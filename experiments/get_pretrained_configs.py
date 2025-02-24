@@ -6,9 +6,9 @@ configs = []
 
 # all options: 
 # ["baseline", "text-only", "cot", "icl", "theory", "ft", "ft_theory"]
-experiments = ["baseline"]
+experiments = ["icl"]
 
-datasets = ["ours_v4", "relca_v2", "llm_meme"]
+datasets = ["relca_v2", "ours_v4"]
 n_demos = {
     "single": [2, 4, 6, 8],
     "pairwise": [0, 2, 4]
@@ -59,43 +59,46 @@ gpu_requests = {
 mllms = [
     "gpt-4o-mini",
     "gpt-4o",
-    # "Llama-3.2-11B-Vision-Instruct",
-    # "Llama-3.2-90B-Vision-Instruct",
-    # 'Qwen2-VL-2B-Instruct',
-    # 'Qwen2-VL-7B-Instruct',
-    # 'Qwen2-VL-72B-Instruct',
-    # 'gemini-1.5-flash',
-    # 'gemini-1.5-pro',
-    # 'pixtral-12b',
+    "Llama-3.2-11B-Vision-Instruct",
+    "Llama-3.2-90B-Vision-Instruct",
+    'Qwen2-VL-2B-Instruct',
+    'Qwen2-VL-7B-Instruct',
+    'Qwen2-VL-72B-Instruct',
+    'gemini-1.5-flash',
+    'gemini-1.5-pro',
+    'pixtral-12b',
     'gemini-2.0-flash',
     'o1-2024-12-17',
-    'o3-mini-2025-01-31',
-    'o3-preview-2024-11-20',
+    # 'o3-mini-2025-01-31',
+    # 'o3-preview-2024-11-20',
 ]
 
 llms = [
-    # 'Qwen2.5-14B-Instruct',
-    # 'Qwen2.5-72B-Instruct',
-    # "Llama-3.1-8B-Instruct",
-    # "Llama-3.1-70B-Instruct",
-    # "Mistral-7B-Instruct-v0.3",
-    # "Mixtral-8x22B-Instruct-v0.1",
-    # "Mistral-Large-Instruct-2407",
-    # "DeepSeek-R1-Distill-Qwen-32B",
-    # "DeepSeek-R1-Distill-Llama-70B",
+    'Qwen2.5-14B-Instruct',
+    'Qwen2.5-72B-Instruct',
+    "Llama-3.1-8B-Instruct",
+    "Llama-3.1-70B-Instruct",
+    "Mistral-7B-Instruct-v0.3",
+    "Mixtral-8x22B-Instruct-v0.1",
+    "Mistral-Large-Instruct-2407",
+    "DeepSeek-R1-Distill-Qwen-32B",
+    "DeepSeek-R1-Distill-Llama-70B",
 ]
 
 good_mllms = [
     # "gpt-4o",
     # "gemini-1.5-pro",
-    # "Qwen2-VL-72B-Instruct",
-    # "pixtral-12b",
+    "Qwen2-VL-72B-Instruct",
+    "pixtral-12b",
+    # "gemini-2.0-flash",
 ]
 
 good_llms = [
     'Qwen2.5-72B-Instruct',
     'Llama-3.1-70B-Instruct',
-    'Mixtral-8x22B-Instruct-v0.1',
+    # 'Mixtral-8x22B-Instruct-v0.1',
+    # "DeepSeek-R1-Distill-Qwen-32B",
+    # "DeepSeek-R1-Distill-Llama-70B",
 ]
 
 oom_models = ['Mixtral-8x22B-Instruct-v0.1'] # out of memory
@@ -162,14 +165,13 @@ for experiment in experiments:
 
     elif experiment == "cot":
         # CoT
-        model_list = ["Qwen2.5-72B-Instruct", "Qwen2-VL-72B-Instruct", "Llama-3.1-70B-Instruct"]
-        for model in model_list:
+        for model in good_llms + good_mllms:
             for dataset in datasets:
                 if model in good_llms:
                     additional_config = {"description": description.get(dataset, "gemini-1.5-pro")}
                 else:
                     additional_config = {}
-                for eval_mode in ["pairwise"]:
+                for eval_mode in ["single", "pairwise"]:
                     config = default_config.copy()
                     config.update({
                         "model_name": model,
@@ -188,7 +190,7 @@ for experiment in experiments:
 
     elif experiment == "icl":
         # ICL
-        model_list = good_llms + good_mllms
+        model_list = ["gpt-4o"]
         for model in model_list:
             for dataset in datasets:
                 if model in good_llms:
@@ -245,8 +247,7 @@ for experiment in experiments:
         model_list = good_mllms + good_llms
         for model in model_list:
             if model in oom_models: continue
-            dataset_list = ["relca_v2", "ours_v4&relca_v2"]
-            for dataset in dataset_list:
+            for dataset in datasets:
                 if model in good_llms:
                     additional_config = {"description": description.get(dataset, "gemini-1.5-pro")}
                 else:
@@ -263,6 +264,8 @@ for experiment in experiments:
                         "wandb": wandb[eval_mode],
                         "gpu_request": gpu_requests[model],
                         "experiment": experiment,
+                        "lr": 0.001,
+                        "epochs": 20,
                     })
                     config.update(additional_config)
                     configs.append(config)

@@ -89,7 +89,6 @@ def call_llama(
     demonstrations = [],
     **kwargs,
 ):
-    pdb.set_trace()
     set_seed(seed)
     if 'Llama-3.2' in llama['model_id']:
         if description: raise ValueError('Description is not supported for Llama-3.2 models.')

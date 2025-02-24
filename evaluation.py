@@ -45,7 +45,10 @@ def get_single_output(
     if os.path.exists(result_file) and not overwrite:
         try:
             result = read_json(result_file)
-            read_result = True
+            if result['output_dict']['output'] == 'ERROR': 
+                read_result = False
+            else:
+                read_result = True
         except KeyboardInterrupt:
             raise KeyboardInterrupt
         except:
@@ -402,7 +405,10 @@ def evaluate(
                 if os.path.exists(result_file) and not overwrite and not prompt_name == "theory":
                     try:
                         result = read_json(result_file)
-                        read_result = True
+                        if result['output_1']['output_dict']['output'] == 'ERROR' or result['output_2']['output_dict']['output'] == 'ERROR': 
+                            read_result = False
+                        else:
+                            read_result = True
                     except KeyboardInterrupt:
                         raise KeyboardInterrupt
                     except:

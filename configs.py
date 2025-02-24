@@ -91,7 +91,7 @@ support_ml_models = {
 
 support_llm_properties = {
     'gpt-4o-mini': {
-        'model_size': 1000000000,
+        'model_size': 8_000_000_000,
     },
     'gpt-4o': {
         'model_size': 1800000000000,

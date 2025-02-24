@@ -953,5 +953,209 @@
             "messages": "conversations",
             "chosen": "chosen"
         }
+    },
+    "llm_meme_Qwen2-VL-72B-Instruct_multimodal_single_standard_2_shot_train_3_epochs_0.0001_lr": {
+        "file_name": "llm_meme_Qwen2-VL-72B-Instruct_multimodal_single_standard_2_shot_train_3_epochs_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "llm_meme_pixtral-12b_multimodal_single_standard_2_shot_train_3_epochs_0.0001_lr": {
+        "file_name": "llm_meme_pixtral-12b_multimodal_single_standard_2_shot_train_3_epochs_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "llm_meme_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train_3_epochs_0.0001_lr": {
+        "file_name": "llm_meme_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train_3_epochs_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "llm_meme_pixtral-12b_multimodal_pairwise_standard_0_shot_train_3_epochs_0.0001_lr": {
+        "file_name": "llm_meme_pixtral-12b_multimodal_pairwise_standard_0_shot_train_3_epochs_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "llm_meme_Qwen2.5-72B-Instruct_description_default_single_standard_2_shot_train_3_epochs_0.0001_lr": {
+        "file_name": "llm_meme_Qwen2.5-72B-Instruct_description_default_single_standard_2_shot_train_3_epochs_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "llm_meme_Llama-3.1-70B-Instruct_description_default_single_standard_2_shot_train_3_epochs_0.0001_lr": {
+        "file_name": "llm_meme_Llama-3.1-70B-Instruct_description_default_single_standard_2_shot_train_3_epochs_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "llm_meme_Qwen2.5-72B-Instruct_description_default_pairwise_standard_0_shot_train_3_epochs_0.0001_lr": {
+        "file_name": "llm_meme_Qwen2.5-72B-Instruct_description_default_pairwise_standard_0_shot_train_3_epochs_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "llm_meme_Llama-3.1-70B-Instruct_description_default_pairwise_standard_0_shot_train_3_epochs_0.0001_lr": {
+        "file_name": "llm_meme_Llama-3.1-70B-Instruct_description_default_pairwise_standard_0_shot_train_3_epochs_0.0001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "llm_meme_Qwen2-VL-72B-Instruct_multimodal_single_standard_2_shot_train_10_epochs_0.001_lr": {
+        "file_name": "llm_meme_Qwen2-VL-72B-Instruct_multimodal_single_standard_2_shot_train_10_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "llm_meme_pixtral-12b_multimodal_single_standard_2_shot_train_10_epochs_0.001_lr": {
+        "file_name": "llm_meme_pixtral-12b_multimodal_single_standard_2_shot_train_10_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "llm_meme_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train_10_epochs_0.001_lr": {
+        "file_name": "llm_meme_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train_10_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "llm_meme_pixtral-12b_multimodal_pairwise_standard_0_shot_train_10_epochs_0.001_lr": {
+        "file_name": "llm_meme_pixtral-12b_multimodal_pairwise_standard_0_shot_train_10_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "llm_meme_Qwen2.5-72B-Instruct_description_default_single_standard_2_shot_train_10_epochs_0.001_lr": {
+        "file_name": "llm_meme_Qwen2.5-72B-Instruct_description_default_single_standard_2_shot_train_10_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "llm_meme_Qwen2.5-72B-Instruct_description_default_pairwise_standard_0_shot_train_10_epochs_0.001_lr": {
+        "file_name": "llm_meme_Qwen2.5-72B-Instruct_description_default_pairwise_standard_0_shot_train_10_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "llm_meme_Llama-3.1-70B-Instruct_description_default_single_standard_2_shot_train_10_epochs_0.001_lr": {
+        "file_name": "llm_meme_Llama-3.1-70B-Instruct_description_default_single_standard_2_shot_train_10_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "llm_meme_Llama-3.1-70B-Instruct_description_default_pairwise_standard_0_shot_train_10_epochs_0.001_lr": {
+        "file_name": "llm_meme_Llama-3.1-70B-Instruct_description_default_pairwise_standard_0_shot_train_10_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "llm_meme_Qwen2-VL-72B-Instruct_multimodal_single_standard_2_shot_train_20_epochs_0.001_lr": {
+        "file_name": "llm_meme_Qwen2-VL-72B-Instruct_multimodal_single_standard_2_shot_train_20_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "llm_meme_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train_20_epochs_0.001_lr": {
+        "file_name": "llm_meme_Qwen2-VL-72B-Instruct_multimodal_pairwise_standard_0_shot_train_20_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "llm_meme_pixtral-12b_multimodal_single_standard_2_shot_train_20_epochs_0.001_lr": {
+        "file_name": "llm_meme_pixtral-12b_multimodal_single_standard_2_shot_train_20_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "llm_meme_pixtral-12b_multimodal_pairwise_standard_0_shot_train_20_epochs_0.001_lr": {
+        "file_name": "llm_meme_pixtral-12b_multimodal_pairwise_standard_0_shot_train_20_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "llm_meme_Qwen2.5-72B-Instruct_description_default_single_standard_2_shot_train_20_epochs_0.001_lr": {
+        "file_name": "llm_meme_Qwen2.5-72B-Instruct_description_default_single_standard_2_shot_train_20_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "llm_meme_Qwen2.5-72B-Instruct_description_default_pairwise_standard_0_shot_train_20_epochs_0.001_lr": {
+        "file_name": "llm_meme_Qwen2.5-72B-Instruct_description_default_pairwise_standard_0_shot_train_20_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "llm_meme_Llama-3.1-70B-Instruct_description_default_single_standard_2_shot_train_20_epochs_0.001_lr": {
+        "file_name": "llm_meme_Llama-3.1-70B-Instruct_description_default_single_standard_2_shot_train_20_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
+    },
+    "llm_meme_Llama-3.1-70B-Instruct_description_default_pairwise_standard_0_shot_train_20_epochs_0.001_lr": {
+        "file_name": "llm_meme_Llama-3.1-70B-Instruct_description_default_pairwise_standard_0_shot_train_20_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen"
+        }
     }
 }

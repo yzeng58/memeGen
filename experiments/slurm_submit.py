@@ -78,7 +78,7 @@ for index, row in configs.iterrows():
             lr=row["lr"],
         )
 
-        for dataset in ["ours_v4", "relca_v2"]:
+        for dataset in ["llm_meme"]:
             new_row["dataset_name"] = dataset
             new_row["n_pairs"] = 2000
             eval_command = create_python_eval_command(new_row)
@@ -145,7 +145,7 @@ cd ../..
     with open(f"{root_dir}/submit/auto/{job_name}.sh", "w") as f:
         f.write(slurm_script)
 
-    run_script += f"sbatch {job_name}.sh\nsleep 120\n"
+    run_script += f"sbatch {job_name}.sh\nsleep 10\n"
 
 with open(f"{root_dir}/submit/auto/run_all.sh", "w") as f:
     f.write(run_script)

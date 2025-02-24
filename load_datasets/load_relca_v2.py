@@ -44,7 +44,6 @@ def load_relca_v2(
     if description:
         df['description_path'] = df['image_path'].apply(lambda x: get_description_path(x, description))
 
-
     if train_test_split:
         train_df = df.sample(frac=0.5, random_state=42)
         test_df = df.drop(train_df.index)

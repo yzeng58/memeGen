@@ -42,7 +42,7 @@ def generate_meme_llm(
         "topic": topic,
         "llm_output": gen_llm_output,
         "meme_path": meme_path,
-        "description": f"\n* image description: {gen_llm_output_dict['image_description']}\n* top text: {gen_llm_output_dict['top_text']}\n* bottom text: {gen_llm_output_dict['bottom_text']}",
+        "description": {"output": f"\n* image description: {gen_llm_output_dict['image_description']}\n* top text: {gen_llm_output_dict['top_text']}\n* bottom text: {gen_llm_output_dict['bottom_text']}"},
         "output_path": output_path,
     }
 
