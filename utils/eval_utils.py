@@ -2,7 +2,7 @@ import os, sys
 root_dir = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(root_dir)
 
-from rate_meme.rate_meme import score_meme_based_on_theory
+from rate_meme.rate_meme import score_meme_based_on_theory, compare_meme_based_on_theory
 import pdb
     
 def get_file_path(
@@ -86,6 +86,20 @@ def get_output(
             result_dir = result_dir,
             max_intermediate_tokens = max_intermediate_tokens,
             max_new_tokens = max_new_tokens,
+            example = example,
+            description = description,
+            context = context,
+            overwrite = overwrite,
+            version = theory_version,
+            system_prompt_name = system_prompt_name,
+        )
+    elif prompt_name == "pairwise_theory":
+        output_dict = compare_meme_based_on_theory(
+            meme_path_1 = image_paths[0],
+            meme_path_2 = image_paths[1],
+            call_model = call_model,
+            result_dir = result_dir,
+            max_new_tokens = max_intermediate_tokens,
             example = example,
             description = description,
             context = context,

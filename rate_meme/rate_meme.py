@@ -7,7 +7,7 @@ from rate_meme.score_meme_v2 import score_meme_based_on_theory_v2
 from rate_meme.score_meme_v3 import score_meme_based_on_theory_v3
 from rate_meme.score_meme_v4 import score_meme_based_on_theory_v4
 from rate_meme.score_meme_v5 import score_meme_based_on_theory_v5
-from rate_meme.score_meme_v6 import score_meme_based_on_theory_v6
+from rate_meme.score_meme_v6 import score_meme_based_on_theory_v6, pairwise_score_meme_based_on_theory_v6
 
 def score_meme_based_on_theory(
     meme_path,
@@ -95,6 +95,34 @@ def score_meme_based_on_theory(
             context = context,
             overwrite = overwrite,
             system_prompt_name = system_prompt_name,
+        )
+    else:
+        raise ValueError(f"Version {version} not supported!")
+
+def compare_meme_based_on_theory(
+    meme_path_1,
+    meme_path_2,
+    call_model,
+    result_dir = None,
+    max_new_tokens = 1,
+    example = False,
+    description = '',
+    context = '',
+    overwrite = False,
+    version = 'v6',
+    system_prompt_name = 'default',
+):
+    if version == 'v6':
+        return pairwise_score_meme_based_on_theory_v6(
+            meme_path_1 = meme_path_1,
+            meme_path_2 = meme_path_2,
+            call_model = call_model,
+            result_dir = result_dir,
+            max_new_tokens = max_new_tokens,
+            example = example,
+            description = description,
+            context = context,
+            overwrite = overwrite,
         )
     else:
         raise ValueError(f"Version {version} not supported!")

@@ -13,6 +13,7 @@ import random, warnings
 from utils.eval_utils import get_output, get_file_path
 from rate_meme.train import train
 
+
 def get_single_output(
     file_path,
     label,
@@ -233,7 +234,7 @@ def evaluate(
         dataset = pd.concat(sampled_datasets, ignore_index=True).reset_index(drop=True)
         dataset = dataset.sample(frac=1, random_state=seed).reset_index(drop=True)
 
-    if prompt_name == "theory" or ensemble:
+    if prompt_name in ["theory", "pairwise_theory"] or ensemble:
         # the pipeline is implemented in the score_meme_based_on_theory function
         prompt = None
     else:
@@ -447,7 +448,7 @@ def evaluate(
                         demonstrations = demonstrations,
                         system_prompt_name = system_prompt_name,
                     )
-        
+                
                     pred_label_1 = prompt_processor[model_name][metric][eval_mode][prompt_name]['output_processor'](compare_output_dict_1['output'])
 
                     compare_output_dict_2 = get_output(
@@ -557,6 +558,7 @@ def evaluate(
 
                     pred_label_1 = int(compare_output_dict_1['pred_label'] <= compare_output_dict_2['pred_label'])
                     pred_label_2 = int(compare_output_dict_1['pred_label'] > compare_output_dict_2['pred_label'])
+                
                 else:
                     raise ValueError(f'Prompt name {prompt_name} not supported')
                     
@@ -680,7 +682,7 @@ if __name__ == '__main__':
         model_names.extend(support_llms[model])
 
     parser.add_argument('--model_name', type=str, nargs='+', default=['gemini-1.5-flash'], choices = model_names)
-    parser.add_argument('--dataset_name', type=str, default='relca', choices=list(support_eval_datasets.keys()))
+    parser.add_argument('--dataset_name', type=str, default='relca_v2', choices=list(support_eval_datasets.keys()))
     parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--n_per_class', type=int, default=-1, help='-1 for all, otherwise random sample n_per_class for each class')
@@ -694,7 +696,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_new_tokens', type=int, default = 1000)
     parser.add_argument('--theory_example', action='store_true')
     parser.add_argument('--not_load_model', action='store_true', help="Do not load the model. Use this option only when results have already been stored and you want to read the existing results.")
-    parser.add_argument('--theory_version', type=str, default='v4', choices=['v1', 'v2', 'v3', 'v4', 'v5', 'v6'])
+    parser.add_argument('--theory_version', type=str, default='v6', choices=['v1', 'v2', 'v3', 'v4', 'v5', 'v6'])
     parser.add_argument('--ensemble', action='store_true')
     parser.add_argument('--n_demos', type=int, default=0)
     parser.add_argument('--train_ml_model', type=str, default="", choices=list(support_ml_models.keys()) + [""])

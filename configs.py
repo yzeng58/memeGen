@@ -295,7 +295,10 @@ prompt_processor_default["funniness"] = {
                 ```
             """,
             "output_processor": lambda x: {'1': 0, '2': 1}.get(json.loads(re.search(r'```json\s*(.*?)\s*```', x, re.DOTALL).group(1) if re.search(r'```json\s*(.*?)\s*```', x, re.DOTALL) else x)["comparison"]["funnier_meme"], -1),
-        }
+        },
+        'pairwise_theory': {
+            "output_processor": lambda x: {'1': 0, '2': 1}.get(x, -1) if x else -1,
+        },
     },
 }
 

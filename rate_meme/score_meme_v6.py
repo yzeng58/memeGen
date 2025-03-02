@@ -231,7 +231,7 @@ def pairwise_score_meme_based_on_theory_v6(
 
     result_dict = {
         'outputs': output,
-        "decision": output["decision"],
+        "output": output["decision"],
     }
 
     if result_dir:
