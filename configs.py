@@ -614,7 +614,7 @@ for support_model_category in support_llms:
 ##########################
 eval_modes = {
     "single": ["standard", "cot", "theory"], 
-    "pairwise": ["standard", "cot", "theory", "single", "single_cot"],
+    "pairwise": ["standard", "cot", "theory", "single", "single_cot", "pairwise_theory"],
     "threeway": ["standard", "cot"],
 }
 

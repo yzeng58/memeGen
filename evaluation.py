@@ -84,8 +84,10 @@ def get_single_output(
             system_prompt_name = system_prompt_name,
             prompt_position = "last",
         )
-
-        pred_label = prompt_processor[model_name][metric][eval_mode][core_prompt_name]['output_processor'](output_dict['output'])
+        try:
+            pred_label = prompt_processor[model_name][metric][eval_mode][core_prompt_name]['output_processor'](output_dict['output'])
+        except:
+            pred_label = -1
 
         result = {
             'file_path': file_path,

@@ -157,3 +157,48 @@ def get_score_v4(
         }
 
     return parsed_data
+
+def get_score_pairwise_v6(
+    prompt,
+    meme_path_1,
+    meme_path_2,
+    call_model,
+    max_new_tokens = 500,
+    description = '',
+    context = '',
+    system_prompt_name = 'default',
+):
+    output = call_model(
+        prompt,
+        [meme_path_1, meme_path_2],
+        max_new_tokens=max_new_tokens,
+        save_history=True,
+        description = description,
+        context = context,
+        system_prompt = system_prompt_name,
+    )
+
+    try:
+        parsed_data = json.loads(output['output'].replace("```json", "").replace("```", "").strip())
+    except KeyboardInterrupt:
+        raise KeyboardInterrupt
+    except:
+        print(f"Error parsing the output of {os.path.basename(meme_path_1)} and {os.path.basename(meme_path_2)}, using default values")
+        parsed_data = {
+            "meme_1": {
+                "a": { "comment": "", "option": -1 },
+                "b": { "comment": "", "option": -1 },
+                "c": { "comment": "", "option": -1 },
+                "d": { "comment": "", "option": -1 },
+            },
+            "meme_2": {
+                "a": { "comment": "", "option": -1 },
+                "b": { "comment": "", "option": -1 },
+                "c": { "comment": "", "option": -1 },
+                "d": { "comment": "", "option": -1 },
+            },
+            "decision": -1,
+        }
+
+    return parsed_data   
+

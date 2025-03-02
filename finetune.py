@@ -11,7 +11,7 @@ from tqdm import tqdm
 from itertools import product
 import random, warnings, yaml, subprocess
 from utils.eval_utils import get_file_path
-from rate_meme.score_meme_v6 import prompt_score_v6, score_v6_json_format
+from rate_meme.score_meme_v6 import prompt_score_v6, score_v6_json_format, pairwise_prompt_score_v6, pairwise_prompt_score_v6_json_format
 
 def convert_data_sample_single(
     file_path,
@@ -152,8 +152,36 @@ def get_data_sample_pairwise(
     prompt_name,
     label,
     demonstrations,
+    rows = None,
 ):
-    label_processor = prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor']
+    if prompt_name == "pairwise_theory":
+        prompt = pairwise_prompt_score_v6()
+        label_processor = lambda x: pairwise_prompt_score_v6_json_format({
+            "meme_1": {
+                "Q1_reasoning": rows[0]["Q1_reasoning"],
+                "Q1_option": rows[0]["Q1_option"],
+                "Q2_reasoning": rows[0]["Q2_reasoning"],
+                "Q2_option": rows[0]["Q2_option"],
+                "Q3_reasoning": rows[0]["Q3_reasoning"],
+                "Q3_option": rows[0]["Q3_option"],
+                "Q4_reasoning": rows[0]["Q4_reasoning"],
+                "Q4_option": rows[0]["Q4_option"],
+            },
+            "meme_2": {
+                "Q1_reasoning": rows[1]["Q1_reasoning"],
+                "Q1_option": rows[1]["Q1_option"],
+                "Q2_reasoning": rows[1]["Q2_reasoning"],
+                "Q2_option": rows[1]["Q2_option"],
+                "Q3_reasoning": rows[1]["Q3_reasoning"],
+                "Q3_option": rows[1]["Q3_option"],
+                "Q4_reasoning": rows[1]["Q4_reasoning"],
+                "Q4_option": rows[1]["Q4_option"],
+            },
+            "decision": label,
+        })
+    else:
+        label_processor = prompt_processor[model_name][metric][eval_mode][prompt_name]['label_processor']
+
     data_sample = {"system": system_prompts[model_name][system_prompt_name]}
     for data in demonstrations + [{"image_paths": [path1, path2], "label": label}]:
         sample = convert_data_sample_pairwise(
@@ -230,7 +258,7 @@ def preprocess(
         eval_mode=eval_mode, 
         train_test_split=True,
         difficulty=difficulty,
-        score_analysis= prompt_name == "theory",
+        score_analysis= prompt_name in ["theory", "pairwise_theory"],
     )
     if data_mode == "train":
         dataset = dataset['train']
@@ -259,7 +287,7 @@ def preprocess(
         dataset = pd.concat(sampled_datasets, ignore_index=True).reset_index(drop=True)
         dataset = dataset.sample(frac=1, random_state=seed).reset_index(drop=True)
 
-    if prompt_name == "theory" or ensemble:
+    if prompt_name in ["theory", "pairwise_theory"] or ensemble:
         # the pipeline is implemented in the score_meme_based_on_theory function
         prompt = None
     else:
@@ -416,7 +444,9 @@ def preprocess(
                     prompt_name=prompt_name,
                     label=0,
                     demonstrations=demonstrations,
+                    rows = [funny_data.loc[i], not_funny_data.loc[j]],
                 ))
+
                 llm_dataset.append(get_data_sample_pairwise(
                     path1=not_funny_path,
                     path2=funny_path,
@@ -430,7 +460,9 @@ def preprocess(
                     prompt_name=prompt_name,
                     label=1,
                     demonstrations=demonstrations,
+                    rows = [not_funny_data.loc[j], funny_data.loc[i]],
                 ))
+            
 
 
     file_name = f"{dataset_save_name}.json"
@@ -624,7 +656,7 @@ if __name__ == '__main__':
         model_names.extend(support_llms[model])
 
     parser.add_argument('--model_name', type=str, nargs='+', default=['Qwen2-VL-2B-Instruct'], choices=model_names)
-    parser.add_argument('--dataset_name', type=str, nargs='+', default=['relca'], choices=list(support_eval_datasets.keys()))
+    parser.add_argument('--dataset_name', type=str, nargs='+', default=['relca_v2'], choices=list(support_eval_datasets.keys()))
     parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--n_demos', type=int, default=0)
     parser.add_argument('--seed', type=int, default=42)

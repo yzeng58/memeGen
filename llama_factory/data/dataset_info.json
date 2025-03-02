@@ -1157,5 +1157,23 @@
             "messages": "conversations",
             "chosen": "chosen"
         }
+    },
+    "relca_Qwen2-VL-2B-Instruct_multimodal_pairwise_standard_0_shot_train_3_epochs_0.001_lr": {
+        "file_name": "relca_Qwen2-VL-2B-Instruct_multimodal_pairwise_standard_0_shot_train_3_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
+    },
+    "relca_v2_Qwen2-VL-2B-Instruct_multimodal_pairwise_pairwise_theory_0_shot_train_3_epochs_0.001_lr": {
+        "file_name": "relca_v2_Qwen2-VL-2B-Instruct_multimodal_pairwise_pairwise_theory_0_shot_train_3_epochs_0.001_lr.json",
+        "formatting": "sharegpt",
+        "columns": {
+            "messages": "conversations",
+            "chosen": "chosen",
+            "images": "images"
+        }
     }
 }
