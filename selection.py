@@ -3,11 +3,13 @@ root_dir = os.path.dirname(__file__)
 from configs import prompt_processor, support_gen_datasets, support_llms, support_diffusers, summarizer_prompts, system_prompts_default, prompt_processor_default
 from load_model import load_model
 from load_dataset import load_dataset
-from helper import set_seed, save_json, print_configs, retry_if_fail, read_json
+from helper import set_seed, save_json, read_json
 from typing import List, Literal
 import itertools
 from utils.eval_utils import get_output
+from configs import support_ml_models
 import pdb
+from tqdm import tqdm
 
 def select(
     gen_llm_name: str = "gemini-1.5-pro",
@@ -31,8 +33,6 @@ def select(
     if data_mode in ["train", "test"]:
         if not support_gen_datasets[dataset_name]["train_test_split"]:
             raise ValueError(f"Dataset {dataset_name} does not support train/test split!")
-    if eval_mode not in ["pairwise"]:
-        raise ValueError(f"Select mode {eval_mode} not supported! Please choose from ['pairwise']")
     
     dataset = load_dataset(dataset_name)
     if data_mode in ["train", "test"]: dataset = dataset[data_mode]
@@ -61,7 +61,7 @@ def select(
             file_names.append(f"{i+1}")
     
     
-    for content, file_name in zip(contents, file_names):
+    for content, file_name in tqdm(zip(contents, file_names)):
         file_paths = {}
 
         if eval_mode == "pairwise":
@@ -132,7 +132,7 @@ def select(
             for prompt_name in prompt_names:
                 result = {}
                 meme_path = f"{result_dirs[prompt_name]}/{file_name}.json"
-                result_file_path = f"{root_dir}/results/generation/{dataset_name}/{gen_llm_name}/{dm_name}/selective/{call_eval_llm_path}/{gen_mode}/output/{file_name}_{prompt_name}.json"
+                result_file_path = f"{root_dir}/results/generation/{dataset_name}/{gen_llm_name}/{dm_name}/selective/{call_eval_llm_path}/{gen_mode}/output/{file_name}_{prompt_name}_theory.json"
 
                 if not os.path.exists(meme_path):
                     raise ValueError(f"Meme {file_name} does not exist! Please make sure to generate the meme using generation.py before running selection.py!")
@@ -141,7 +141,7 @@ def select(
                     output_dict = get_output(
                         call_model=call_eval_llm,
                         prompt_name=eval_prompt_name,
-                        prompt=prompt_processor[eval_llm_name]["funniness"][eval_mode][eval_prompt_name]['prompt'],
+                        prompt=None,
                         image_paths=[meme_path],
                         max_new_tokens=1,
                         max_intermediate_tokens=300,
@@ -156,20 +156,23 @@ def select(
                         prompt_position="default",
                     )
                 else:
+
                     result = read_json(result_file_path)
-                    output_dict = result["output_dict"]
+                    output_dict = result[prompt_name]
 
                 result[prompt_name] = output_dict
                 save_json(result, result_file_path)
                 
-                xgboost_model = read_json(f"{root_dir}/results/generation/xgboost_llm_meme_Qwen2-VL-72B-Instruct.json")
-                pred_label = xgboost_model[prompt_name]
-                file_paths[prompt_name] += pred_label
+                ml_model = support_ml_models["xgboost"]()
+                ml_model.load_model(f"{root_dir}/results/generation/xgboost_llm_meme_Qwen2-VL-72B-Instruct.json")
+                
+                # Predict using the XGBoost model
+                pred_label = ml_model.predict([list(output_dict["scores"].values())])
+                file_paths[prompt_name] = pred_label.item()
 
         else:
             raise ValueError(f"Select mode {eval_mode} not supported! Please choose from ['pairwise']")
                     
-        
         save_json(file_paths, f"{root_dir}/results/generation/{dataset_name}/{gen_llm_name}/{dm_name}/selective/{call_eval_llm_path}/{gen_mode}/output/{file_name}.json")
                     
 if __name__ == "__main__":

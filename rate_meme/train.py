@@ -157,6 +157,7 @@ def train(
     
     ml_model = get_ml_model(train_ml_model)
     combined = list(zip(X, y))
+
     random.shuffle(combined)
     X, y = zip(*combined)
     X, y = list(X), list(y)
