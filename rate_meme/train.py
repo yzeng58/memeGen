@@ -161,8 +161,10 @@ def train(
     X, y = zip(*combined)
     X, y = list(X), list(y)
     ml_model.fit(X, y)
+
     # accuracy on train set
     train_pred = ml_model.predict(X)
+    
     train_acc = (train_pred == y).mean()
     print(f'Accuracy on train set: {train_acc}')
     if wandb.run is not None:

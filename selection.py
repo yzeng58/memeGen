@@ -64,67 +64,111 @@ def select(
     for content, file_name in zip(contents, file_names):
         file_paths = {}
 
-        combinations = list(itertools.combinations(prompt_names, 2))
-        
-        for prompt_name_1, prompt_name_2 in combinations:
-            result = {}
-            result_file_path = f"{root_dir}/results/generation/{dataset_name}/{gen_llm_name}/{dm_name}/selective/{call_eval_llm_path}/{gen_mode}/output/{file_name}_{prompt_name_1}_{prompt_name_2}.json"
+        if eval_mode == "pairwise":
+            combinations = list(itertools.combinations(prompt_names, 2))
             
-            path1 = f"{result_dirs[prompt_name_1]}/{file_name}.json"
-            path2 = f"{result_dirs[prompt_name_2]}/{file_name}.json"
-            
-            if not os.path.exists(path1) or not os.path.exists(path2):
-                print(path1, path2)
-                raise ValueError(f"Meme {file_name} does not exist! Please make sure to generate the meme using generation.py before running selection.py!")
-            if not path1 in file_paths: file_paths[path1] = 0
-            if not path2 in file_paths: file_paths[path2] = 0
-            
-            if not os.path.exists(result_file_path): 
-                compare_output_dict_1 = get_output(
-                    call_model=call_eval_llm,
-                    prompt_name=eval_prompt_name,
-                    prompt=prompt_processor[eval_llm_name]["funniness"][eval_mode][eval_prompt_name]['prompt'],
-                    image_paths=[path1, path2],
-                    max_new_tokens=1,
-                    description="default" if description else "",
-                    max_intermediate_tokens=300,
-                    context="",
-                    example=False,
-                    result_dir=None,
-                    overwrite=False,
-                    system_prompt_name=system_prompt_name,
-                )
-                compare_output_dict_2 = get_output(
-                    call_model=call_eval_llm,
-                    prompt_name=eval_prompt_name,
-                    prompt=prompt_processor[eval_llm_name]["funniness"][eval_mode][eval_prompt_name]['prompt'],
-                    image_paths=[path2, path1],
-                    max_new_tokens=1,
-                    description="default" if description else "",
-                    max_intermediate_tokens=300,
-                    context="",
-                    example=False,
-                    result_dir=None,
-                    overwrite=False,
-                    system_prompt_name=system_prompt_name,
-                )
-            else:
-                result = read_json(result_file_path)
-                compare_output_dict_1 = result[f"{prompt_name_1}_{prompt_name_2}"]
-                compare_output_dict_2 = result[f"{prompt_name_2}_{prompt_name_1}"]
-
+            for prompt_name_1, prompt_name_2 in combinations:
+                result = {}
+                result_file_path = f"{root_dir}/results/generation/{dataset_name}/{gen_llm_name}/{dm_name}/selective/{call_eval_llm_path}/{gen_mode}/output/{file_name}_{prompt_name_1}_{prompt_name_2}.json"
                 
-            pred_label_1 = prompt_processor[eval_llm_name]["funniness"][eval_mode][eval_prompt_name]['output_processor'](compare_output_dict_1['output'])
-            file_paths[[path1, path2][pred_label_1]] += 1
+                path1 = f"{result_dirs[prompt_name_1]}/{file_name}.json"
+                path2 = f"{result_dirs[prompt_name_2]}/{file_name}.json"
+                
+                if not os.path.exists(path1) or not os.path.exists(path2):
+                    print(path1, path2)
+                    raise ValueError(f"Meme {file_name} does not exist! Please make sure to generate the meme using generation.py before running selection.py!")
+                if not path1 in file_paths: file_paths[path1] = 0
+                if not path2 in file_paths: file_paths[path2] = 0
+                
+                if not os.path.exists(result_file_path): 
+                    compare_output_dict_1 = get_output(
+                        call_model=call_eval_llm,
+                        prompt_name=eval_prompt_name,
+                        prompt=prompt_processor[eval_llm_name]["funniness"][eval_mode][eval_prompt_name]['prompt'],
+                        image_paths=[path1, path2],
+                        max_new_tokens=1,
+                        description="default" if description else "",
+                        max_intermediate_tokens=300,
+                        context="",
+                        example=False,
+                        result_dir=None,
+                        overwrite=False,
+                        system_prompt_name=system_prompt_name,
+                    )
+                    compare_output_dict_2 = get_output(
+                        call_model=call_eval_llm,
+                        prompt_name=eval_prompt_name,
+                        prompt=prompt_processor[eval_llm_name]["funniness"][eval_mode][eval_prompt_name]['prompt'],
+                        image_paths=[path2, path1],
+                        max_new_tokens=1,
+                        description="default" if description else "",
+                        max_intermediate_tokens=300,
+                        context="",
+                        example=False,
+                        result_dir=None,
+                        overwrite=False,
+                        system_prompt_name=system_prompt_name,
+                    )
+                else:
+                    result = read_json(result_file_path)
+                    compare_output_dict_1 = result[f"{prompt_name_1}_{prompt_name_2}"]
+                    compare_output_dict_2 = result[f"{prompt_name_2}_{prompt_name_1}"]
 
-            pred_label_2 = prompt_processor[eval_llm_name]["funniness"][eval_mode][eval_prompt_name]['output_processor'](compare_output_dict_2['output'])
-            file_paths[[path2, path1][pred_label_2]] += 1
+                    
+                pred_label_1 = prompt_processor[eval_llm_name]["funniness"][eval_mode][eval_prompt_name]['output_processor'](compare_output_dict_1['output'])
+                file_paths[[path1, path2][pred_label_1]] += 1
 
-            if not os.path.exists(result_file_path):
-                result[f"{prompt_name_1}_{prompt_name_2}"] = compare_output_dict_1
-                result[f"{prompt_name_2}_{prompt_name_1}"] = compare_output_dict_2
+                pred_label_2 = prompt_processor[eval_llm_name]["funniness"][eval_mode][eval_prompt_name]['output_processor'](compare_output_dict_2['output'])
+                file_paths[[path2, path1][pred_label_2]] += 1
 
+                if not os.path.exists(result_file_path):
+                    result[f"{prompt_name_1}_{prompt_name_2}"] = compare_output_dict_1
+                    result[f"{prompt_name_2}_{prompt_name_1}"] = compare_output_dict_2
+
+                    save_json(result, result_file_path)
+
+        elif eval_mode == "single" and eval_prompt_name == "theory":
+            file_paths = {}
+            for prompt_name in prompt_names:
+                result = {}
+                meme_path = f"{result_dirs[prompt_name]}/{file_name}.json"
+                result_file_path = f"{root_dir}/results/generation/{dataset_name}/{gen_llm_name}/{dm_name}/selective/{call_eval_llm_path}/{gen_mode}/output/{file_name}_{prompt_name}.json"
+
+                if not os.path.exists(meme_path):
+                    raise ValueError(f"Meme {file_name} does not exist! Please make sure to generate the meme using generation.py before running selection.py!")
+
+                if not os.path.exists(result_file_path):
+                    output_dict = get_output(
+                        call_model=call_eval_llm,
+                        prompt_name=eval_prompt_name,
+                        prompt=prompt_processor[eval_llm_name]["funniness"][eval_mode][eval_prompt_name]['prompt'],
+                        image_paths=[meme_path],
+                        max_new_tokens=1,
+                        max_intermediate_tokens=300,
+                        description="default" if description else "",
+                        context="",
+                        example=False,
+                        result_dir=None,
+                        overwrite=False,
+                        theory_version="v6",
+                        demonstrations=[],
+                        system_prompt_name=system_prompt_name,
+                        prompt_position="default",
+                    )
+                else:
+                    result = read_json(result_file_path)
+                    output_dict = result["output_dict"]
+
+                result[prompt_name] = output_dict
                 save_json(result, result_file_path)
+                
+                xgboost_model = read_json(f"{root_dir}/results/generation/xgboost_llm_meme_Qwen2-VL-72B-Instruct.json")
+                pred_label = xgboost_model[prompt_name]
+                file_paths[prompt_name] += pred_label
+
+        else:
+            raise ValueError(f"Select mode {eval_mode} not supported! Please choose from ['pairwise']")
+                    
         
         save_json(file_paths, f"{root_dir}/results/generation/{dataset_name}/{gen_llm_name}/{dm_name}/selective/{call_eval_llm_path}/{gen_mode}/output/{file_name}.json")
                     
@@ -148,9 +192,9 @@ if __name__ == "__main__":
     parser.add_argument("--eval_llm_peft_variant", type=str, default="")
     parser.add_argument("--dm_name", type=str, default="stable-diffusion-3-medium-diffusers", choices=dm_names)
     parser.add_argument("--gen_mode", type=str, default="standard", choices=["standard", "selective"])
-    parser.add_argument("--eval_mode", type=str, default="pairwise", choices=["pairwise"])
-    parser.add_argument("--eval_prompt_name", type=str, default="standard", choices=["standard", "reversal", "benign2", "lot"])
-    parser.add_argument("--system_prompt_name", type=str, default="")
+    parser.add_argument("--eval_mode", type=str, default="pairwise", choices=["pairwise", "single"])
+    parser.add_argument("--eval_prompt_name", type=str, default="standard", choices=["standard", "theory"])
+    parser.add_argument("--system_prompt_name", type=str, default="default")
     args = parser.parse_args()
 
     select(

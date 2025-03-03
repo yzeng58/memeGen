@@ -25,8 +25,10 @@ def create_python_finetune_command(row):
     python_command = "python finetune.py"
     if row["experiment"] == "ft":
         skip_cols = ["gpu_request", "experiment", "wandb", "n_pairs", "theory_version", "train_ml_model"]
-    else:
+    elif row["experiment"] == "ft_theory":
         skip_cols = ["gpu_request", "experiment", "wandb", "n_pairs", "train_ml_model"]
+    elif row["experiment"] == "ft_pairwise_theory":
+        skip_cols = ["gpu_request", "experiment", "wandb", "n_pairs", "train_ml_model", "max_new_tokens"]
     for col in row.keys():
         if col in skip_cols:
             continue
@@ -81,7 +83,7 @@ for index, row in configs.iterrows():
             lr=row["lr"],
         )
 
-        for dataset in ["llm_meme"]:
+        for dataset in ["relca_v2"]:
             new_row["dataset_name"] = dataset
             new_row["n_pairs"] = 2000
             eval_command = create_python_eval_command(new_row)
@@ -92,7 +94,7 @@ for index, row in configs.iterrows():
                 eval_command = create_python_eval_command(wandb_row)
                 python_command += f"\n{eval_command}"
 
-    elif row["experiment"] == "ft_theory":
+    elif row["experiment"] in ["ft_theory", "ft_pairwise_theory"]:
         python_command = create_python_finetune_command(row)
 
         new_row["peft_variant"] = get_peft_variant_name(
@@ -111,7 +113,7 @@ for index, row in configs.iterrows():
         new_row["eval_mode"] = "pairwise"
         new_row["n_pairs"] = 2000
         new_row["wandb"] = True
-        for dataset in ["llm_meme"]:
+        for dataset in ["relca_v2"]:
             new_row["dataset_name"] = dataset
             eval_command = create_python_eval_command(new_row)
             python_command += f"\n{eval_command}"

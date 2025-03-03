@@ -5,10 +5,10 @@ root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 configs = []
 
 # all options: 
-# ["baseline", "text-only", "cot", "icl", "theory", "ft", "ft_theory"]
-experiments = ["cot"]
+# ["baseline", "text-only", "cot", "icl", "theory", "ft", "ft_theory", "pairwise_theory", "ft_pairwise_theory"]
+experiments = ["ft_pairwise_theory"]
 
-datasets = ["relca_v2", "ours_v4"]
+datasets = ["relca_v2"]
 n_demos = {
     "single": [2, 4, 6, 8],
     "pairwise": [0, 2, 4]
@@ -89,7 +89,6 @@ good_mllms = [
     "gpt-4o",
     "gemini-1.5-pro",
     "Qwen2-VL-72B-Instruct",
-    "pixtral-12b",
 ]
 
 good_llms = [
@@ -115,6 +114,7 @@ default_config = {
     "train_ml_model": "",
     "epochs": 3,
     "lr": 0.0001,
+    "max_new_tokens": 300,
 }
 
 
@@ -212,7 +212,7 @@ for experiment in experiments:
 
     elif experiment == "theory":
         # Theory
-        model_list = ["gpt-4o", "gemini-1.5-pro"] # good_llms + good_mllms
+        model_list = good_llms + good_mllms
         for model in model_list:
             for dataset in datasets:
                 if model in good_llms:
@@ -234,6 +234,34 @@ for experiment in experiments:
                         "gpu_request": gpu_requests[model],
                         "description": '',
                         "experiment": experiment,
+                    })
+                    config.update(additional_config)
+                    configs.append(config)
+
+    elif experiment == "pairwise_theory":
+        # Pairwise Theory
+        model_list = good_llms + good_mllms
+        for model in model_list:
+            for dataset in datasets:
+                if model in good_llms:
+                    additional_config = {"description": description.get(dataset, "gemini-1.5-pro")}
+                else:
+                    additional_config = {}
+                for eval_mode in ["pairwise"]:
+                    config = default_config.copy()
+                    config.update({
+                        "model_name": model,
+                        "dataset_name": dataset,
+                        "data_mode": "both",
+                        "eval_mode": eval_mode,
+                        "n_pairs": n_pairs[eval_mode],
+                        "wandb": wandb[eval_mode],
+                        "prompt_name": "pairwise_theory",
+                        "theory_version": "v6",
+                        "gpu_request": gpu_requests[model],
+                        "description": '',
+                        "experiment": experiment,
+                        "max_new_tokens": 1000,
                     })
                     config.update(additional_config)
                     configs.append(config)
@@ -297,6 +325,34 @@ for experiment in experiments:
                     config.update(additional_config)
                     configs.append(config)
 
+    elif experiment == "ft_pairwise_theory":
+        # Fine-tuning with pairwise theory
+        model_list = ["Qwen2-VL-72B-Instruct", "Llama-3.1-70B-Instruct"]
+        for model in model_list:
+            for dataset in datasets:
+                if model in good_llms:
+                    additional_config = {"description": description.get(dataset, "gemini-1.5-pro")}
+                else:
+                    additional_config = {}
+                for eval_mode in ["pairwise"]:
+                    config = default_config.copy()
+                    config.update({
+                        "model_name": model,
+                        "dataset_name": dataset,
+                        "data_mode": "both",
+                        "eval_mode": eval_mode,
+                        "n_pairs": n_pairs[eval_mode],
+                        "wandb": wandb[eval_mode],
+                        "prompt_name": "pairwise_theory",
+                        "theory_version": "v6",
+                        "gpu_request": gpu_requests[model],
+                        "experiment": experiment,
+                        "lr": 0.001,
+                        "epochs": 20,
+                        "max_new_tokens": 1000,
+                    })
+                    config.update(additional_config)
+                    configs.append(config)
 
 configs_df = pd.DataFrame(configs)
 configs_df['n_demos'] = configs_df['n_demos'].astype(float).astype(int)
