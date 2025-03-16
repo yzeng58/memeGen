@@ -1,21 +1,24 @@
 <h1 align="center"> <p>Humor-Aware AI: Evaluating and Improving LLMs in Meme Analysis</p></h1>
 <h4 align="center">
     <p>
-      <a href="https://yzeng58.github.io/" target="_blank">Yuchen Zeng</a><sup>*1</sup>, 
-      <a href="https://scholar.google.com/citations?user=cvaTlWgAAAAJ&hl=en" target="_blank">Hemang Rajvanshy</a><sup>*1</sup>, 
-      <a href="https://wonjunn.github.io/">Wonjun Kang</a><sup>*2</sup>, 
-      <a href="https://jifanz.github.io/" target="_blank">Jifan Zhang</a><sup>1</sup>, 
-      <a href="https://en.wikipedia.org/wiki/Bob_Mankoff" target="_blank">Bob Mankoff</a><sup>1</sup>, 
-      <a href="https://kangwooklee.com/aboutme/" target="_blank">Kangwook Lee</a><sup>1</sup>
-      <a href="https://easonnie.github.io/" target="_blank">Yixin Nie</a><sup>2</sup>, 
-      <a href="https://yipin.github.io/" target="_blank">Yipin Zhou</a><sup>2</sup>, 
+      <a href="https://yzeng58.github.io/" target="_blank">Yuchen Zeng</a><sup>2*</sup>, 
+      <a href="https://scholar.google.com/citations?user=cvaTlWgAAAAJ&hl=en" target="_blank">Hemang Rajvanshy</a><sup>1</sup>, 
+      <a href="https://wonjunn.github.io/">Wonjun Kang</a><sup>3,4</sup>, 
+      <a href="https://jifanz.github.io/" target="_blank">Jifan Zhang</a><sup>2</sup>, 
+      <a href="https://en.wikipedia.org/wiki/Bob_Mankoff" target="_blank">Bob Mankoff</a><sup>5</sup>, 
+      <a href="https://kangwooklee.com/aboutme/" target="_blank">Kangwook Lee</a><sup>2</sup>
+      <a href="https://easonnie.github.io/" target="_blank">Yixin Nie</a><sup>1</sup>, 
+      <a href="https://yipin.github.io/" target="_blank">Yipin Zhou</a><sup>1</sup>, 
   </p>
   <p>
-    <sup>1</sup>UW-Madison, <sup>2</sup> Meta
+    <sup>1</sup>Meta GenAI, <sup>2</sup>University of Wisconsin-Madison,
+    <sup>3</sup>FuriosaAI, <sup>4</sup>Seoul National University,
+    <sup>5</sup>Air Mail and Cartoon Collections
+    <sup>*</sup>Work done during internship at Meta GenAI
    </p>
     </h4>
 <p align="center">
-    <a href="https://github.com/UW-Madison-Lee-Lab/CoBSAT/releases">
+    <a href="https://github.com/yzeng58/memeGen/releases">
         <img alt="GitHub release" src="https://img.shields.io/github/release/UW-Madison-Lee-Lab/CoBSAT.svg">
     </a>
     <a href="https://arxiv.org/abs/2402.01293">
