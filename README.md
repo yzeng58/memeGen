@@ -1,3 +1,37 @@
+<h1 align="center"> <p>Humor-Aware AI: Evaluating and Improving LLMs in Meme Analysis</p></h1>
+<h4 align="center">
+    <p>
+      <a href="https://yzeng58.github.io/" target="_blank">Yuchen Zeng</a><sup>*1</sup>, 
+      <a href="https://scholar.google.com/citations?user=cvaTlWgAAAAJ&hl=en" target="_blank">Hemang Rajvanshy</a><sup>*1</sup>, 
+      <a href="https://wonjunn.github.io/">Wonjun Kang</a><sup>*2</sup>, 
+      <a href="https://jifanz.github.io/" target="_blank">Jifan Zhang</a><sup>1</sup>, 
+      <a href="https://en.wikipedia.org/wiki/Bob_Mankoff" target="_blank">Bob Mankoff</a><sup>1</sup>, 
+      <a href="https://kangwooklee.com/aboutme/" target="_blank">Kangwook Lee</a><sup>1</sup>
+      <a href="https://easonnie.github.io/" target="_blank">Yixin Nie</a><sup>2</sup>, 
+      <a href="https://yipin.github.io/" target="_blank">Yipin Zhou</a><sup>2</sup>, 
+  </p>
+  <p>
+    <sup>1</sup>UW-Madison, <sup>2</sup> Meta
+   </p>
+    </h4>
+<p align="center">
+    <a href="https://github.com/UW-Madison-Lee-Lab/CoBSAT/releases">
+        <img alt="GitHub release" src="https://img.shields.io/github/release/UW-Madison-Lee-Lab/CoBSAT.svg">
+    </a>
+    <a href="https://arxiv.org/abs/2402.01293">
+        <img alt="GitHub release" src="https://img.shields.io/badge/arXiv-2402.01293-b31b1b.svg">
+    </a>
+    <a href="https://huggingface.co/datasets/yzeng58/CoBSAT">
+        <img alt="Hugging Face" src="https://img.shields.io/badge/dataset-CoBSAT-orange">
+    </a>
+</p>
+
+**Abstract**: The evolution from Large Language Models (LLMs) to Multimodal Large Language Models (MLLMs) has spurred research into extending In-Context Learning (ICL) to its multimodal counterpart. Existing such studies have primarily concentrated on image-to-text ICL. However, the Text-to-Image ICL (T2I-ICL), with its unique characteristics and potential applications, remains underexplored. To address this gap, we formally define the task of T2I-ICL and present CoBSAT, the first T2I-ICL benchmark dataset, encompassing ten tasks. Utilizing our dataset to benchmark six state-of-the-art MLLMs, we uncover considerable difficulties MLLMs encounter in solving T2I-ICL. We identify the primary challenges as the inherent complexity of multimodality and image generation. To overcome these challenges, we explore strategies like fine-tuning and Chain-of-Thought prompting, demonstrating notable improvements. Our code and dataset are available at <a href="https://github.com/UW-Madison-Lee-Lab/CoBSAT">this link</a>.
+
+<img width="903" alt="image" src="imgs/t2i_icl.jpg">
+
+
+
 # Benchmarking Meme Humor with Large Language Models
 
 ## Baseline Performance
