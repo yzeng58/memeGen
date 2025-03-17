@@ -194,7 +194,6 @@ dependencies:
       - kagglehub==0.3.3
       - kiwisolver==1.4.7
       - lark==1.2.2
-      - llamafactory==0.9.2.dev0
       - llvmlite==0.43.0
       - lm-format-enforcer==0.10.6
       - lxml==5.3.0

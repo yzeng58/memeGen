@@ -8,12 +8,12 @@
       <a href="https://en.wikipedia.org/wiki/Bob_Mankoff" target="_blank">Bob Mankoff</a><sup>5</sup>, 
       <a href="https://kangwooklee.com/aboutme/" target="_blank">Kangwook Lee</a><sup>2</sup>
       <a href="https://easonnie.github.io/" target="_blank">Yixin Nie</a><sup>1</sup>, 
-      <a href="https://yipin.github.io/" target="_blank">Yipin Zhou</a><sup>1</sup>, 
+      <a href="https://yipin.github.io/" target="_blank">Yipin Zhou</a><sup>1</sup>
   </p>
   <p>
     <sup>1</sup>Meta GenAI, <sup>2</sup>University of Wisconsin-Madison,
     <sup>3</sup>FuriosaAI, <sup>4</sup>Seoul National University,
-    <sup>5</sup>Air Mail and Cartoon Collections
+    <sup>5</sup>Air Mail and Cartoon Collections <br>
     <sup>*</sup>Work done during internship at Meta GenAI
    </p>
     </h4>
@@ -29,26 +29,111 @@
     </a>
 </p>
 
-**Abstract**: The evolution from Large Language Models (LLMs) to Multimodal Large Language Models (MLLMs) has spurred research into extending In-Context Learning (ICL) to its multimodal counterpart. Existing such studies have primarily concentrated on image-to-text ICL. However, the Text-to-Image ICL (T2I-ICL), with its unique characteristics and potential applications, remains underexplored. To address this gap, we formally define the task of T2I-ICL and present CoBSAT, the first T2I-ICL benchmark dataset, encompassing ten tasks. Utilizing our dataset to benchmark six state-of-the-art MLLMs, we uncover considerable difficulties MLLMs encounter in solving T2I-ICL. We identify the primary challenges as the inherent complexity of multimodality and image generation. To overcome these challenges, we explore strategies like fine-tuning and Chain-of-Thought prompting, demonstrating notable improvements. Our code and dataset are available at <a href="https://github.com/UW-Madison-Lee-Lab/CoBSAT">this link</a>.
-
-<img width="903" alt="image" src="imgs/t2i_icl.jpg">
+**Abstract**: Large Language Models (LLMs) have been studied for humor-related tasks like joke understanding and generation, yet meme evaluation—a highly shared form of humor—remains largely unexplored. This work presents the first comprehensive benchmark for evaluating LLMs' meme humor capabilities, covering dataset creation, benchmarking, performance improvement, and extending to meme generation. We present two datasets, MemeFF-Basic and MemeFF-Advanced, to assess humor evaluation across different difficulty levels. We benchmark LLMs on our datasets and find that while they perform well on Meme-Basic, their performance drops significantly on Meme-Advanced, with reasoning providing little to no improvement. To address this, we propose MemeSage, an agent-based approach inspired by humor theory. In this framework, LLMs function as agents that, for each meme, answer multiple-choice questions derived from humor theory. The responses, encoded as structured features, are then fed into a lightweight machine learning model (e.g., XGBoost), to produce the final prediction. By explicitly embedding humor theory as a guiding structure, this method enhances evaluation through a form of guided reasoning, resulting in substantial improvements in meme evaluation performance. Lastly, we also benchmark LLMs in meme generation, and explore how MemeSage can be used to enhance the quality of generated outputs.
 
 
+<img width="903" alt="image" src="imgs/meme_sage.jpg">
 
-# Benchmarking Meme Humor with Large Language Models
+# News  🚀
+
+Empty.
+
+# Contents
+
+- [Step 1: Set Up Environment](#step-1-set-up-environment)
+- [Step 2: Download Dataset](#step-2-download-dataset)
+- [Step 3: Select MLLMs](#step-3-select-mllms)
+  - [Supported Models](#supported-models)
+  - [Feature Your Own Model](#feature-your-own-model)
+
+# Step 1: Set Up Environment
+
+To set up the environment for benchmarking LLMs on meme humor, please follow the following steps. This works for linux. 
+
+1. Clone this repository.
+
+   ```bash
+   git clone https://github.com/yzeng58/memeSage
+   ```
+
+2. Install dependencies.
+
+   ```bash
+   # create the environment that works for all experiments in our paper
+   conda env create -f conda_env.yml
+   conda activate meme
+   ```
+
+3. Create `environment.py` in the `memeSage` directory. Note that many variables need you to config except `root_dir` on your own
+
+   ```python
+    import os
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    OPENAI_API_KEY = {
+        'your_openai_api_key_name1': 'your_openai_api_key1',
+        'your_openai_api_key_name2': 'your_openai_api_key2',
+        ...
+    }
+    HUGGINGFACE_API_KEY = {
+        'your_huggingface_api_key_name1': 'your_huggingface_api_key1',
+        'your_huggingface_api_key_name2': 'your_huggingface_api_key2',
+        ...
+    }
+
+    # We also implemented Claude, but did not include it in our paper as it was too conservative and frequently refused to answer.
+    CLAUDE_API_KEY = {
+        'your_claude_api_key_name1': 'your_claude_api_key1',
+        'your_claude_api_key_name2': 'your_claude_api_key2',
+        ...
+    }
+    GEMINI_API_KEY = {
+        'your_gemini_api_key_name1': 'your_gemini_api_key1',
+        'your_gemini_api_key_name2': 'your_gemini_api_key2',
+        ...
+    }
+    
+    # [OPTIONAL] Change Cache Path if you want to use your own cache path
+    HF_HOME = "your_path_for_huggingface_cache"
+    TRANSFORMERS_CACHE = "your_path_for_huggingface_cache/hub"
+    TRITON_CACHE_DIR="your_path_for_triton_cache"
+    
+    WANDB_INFO = {
+        'project': 'memeSage',
+        'entity': 'your_entity',
+    }
+    ```
+    
+    **Important: Do not commit this file to version control**: This file contains sensitive API keys and should not be synced via GitHub or any other version control system to prevent security risks.
+
+5. [Optional] If you want to perform fine-tuning, please install our variant of Llama-Factory. 
+
+    ```bash
+    git clone https://github.com/yzeng58/LLaMA-Factory
+    cd Llama-Factory
+    pip install -e ".[torch,metrics]"
+    cd ..
+    ```
+
+# Step 2: Download Dataset
+<img width="903" alt="image" src="imgs/memeFF.jpg">
+
+To use our dataset, please follow the following steps. 
+
+# Step 3: Select MLLMs
 
 ## Baseline Performance
 
-### Single Meme Evaluation
+    ### Single Meme Evaluation
 
-```bash
-# ours_v4
-python evaluation.py --dataset_name ours_v4 --data_mode test --eval_mode single --n_demos 2
-python evaluation.py --n_pairs 2000 --dataset_name ours_v4 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb
+    ```bash
+    # ours_v4
+    python evaluation.py --dataset_name ours_v4 --data_mode test --eval_mode single --n_demos 2
+    python evaluation.py --n_pairs 2000 --dataset_name ours_v4 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb
 
-# Relca
-python evaluation.py --dataset_name relca_v2 --data_mode test --eval_mode single --n_demos 2
-python evaluation.py --n_pairs 2000 --dataset_name relca_v2 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb
+    # Relca
+    python evaluation.py --dataset_name relca_v2 --data_mode test --eval_mode single --n_demos 2
+    python evaluation.py --n_pairs 2000 --dataset_name relca_v2 --data_mode test --prompt_name single --n_demos 2 --not_load_model --wandb
 ```
 
 ### Pairwise Meme Comparison
