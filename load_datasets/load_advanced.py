@@ -10,7 +10,7 @@ def get_description_path(image_path: str, description: str):
     description_path = re.sub(r'\.(jpeg|jpg|png|gif|bmp|webp)$', '.json', description_path, flags=re.IGNORECASE)
     return description_path
 
-def load_relca_v2(
+def load_advanced(
     description: str = '', 
     train_test_split: bool = False,
     difficulty: str = 'easy',

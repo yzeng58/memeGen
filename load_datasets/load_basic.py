@@ -10,12 +10,12 @@ def get_description_path(image_path: str, description: str):
     description_path = re.sub(r'\.(jpeg|jpg|png|gif|bmp|webp)$', '.json', description_path, flags=re.IGNORECASE)
     return description_path
 
-def load_ours_v4(
+def load_basic(
     description: str = '',
     train_test_split: bool = False,
 ):
-    df = pd.read_csv(f'{get_dataset_dir("ours_v4")}/meme_dataset.csv')
-    df['image_path'] = df['image_path'].apply(lambda x: os.path.join(get_dataset_dir("ours_v4"), x))
+    df = pd.read_csv(f'{get_dataset_dir("basic")}/meme_dataset.csv')
+    df['image_path'] = df['image_path'].apply(lambda x: os.path.join(get_dataset_dir("basic"), x))
 
     if description:
         df['description_path'] = df['image_path'].apply(lambda x: get_description_path(x, description))

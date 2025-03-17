@@ -83,7 +83,7 @@ for index, row in configs.iterrows():
             lr=row["lr"],
         )
 
-        for dataset in ["relca_v2"]:
+        for dataset in ["advanced"]:
             new_row["dataset_name"] = dataset
             new_row["n_pairs"] = 2000
             eval_command = create_python_eval_command(new_row)
@@ -113,7 +113,7 @@ for index, row in configs.iterrows():
         new_row["eval_mode"] = "pairwise"
         new_row["n_pairs"] = 2000
         new_row["wandb"] = True
-        for dataset in ["relca_v2"]:
+        for dataset in ["advanced"]:
             new_row["dataset_name"] = dataset
             eval_command = create_python_eval_command(new_row)
             python_command += f"\n{eval_command}"

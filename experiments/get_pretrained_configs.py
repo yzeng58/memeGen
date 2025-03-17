@@ -8,7 +8,7 @@ configs = []
 # ["baseline", "text-only", "cot", "icl", "theory", "ft", "ft_theory", "pairwise_theory", "ft_pairwise_theory"]
 experiments = ["ft_pairwise_theory"]
 
-datasets = ["relca_v2"]
+datasets = ["advanced"]
 n_demos = {
     "single": [2, 4, 6, 8],
     "pairwise": [0, 2, 4]
@@ -20,8 +20,8 @@ n_pairs = {
 }
 
 description = {
-    "relca_v2": "gemini-1.5-pro",
-    "ours_v4": "gemini-1.5-pro",
+    "advanced": "gemini-1.5-pro",
+    "basic": "gemini-1.5-pro",
     "llm_meme": "default",
 }
 
@@ -100,7 +100,7 @@ oom_models = ['Mixtral-8x22B-Instruct-v0.1'] # out of memory
 
 default_config = {
     "model_name": "gemini-1.5-pro",
-    "dataset_name": "relca_v2",
+    "dataset_name": "advanced",
     "data_mode": "test",
     "eval_mode": "pairwise",
     "n_pairs": -1,

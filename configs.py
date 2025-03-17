@@ -634,7 +634,7 @@ support_eval_datasets = {
         "train_test_split": True,
         "difficulty": ["easy", "medium", "hard"],
     },
-    "relca_v2": {
+    "advanced": {
         "metric": "funniness",
         "eval_mode": ["single", "pairwise"],
         "train_test_split": True,
@@ -652,7 +652,7 @@ support_eval_datasets = {
         "train_test_split": True,
         "difficulty": ["easy"],
     },
-    'ours_v4': {
+    'basic': {
         "metric": "funniness",
         "eval_mode": ["single", "pairwise"],
         "train_test_split": True,
@@ -703,7 +703,7 @@ support_gen_datasets = {
 dataset_dir_dict = {
     "memotion": f"{dataset_dir}/memotion_dataset_7k",
     "relca": f"{dataset_dir}/RelCa",
-    "relca_v2": f"{dataset_dir}/RelCa",
+    "advanced": f"{dataset_dir}/RelCa",
     "isarcasm": f"{dataset_dir}/iSarcasm",
 }
 

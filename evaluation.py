@@ -682,7 +682,7 @@ if __name__ == '__main__':
         model_names.extend(support_llms[model])
 
     parser.add_argument('--model_name', type=str, nargs='+', default=['gemini-1.5-flash'], choices = model_names)
-    parser.add_argument('--dataset_name', type=str, default='relca_v2', choices=list(support_eval_datasets.keys()))
+    parser.add_argument('--dataset_name', type=str, default='advanced', choices=list(support_eval_datasets.keys()))
     parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--api_key', type=str, default='yz')
     parser.add_argument('--n_per_class', type=int, default=-1, help='-1 for all, otherwise random sample n_per_class for each class')

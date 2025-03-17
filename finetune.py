@@ -656,7 +656,7 @@ if __name__ == '__main__':
         model_names.extend(support_llms[model])
 
     parser.add_argument('--model_name', type=str, nargs='+', default=['Qwen2-VL-2B-Instruct'], choices=model_names)
-    parser.add_argument('--dataset_name', type=str, nargs='+', default=['relca_v2'], choices=list(support_eval_datasets.keys()))
+    parser.add_argument('--dataset_name', type=str, nargs='+', default=['advanced'], choices=list(support_eval_datasets.keys()))
     parser.add_argument('--prompt_name', type=str, default='standard')
     parser.add_argument('--n_demos', type=int, default=0)
     parser.add_argument('--seed', type=int, default=42)
