@@ -32,7 +32,7 @@
 **Abstract**: Large Language Models (LLMs) have been studied for humor-related tasks like joke understanding and generation, yet meme evaluation—a highly shared form of humor—remains largely unexplored. This work presents the first comprehensive benchmark for evaluating LLMs' meme humor capabilities, covering dataset creation, benchmarking, performance improvement, and extending to meme generation. We present two datasets, MemeFF-Basic and MemeFF-Advanced, to assess humor evaluation across different difficulty levels. We benchmark LLMs on our datasets and find that while they perform well on Meme-Basic, their performance drops significantly on Meme-Advanced, with reasoning providing little to no improvement. To address this, we propose MemeSage, an agent-based approach inspired by humor theory. In this framework, LLMs function as agents that, for each meme, answer multiple-choice questions derived from humor theory. The responses, encoded as structured features, are then fed into a lightweight machine learning model (e.g., XGBoost), to produce the final prediction. By explicitly embedding humor theory as a guiding structure, this method enhances evaluation through a form of guided reasoning, resulting in substantial improvements in meme evaluation performance. Lastly, we also benchmark LLMs in meme generation, and explore how MemeSage can be used to enhance the quality of generated outputs.
 
 
-<img width="903" alt="image" src="imgs/meme_sage.jpg">
+<img width="903" alt="image" src="imgs/memesage.jpg">
 
 # News  🚀
 
@@ -104,7 +104,7 @@ To set up the environment for benchmarking LLMs on meme humor, please follow the
     }
     ```
     
-    **Important: Do not commit this file to version control**: This file contains sensitive API keys and should not be synced via GitHub or any other version control system to prevent security risks.
+    **Important: Do not commit this file to version control**. This file contains sensitive API keys and should not be synced via GitHub or any other version control system to prevent security risks.
 
 5. [Optional] If you want to perform fine-tuning, please install our variant of Llama-Factory. 
 
@@ -294,7 +294,65 @@ Throughout this section, the placeholder `OwnModel` will be substituted with the
     
     </details>
 
+2. Add your model to the [`load_model.py`](load_model.py) file.
 
+ <details><summary> <code>load_model.py</code> template </summary>
+
+   ```python
+       elif 'OwnModel' in model_name.lower():
+           from load_models.load_OwnModel import load_OwnModel, call_OwnModel
+   			model = load_OwnModel(model_path, ...)
+           return lambda *args, **kwargs: call_OwnModel(model, *args, **kwargs)
+   ```
+
+   You can check our implementation for other models for example. For your own model, typically you need to load the model first, and then use `call_OwnModel` to make the infernece. Here is one example usage:
+
+   ```python
+    >>> from load_model import load_model
+    >>> call_model = load_model("gemini-1.5-flash/pretrained")
+    >>> call_model("how are you?")
+    {'output': 'I am doing well, thank you for asking!  How are you today?\n'}
+   ```
+
+   </details>
+
+4. Add your model to [`configs.py`](configs.py).
+
+    If your model is LLM, add it to the `support_llms` dictionary.
+
+   ```python
+   support_llms = {
+       'gpt': [
+        'gpt-4o',
+        'gpt-4o-mini',
+        'gpt-4-turbo-2024-04-09',
+        'gpt-4o-2024-08-06',
+        'o1-2024-12-17',
+       ],
+       ...
+       'OwnModel': [
+           ...
+       ] # Add your model names here. For a single model, include just that name in the list.
+   }
+   ```
+
+    If your model is image generation model, add it to the `support_diffusers` dictionary.
+
+    ```python
+    support_diffusers = {
+        'sd': [
+            ...
+        ],
+        ...
+        'OwnModel': [
+            ...
+        ] # Add your model names here. For a single model, include just that name in the list.
+    }
+    ```
+
+# Step 4: Benchmark LLMs
+
+   
     ```bash
     # basic
     python evaluation.py --dataset_name basic --data_mode test --eval_mode single --n_demos 2

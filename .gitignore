@@ -56,3 +56,6 @@ token_drive_v3.pickle
 nohup.out
 SimSun.ttf
 **/llama_factory/
+
+**/__MACOSX/
+**/*.DS_Store
